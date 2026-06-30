@@ -13,7 +13,16 @@ const { class: className, ...rest } = Astro.props;
 
 <div class={`vitruvian-particles ${className ?? ''}`} data-vitruvian {...rest}>
 	<canvas data-canvas aria-hidden="true"></canvas>
-	<img src={vitruvian.src} alt="" data-src hidden aria-hidden="true" decoding="async" />
+	<img
+		src={vitruvian.src}
+		alt=""
+		width="362"
+		height="362"
+		data-src
+		hidden
+		aria-hidden="true"
+		decoding="async"
+	/>
 	<span class="vp-fallback bil" lang="it">Studio anatomico di un automa secondo le proporzioni vitruviane</span>
 </div>
 

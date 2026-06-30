@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gianluca-darcangelo.example/sitemap-index.xml
+Sitemap: https://codex-gianluca.vercel.app/sitemap-index.xml

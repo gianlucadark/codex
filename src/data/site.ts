@@ -1,11 +1,10 @@
 /**
  * Single source of truth for site-wide identity, SEO defaults and contact
- * links. Swap the placeholders here when the real domain / handles are ready —
- * this is the only file you need to touch.
+ * links. This is the single source of truth for the public site domain.
  */
 export const site = {
-	/** TODO: dominio reale. Usato per canonical, sitemap e URL assoluti OG. */
-	url: 'https://gianluca-darcangelo.example',
+	/** Public domain. Used for canonical URLs, sitemap and absolute OG URLs. */
+	url: 'https://codex-gianluca.vercel.app',
 	name: "Gianluca D'Arcangelo",
 	role: 'Fullstack Developer · 3D · UI/UX Design',
 	title: "Gianluca D'Arcangelo — Codex · Portfolio",

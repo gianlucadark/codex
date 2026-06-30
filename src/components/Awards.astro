@@ -40,6 +40,9 @@ const awards = [
 		image: favouriteWebDesign,
 	},
 ];
+
+const transparentPixel =
+	'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 ---
 
 <section id="riconoscimenti" class="foglio" aria-label="Riconoscimenti">
@@ -92,7 +95,7 @@ const awards = [
 	<dialog class="lightbox" aria-label="Certificato ingrandito">
 		<button type="button" class="lb-close" aria-label="Chiudi">×</button>
 		<figure>
-			<img src="" alt="" />
+			<img src={transparentPixel} alt="" width="1" height="1" data-lightbox-image />
 			<figcaption></figcaption>
 		</figure>
 	</dialog>

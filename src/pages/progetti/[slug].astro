@@ -17,6 +17,7 @@ export function getStaticPaths() {
 }
 
 const { project, prev, next } = Astro.props;
+const pageTitle = `${project.title.replace(' Browser Extension', ' Extension')} — Codex`;
 const images = project.images ?? [];
 const highlights = project.highlights ?? [];
 const technologies = project.stack
@@ -26,7 +27,7 @@ const technologies = project.stack
 ---
 
 <Layout
-	title={`${project.title} — Codex · Gianluca D'Arcangelo`}
+	title={pageTitle}
 	description={`${project.desc} — ${project.descEn}`}
 >
 	<main class="codex">

@@ -1,0 +1,174 @@
+/*
+ * Codex — global foundations.
+ * The whole portfolio is themed as an illuminated manuscript: aged paper,
+ * a rubric-red accent for initials/headings, and two voices —
+ * EB Garamond (the printed text) and Gianluca Hand (the handwritten gloss).
+ */
+
+:root {
+	/* Paper & ink palette — campionata dalla pergamena della tavola vitruviana */
+	--paper: #d4be97;
+	--ink: #3a2a18;
+	--ink-strong: #2f2012;
+	--ink-soft: #4a3520;
+
+	/* Rubric red — used for initials, headings, marginalia */
+	--accent: #9c4326;
+	/* Rosso rubrica scurito per il testo scritto a mano: l'accento (#9c4326) sui
+	   tratti sottili del font a mano ha poco contrasto sulla pergamena; questo
+	   resta chiaramente rosso ma si legge a colpo d'occhio. */
+	--accent-ink: #7c2f17;
+
+	/* Earthy browns for secondary text & rules.
+	   Scuriti rispetto alla pergamena per tenere leggibili etichette piccole,
+	   glosse bilingui e sottotitoli a mano (il tono resta terroso). */
+	--brown: #513d22;
+	--brown-2: #5a4024;
+	--brown-3: #6e5638;
+
+	/* Plate / parchment surfaces */
+	--plate-top: #efe6cb;
+	--plate-bottom: #e3d4af;
+
+	/* Shared measurements */
+	--page-max: 1180px;
+	--folio-pad-x: 64px;
+
+	/* Font stacks are injected by the Astro Fonts API:
+	   --font-garamond and --font-hand. */
+
+	/* Finto-grassetto per la grafia: i tratti del font a mano sono sottili e
+	   l'antialiasing pieno li smaglia; un'ombra dello stesso inchiostro li
+	   ispessisce di un soffio mantenendo l'aspetto manoscritto. Va abbinato a
+	   `-webkit-font-smoothing: auto` su ogni testo scritto a mano. */
+	--hand-bold: 0 0 0.45px currentColor;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	/* Native fallback when Lenis is off (reduced motion / no JS). When Lenis is
+	   active it adds `.lenis-smooth` and forces this back to `auto`. */
+	scroll-behavior: smooth;
+	/* Keep anchored sections clear of the floating "Insula" nav. */
+	scroll-padding-top: 96px;
+}
+
+/* Lenis smooth scroll — recommended base styles. */
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+.lenis.lenis-smooth {
+	scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+	overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+	overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+	pointer-events: none;
+}
+
+html,
+body {
+	margin: 0;
+	background: var(--paper);
+}
+
+body {
+	color: var(--ink);
+	font-family: var(--font-garamond), Georgia, serif;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+::selection {
+	background: rgba(156, 67, 38, 0.22);
+}
+
+a {
+	color: inherit;
+}
+
+/*
+ * Switch lingua — la doppia voce del codice.
+ * Only one language is visible at a time: the element matching the active
+ * language reads as the primary text; the other is hidden entirely.
+ * Mark paired text with class `bil` + a native `lang="it|en"` attribute.
+ */
+.bil {
+	transition: color 0.3s ease;
+}
+
+/* The inactive voice is hidden — solo una lingua alla volta. */
+html[data-lang='it'] .bil[lang='en'],
+html[data-lang='en'] .bil[lang='it'] {
+	display: none;
+}
+
+/* Block pairs stack vertically; only the active voice shows. */
+.bil-pair {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+/* A "foglio" — one leaf/page of the codex. Shared padding so sections align. */
+.foglio {
+	position: relative;
+	padding: 74px var(--folio-pad-x);
+}
+
+@media (max-width: 860px) {
+	.foglio {
+		padding: 64px 26px;
+	}
+}
+
+/*
+ * Reveal allo scroll — stato iniziale anti-FOUC.
+ * La classe `.js-motion` è posata pre-paint solo se il lettore accetta il
+ * movimento; gli elementi marcati `data-reveal*` partono nascosti e GSAP li
+ * rivela entrando nel viewport. Senza JS o in reduced motion la classe non
+ * c'è → tutto resta visibile, nessuna animazione.
+ */
+.js-motion [data-reveal],
+.js-motion [data-reveal='stagger'] > * {
+	opacity: 0;
+}
+
+/* Gli elementi in parallax sono visibili: derivano soltanto, non si rivelano. */
+.js-motion [data-parallax] {
+	opacity: 1;
+}
+
+@keyframes codexBob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(8px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	* {
+		animation: none !important;
+	}
+}

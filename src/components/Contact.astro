@@ -1,0 +1,209 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import MarginNote from './MarginNote.astro';
+import { site } from '../data/site';
+
+interface Props {
+	showAnnotations?: boolean;
+}
+
+const { showAnnotations = true } = Astro.props;
+
+const { email, linkedin, place } = site.contact;
+const links = [
+	{ it: 'email', en: 'email', text: email, href: `mailto:${email}` },
+	{ it: 'linkedin', en: 'linkedin', text: linkedin.replace(/^https?:\/\//, ''), href: linkedin },
+	{ it: 'luogo', en: 'place', text: place },
+	// Solo i contatti compilati: i link vuoti restano fuori invece di puntare
+	// a un href vuoto.
+].filter((link) => link.text);
+---
+
+<section id="contatti" class="foglio contact" aria-label="Contatti">
+	<SectionHeader latin="Colophon" it="Contatti" en="Contact" folio="f. VII v" />
+
+	<div class="grid">
+		<div>
+			<h2 data-reveal>
+				<span class="bil" lang="it">Costruiamo qualcosa di solido, chiaro e memorabile.</span>
+				<span class="bil" lang="en">Let's build something solid, clear and memorable.</span>
+			</h2>
+			<ul data-reveal="stagger">
+				{
+					links.map((link) => (
+						<li>
+							<span class="key">
+								<span class="bil" lang="it">{link.it}</span>
+								<span class="bil" lang="en">{link.en}</span>
+							</span>
+							{link.href ? (
+								<a href={link.href}>{link.text}</a>
+							) : (
+								<span class="val">{link.text}</span>
+							)}
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		<div class="sign" data-reveal>
+			<div class="seal">
+				<span class="seal-ring"></span>
+				<span class="seal-mark">GD</span>
+			</div>
+			<div class="signature">Gianluca</div>
+			<div class="flourish" data-reveal="rule"></div>
+		</div>
+	</div>
+
+	<div class="explicit" data-reveal>
+		<span class="bil" lang="it">Explicit codex · Qui finisce il codice · Sperlonga MMXXVI</span>
+		<span class="bil" lang="en">Explicit codex · Here ends the codex · Sperlonga MMXXVI</span>
+	</div>
+
+	{
+		showAnnotations && (
+			<MarginNote style="bottom:120px;left:20px;transform:rotate(-6deg);">
+					<span class="bil" lang="it">parliamone</span>
+					<span class="bil" lang="en">let's talk</span>
+				</MarginNote>
+		)
+	}
+</section>
+
+<style>
+	.contact {
+		padding-bottom: 90px;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 220px;
+		gap: 48px;
+		align-items: center;
+		margin-top: 40px;
+	}
+
+	h2 {
+		margin: 0 0 22px;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(32px, 4.6vw, 54px);
+		line-height: 1;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	li {
+		display: flex;
+		align-items: baseline;
+		gap: 16px;
+		padding: 11px 0;
+		border-bottom: 1px solid rgba(110, 86, 56, 0.35);
+	}
+
+	li:last-child {
+		border-bottom: none;
+	}
+
+	.key {
+		flex: none;
+		width: 130px;
+		font-family: var(--font-hand), cursive;
+		font-size: 23px;
+		letter-spacing: 0.02em;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	a,
+	.val {
+		font-size: 19px;
+		color: var(--ink);
+		text-decoration: none;
+	}
+
+	a {
+		border-bottom: 1px solid rgba(58, 42, 24, 0.3);
+		transition: color 0.2s;
+	}
+
+	a:hover {
+		color: var(--accent);
+	}
+
+	.sign {
+		text-align: center;
+	}
+
+	.seal {
+		position: relative;
+		width: 118px;
+		height: 118px;
+		margin: 0 auto 18px;
+		border: 2px solid var(--accent);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(closest-side, rgba(156, 67, 38, 0.16), rgba(156, 67, 38, 0.05));
+		transform: rotate(-7deg);
+	}
+
+	.seal-ring {
+		position: absolute;
+		inset: 8px;
+		border: 1px solid rgba(156, 67, 38, 0.55);
+		border-radius: 50%;
+	}
+
+	.seal-mark {
+		font-family: var(--font-hand), cursive;
+		font-size: 44px;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.signature {
+		font-family: var(--font-hand), cursive;
+		font-size: 30px;
+		letter-spacing: 0.02em;
+		color: var(--ink-strong);
+		line-height: 1;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.flourish {
+		height: 2px;
+		width: 120px;
+		margin: 6px auto 0;
+		background: linear-gradient(90deg, rgba(156, 67, 38, 0.15), var(--accent), rgba(156, 67, 38, 0.15));
+	}
+
+	.explicit {
+		margin-top: 64px;
+		text-align: center;
+		font-style: italic;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		font-size: 12px;
+		color: var(--brown-2);
+	}
+
+	@media (max-width: 860px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

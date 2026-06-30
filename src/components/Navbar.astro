@@ -1,0 +1,366 @@
+---
+/**
+ * "Insula" — a centred, floating capsule à la Apple's dynamic island, recast
+ * as a piece of the codex: a parchment pill with a rubric border that hovers in
+ * the empty centre of the manuscript's running head. It carries the index links
+ * and the bilingual switch (IT/EN), which toggles which "voice" of the codex is
+ * read as primary text and which collapses to the marginal gloss.
+ *
+ * Links are absolute (/#anchor) so they work from any folio. Each link carries
+ * both labels (data-it / data-en); the switch script swaps the visible one.
+ */
+const links = [
+	{ it: 'Chi sono', en: 'About', href: '/#chi-sono' },
+	{ it: 'Il font', en: 'Typeface', href: '/#font' },
+	{ it: 'Progetti', en: 'Work', href: '/#progetti' },
+	{ it: 'Competenze', en: 'Skills', href: '/#competenze' },
+	{ it: 'Contatti', en: 'Contact', href: '/#contatti' },
+];
+---
+
+<header class="island" data-codex-nav>
+	<a class="brand" href="/" aria-label="Torna alla copertina">
+		<span class="brand-initial">G</span>
+	</a>
+
+	<span class="sep sep-links" aria-hidden="true"></span>
+
+	<nav id="codex-nav-links" class="links" aria-label="Indice del codice">
+		<ul>
+			{
+				links.map((link) => (
+					<li>
+						<a href={link.href} data-nav-link data-it={link.it} data-en={link.en}>
+							{link.it}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</nav>
+
+	<span class="sep sep-lang" aria-hidden="true"></span>
+
+	<div class="lang" role="group" aria-label="Lingua · language">
+		<button type="button" class="lang-btn active" data-lang-btn="it" aria-pressed="true">it</button>
+		<span class="lang-div" aria-hidden="true">·</span>
+		<button type="button" class="lang-btn" data-lang-btn="en" aria-pressed="false">en</button>
+	</div>
+
+	<button
+		class="burger"
+		type="button"
+		aria-expanded="false"
+		aria-controls="codex-nav-links"
+		aria-label="Apri l'indice"
+		data-nav-toggle
+	>
+		<span></span><span></span><span></span>
+	</button>
+</header>
+
+<style>
+	.island {
+		position: fixed;
+		top: 14px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 7px 8px 7px 9px;
+		max-width: calc(100vw - 24px);
+		border-radius: 999px;
+		border: 1.4px solid var(--accent);
+		/* Pergamena opaca (stesso gradiente delle tavole), non vetro smerigliato:
+		   tiene la capsula coerente col codice ed elimina il blur anacronistico. */
+		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
+		box-shadow:
+			0 10px 26px -14px rgba(58, 42, 24, 0.7),
+			inset 0 0 0 1px rgba(255, 248, 226, 0.35);
+		transition: box-shadow 0.28s ease, gap 0.28s ease, padding 0.28s ease;
+	}
+
+	/* The island "lifts" a touch once the reader scrolls into the codex. */
+	.island.scrolled {
+		gap: 16px;
+		box-shadow:
+			0 16px 32px -12px rgba(58, 42, 24, 0.82),
+			inset 0 0 0 1px rgba(255, 248, 226, 0.4);
+	}
+
+	/* Brand --------------------------------------------------------------- */
+	.brand {
+		display: flex;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.brand-initial {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		border: 1.5px solid var(--accent);
+		font-family: var(--font-hand), cursive;
+		font-size: 24px;
+		line-height: 1;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+		background: linear-gradient(180deg, var(--plate-top), #e0d0a8);
+		transition: transform 0.2s ease;
+	}
+
+	.brand:hover .brand-initial {
+		transform: rotate(-6deg) scale(1.05);
+	}
+
+	/* Separators ---------------------------------------------------------- */
+	.sep {
+		width: 1px;
+		height: 22px;
+		background: rgba(110, 86, 56, 0.4);
+		flex: none;
+	}
+
+	/* Links --------------------------------------------------------------- */
+	.links ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		gap: 22px;
+	}
+
+	.links a {
+		position: relative;
+		text-decoration: none;
+		font-style: italic;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		font-size: 12px;
+		color: var(--brown);
+		padding: 3px 0;
+		white-space: nowrap;
+		transition: color 0.2s ease;
+	}
+
+	.links a::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -2px;
+		height: 1px;
+		background: var(--accent);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.22s ease;
+	}
+
+	.links a:hover,
+	.links a:focus-visible {
+		color: var(--accent);
+	}
+
+	.links a:hover::after,
+	.links a:focus-visible::after {
+		transform: scaleX(1);
+	}
+
+	/* Language switch ----------------------------------------------------- */
+	.lang {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding: 0 4px;
+		flex: none;
+	}
+
+	.lang-btn {
+		font-family: var(--font-hand), cursive;
+		font-size: 19px;
+		line-height: 1;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--brown);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+		padding: 4px 7px;
+		border-radius: 8px;
+		transition: color 0.2s ease, background 0.2s ease;
+	}
+
+	.lang-btn:hover {
+		color: var(--accent-ink);
+	}
+
+	.lang-btn.active {
+		color: var(--accent-ink);
+		background: rgba(156, 67, 38, 0.13);
+	}
+
+	.lang-div {
+		color: var(--brown-2);
+		font-style: italic;
+	}
+
+	/* Burger (mobile only) ------------------------------------------------ */
+	.burger {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 38px;
+		height: 34px;
+		padding: 0 8px;
+		background: transparent;
+		border: none;
+		cursor: pointer;
+	}
+
+	.burger span {
+		display: block;
+		height: 1.6px;
+		background: var(--ink-strong);
+		transition: transform 0.25s ease, opacity 0.25s ease;
+	}
+
+	.island.open .burger span:nth-child(1) {
+		transform: translateY(6.6px) rotate(45deg);
+	}
+	.island.open .burger span:nth-child(2) {
+		opacity: 0;
+	}
+	.island.open .burger span:nth-child(3) {
+		transform: translateY(-6.6px) rotate(-45deg);
+	}
+
+	/* Mobile -------------------------------------------------------------- */
+	@media (max-width: 860px) {
+		.island {
+			gap: 8px;
+			padding: 7px 6px 7px 9px;
+		}
+
+		.sep-links {
+			display: none;
+		}
+
+		.burger {
+			display: flex;
+		}
+
+		/* Links drop into a floating rounded panel under the island. */
+		.links {
+			position: fixed;
+			top: 70px;
+			left: 50%;
+			width: min(320px, calc(100vw - 24px));
+			border: 1.4px solid var(--accent);
+			border-radius: 20px;
+			background: linear-gradient(180deg, rgba(243, 233, 206, 0.98), rgba(231, 218, 187, 0.98));
+			box-shadow: 0 18px 32px -16px rgba(58, 42, 24, 0.85);
+			padding: 4px 0;
+			overflow: hidden;
+			opacity: 0;
+			pointer-events: none;
+			transform: translateX(-50%) translateY(-10px) scale(0.97);
+			transition: opacity 0.22s ease, transform 0.22s ease;
+		}
+
+		.island.open .links {
+			opacity: 1;
+			pointer-events: auto;
+			transform: translateX(-50%) translateY(0) scale(1);
+		}
+
+		.links ul {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+		}
+
+		.links li {
+			border-bottom: 1px solid rgba(110, 86, 56, 0.25);
+		}
+
+		.links li:last-child {
+			border-bottom: none;
+		}
+
+		.links a {
+			display: block;
+			padding: 13px 22px;
+			text-align: center;
+			font-size: 13px;
+		}
+
+		.links a::after {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	const nav = document.querySelector<HTMLElement>('[data-codex-nav]');
+	const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+	const root = document.documentElement;
+
+	// — Language switch: swap which "voice" is primary —
+	const applyLang = (lang: 'it' | 'en') => {
+		root.dataset.lang = lang;
+		root.lang = lang;
+		try {
+			localStorage.setItem('codex-lang', lang);
+		} catch {}
+
+		document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]').forEach((btn) => {
+			const active = btn.dataset.langBtn === lang;
+			btn.classList.toggle('active', active);
+			btn.setAttribute('aria-pressed', String(active));
+		});
+
+		// Localise the index labels to the active language.
+		document.querySelectorAll<HTMLElement>('[data-nav-link]').forEach((link) => {
+			const label = link.dataset[lang];
+			if (label) link.textContent = label;
+		});
+	};
+
+	document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]').forEach((btn) => {
+		btn.addEventListener('click', () => applyLang(btn.dataset.langBtn === 'en' ? 'en' : 'it'));
+	});
+
+	// Sync UI with the language the no-flash head script already chose.
+	applyLang(root.dataset.lang === 'en' ? 'en' : 'it');
+
+	// — Mobile menu + scroll-aware styling —
+	if (nav && toggle) {
+		const close = () => {
+			nav.classList.remove('open');
+			toggle.setAttribute('aria-expanded', 'false');
+		};
+
+		toggle.addEventListener('click', () => {
+			const open = nav.classList.toggle('open');
+			toggle.setAttribute('aria-expanded', String(open));
+		});
+
+		nav.querySelectorAll('[data-nav-link]').forEach((link) => link.addEventListener('click', close));
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') close();
+		});
+
+		const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+	}
+</script>

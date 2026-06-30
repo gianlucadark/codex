@@ -1,0 +1,311 @@
+---
+import VitruvianParticles from './VitruvianParticles.astro';
+---
+
+<section class="hero foglio" aria-label="Copertina">
+	<div class="runninghead">
+		<span class="latin">Codex · Portfolio</span>
+	</div>
+
+	<div class="incipit">
+		<!-- Colonna del testo: l'incipit del codice -->
+		<div class="intro">
+			<p class="place">Anno Domini MMXXVI · Sperlonga</p>
+			<h1>Gianluca<br />D'Arcangelo</h1>
+
+			<div class="flourish" aria-hidden="true">
+				<svg viewBox="0 0 240 24" preserveAspectRatio="xMinYMid meet">
+					<path d="M2 12 H78 M158 12 H236" class="fl-rule" />
+					<path
+						d="M78 12 C92 12 96 4 106 4 C114 4 116 12 118 12 C120 12 122 20 130 20 C140 20 146 12 158 12"
+						class="fl-swash"
+					/>
+					<circle cx="118" cy="12" r="2.4" class="fl-dot" />
+				</svg>
+			</div>
+
+			<p class="role">Fullstack Developer · 3D · UI/UX Design</p>
+
+			<div class="bil-pair leads">
+				<p class="lead bil" lang="it">
+					Progetto e sviluppo prodotti web completi: interfacce curate, backend solidi ed
+					esperienze interattive che restano memorabili.
+				</p>
+				<p class="lead bil" lang="en">
+					I design and build complete web products: polished interfaces, solid backends and
+					interactive experiences made to be remembered.
+				</p>
+			</div>
+
+			<div class="scroll">
+				<span class="scroll-label bil" lang="it">esplora il codice</span>
+					<span class="scroll-label bil" lang="en">explore the codex</span>
+				<span class="arrow" aria-hidden="true">↓</span>
+			</div>
+		</div>
+
+		<!-- La tavola istoriata: l'uomo vitruviano in chiave macchina -->
+		<figure class="plate">
+			<div class="plate-img">
+				<VitruvianParticles data-parallax data-parallax-y="16" />
+			</div>
+			<figcaption>
+				<span class="cap-title">Homo Machina</span>
+				<span class="cap-sub bil" lang="it">studio di proporzioni · f. I v</span>
+				<span class="cap-sub bil" lang="en">study of proportions · f. I v</span>
+			</figcaption>
+		</figure>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding-top: clamp(48px, 8vh, 84px);
+		padding-bottom: clamp(32px, 5vh, 70px);
+	}
+
+	.runninghead {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		font-style: italic;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		font-size: 13px;
+		color: var(--brown);
+	}
+
+	.runninghead .latin {
+		font-family: var(--font-hand), cursive;
+		font-style: normal;
+		letter-spacing: 0.02em;
+		text-transform: none;
+		font-size: 80px;
+		color: var(--ink-soft);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	/* ---- Pagina d'incipit: testo a sinistra, tavola a destra ---------------- */
+	.incipit {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) clamp(300px, 38%, 440px);
+		gap: clamp(32px, 5vw, 72px);
+		align-items: center;
+		margin-top: clamp(20px, 3vw, 48px);
+	}
+
+	/* ---- Testo --------------------------------------------------------------- */
+	.intro {
+		position: relative;
+	}
+
+	.place {
+		margin: 0 0 14px;
+		font-style: italic;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		font-size: 13px;
+		color: var(--brown-2);
+	}
+
+	h1 {
+		margin: 0;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(44px, min(7.4vw, 9.5vh), 100px);
+		line-height: 0.9;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.flourish {
+		margin: clamp(8px, 1.5vh, 18px) 0 clamp(8px, 1.5vh, 16px);
+		width: min(300px, 90%);
+	}
+
+	.flourish svg {
+		display: block;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.flourish .fl-rule,
+	.flourish .fl-swash {
+		fill: none;
+		stroke: var(--accent);
+		stroke-linecap: round;
+		stroke-dasharray: 320;
+		stroke-dashoffset: 320;
+		animation: vineDraw 1.1s ease forwards 0.4s;
+	}
+	.flourish .fl-rule {
+		stroke-width: 1.4;
+	}
+	.flourish .fl-swash {
+		stroke-width: 1.6;
+		animation-delay: 0.7s;
+	}
+	.flourish .fl-dot {
+		fill: var(--accent);
+		opacity: 0;
+		animation: vineFade 0.5s ease forwards 1.4s;
+	}
+
+	.role {
+		margin: 0;
+		font-size: clamp(18px, min(2.2vw, 2.8vh), 25px);
+		font-style: italic;
+		color: var(--ink-soft);
+	}
+
+	.leads {
+		margin-top: clamp(8px, 1.5vh, 20px);
+	}
+
+	.lead {
+		margin: 0;
+		max-width: 44ch;
+		font-size: clamp(15px, min(18px, 2.4vh), 18px);
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+
+	.scroll {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin-top: clamp(12px, 3vh, 40px);
+		color: var(--ink-soft);
+	}
+
+	.scroll-label {
+		font-family: var(--font-hand), cursive;
+		font-size: 45px;
+		letter-spacing: 0.02em;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.arrow {
+		display: inline-block;
+		animation: codexBob 1.8s ease-in-out infinite;
+		font-size: 22px;
+		color: var(--accent);
+	}
+
+	/* ---- Tavola istoriata ---------------------------------------------------- */
+	.plate {
+		position: relative;
+		margin: 0;
+		padding: 0;
+		opacity: 0;
+		transform: translateY(14px);
+		animation: plateIn 0.9s ease forwards 0.35s;
+	}
+
+	.plate-img {
+		position: relative;
+		/* La tavola è quadrata: limitandone la larghezza in vh evitiamo che,
+		   su schermi bassi, la sua altezza spinga la hero fuori dalla prima
+		   schermata. Sugli schermi alti resta piena (cap a 440px dalla colonna). */
+		max-width: 45vh;
+		margin-inline: auto;
+	}
+
+	.plate-img img {
+		display: block;
+		width: 100%;
+		height: auto;
+		/* Fonde la pergamena del disegno con quella della pagina */
+		mix-blend-mode: multiply;
+		filter: contrast(1.04) saturate(0.96);
+	}
+
+	figcaption {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		margin-top: 12px;
+		padding-bottom: 2px;
+	}
+
+	.cap-title {
+		font-family: var(--font-hand), cursive;
+		font-size: 44px;
+		letter-spacing: 0.02em;
+		color: var(--accent-ink);
+		line-height: 1;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.cap-sub {
+		margin-top: 4px;
+		font-style: italic;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		font-size: 13px;
+		color: var(--brown);
+	}
+
+	/* ---- Keyframes ----------------------------------------------------------- */
+	@keyframes vineDraw {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+	@keyframes vineFade {
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes plateIn {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.flourish .fl-rule,
+		.flourish .fl-swash {
+			stroke-dashoffset: 0;
+			animation: none;
+		}
+		.flourish .fl-dot {
+			opacity: 1;
+			animation: none;
+		}
+		.plate {
+			opacity: 1;
+			transform: none;
+			animation: none;
+		}
+	}
+
+	/* ---- Responsive ---------------------------------------------------------- */
+	@media (max-width: 860px) {
+		.incipit {
+			grid-template-columns: 1fr;
+			gap: 40px;
+		}
+		.plate {
+			max-width: 380px;
+			margin: 0 auto;
+		}
+		.flourish,
+		.lead {
+			margin-left: auto;
+			margin-right: auto;
+		}
+		.intro {
+			text-align: center;
+		}
+		.scroll {
+			justify-content: center;
+		}
+	}
+</style>

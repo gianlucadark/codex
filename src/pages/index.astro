@@ -1,11 +1,64 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import CodexBackground from '../components/CodexBackground.astro';
+import FoglioDivider from '../components/FoglioDivider.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import Typeface from '../components/Typeface.astro';
+import Projects from '../components/Projects.astro';
+import Awards from '../components/Awards.astro';
+import Skills from '../components/Skills.astro';
+import Contact from '../components/Contact.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// "Decori del codice" — toggles for the manuscript ornamentation.
+// In the original Claude Design file these were live props; here they're
+// build-time constants you can flip to taste.
+const showAnnotations = true;
+const showStains = true;
+const showGrid = true;
 ---
 
 <Layout>
-	<Welcome />
+	<main class="codex">
+		<CodexBackground showGrid={showGrid} showStains={showStains} />
+
+		<div class="content">
+			<Hero />
+			<FoglioDivider />
+			<About showAnnotations={showAnnotations} />
+			<FoglioDivider />
+			<Typeface showAnnotations={showAnnotations} />
+			<FoglioDivider />
+			<Projects showAnnotations={showAnnotations} />
+			<FoglioDivider />
+			<Awards showAnnotations={showAnnotations} />
+			<FoglioDivider />
+			<Skills />
+			<FoglioDivider />
+			<Contact showAnnotations={showAnnotations} />
+		</div>
+	</main>
 </Layout>
+
+<style>
+	.codex {
+		position: relative;
+		min-height: 100vh;
+		overflow: hidden;
+		background: radial-gradient(
+			125% 85% at 26% 10%,
+			#ead8b1 0%,
+			#e2d0a8 42%,
+			#dbc8a0 72%,
+			var(--paper) 100%
+		);
+		color: var(--ink);
+	}
+
+	.content {
+		position: relative;
+		z-index: 2;
+		max-width: var(--page-max);
+		margin: 0 auto;
+	}
+</style>

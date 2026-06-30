@@ -1,0 +1,114 @@
+---
+import SectionHeader from './SectionHeader.astro';
+
+const groups = [
+	{
+		title: 'Frontend',
+		descIt: 'Interfacce reattive, accessibili e mantenibili.',
+		descEn: 'Responsive, accessible and maintainable interfaces.',
+		items: ['React · Next.js', 'Vue · Nuxt', 'TypeScript', 'Angular'],
+	},
+	{
+		title: 'Backend',
+		descIt: 'API, dati, autenticazione e logica applicativa.',
+		descEn: 'APIs, data, authentication and application logic.',
+		items: ['Node · Nest · Express', 'PostgreSQL · MongoDB', 'GraphQL · REST', 'Docker · CI/CD'],
+	},
+	{
+		title: '3D · Creative',
+		descIt: 'Scene interattive, motion e WebGL per esperienze più vive.',
+		descEn: 'Interactive scenes, motion and WebGL for richer experiences.',
+		items: ['Three.js · R3F', 'GLSL Shaders', 'Blender', 'GSAP · Motion'],
+	},
+	{
+		title: 'UI/UX Design',
+		descIt: 'Struttura, prototipi e sistemi visivi centrati sull’uso.',
+		descEn: 'Structure, prototypes and visual systems shaped around use.',
+		items: ['Figma', 'Design Systems', 'Prototyping', 'User Research'],
+	},
+];
+---
+
+<section id="competenze" class="foglio" aria-label="Competenze">
+	<SectionHeader latin="Artes & Instrumenta" it="Competenze" en="Skills" folio="f. VI r" />
+
+	<div class="grid" data-reveal="stagger">
+		{
+			groups.map((group) => (
+				<div class="group">
+					<h3>{group.title}</h3>
+					<p class="group-desc">
+						<span class="bil" lang="it">{group.descIt}</span>
+						<span class="bil" lang="en">{group.descEn}</span>
+					</p>
+					<div class="rule" />
+					<ul>
+						{group.items.map((item) => (
+							<li>
+								<span class="bullet" />
+								{item}
+							</li>
+						))}
+					</ul>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+		gap: 38px;
+		margin-top: 38px;
+	}
+
+	h3 {
+		margin: 0 0 4px;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: 30px;
+		color: var(--accent-ink);
+		line-height: 1;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.group-desc {
+		margin: 8px 0 0;
+		min-height: 3.1em;
+		font-size: 16px;
+		line-height: 1.35;
+		color: var(--ink-soft);
+	}
+
+	.rule {
+		height: 1px;
+		background: rgba(110, 86, 56, 0.5);
+		margin: 8px 0 16px;
+	}
+
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 18px;
+		color: var(--ink);
+	}
+
+	li {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 5px 0;
+	}
+
+	.bullet {
+		width: 7px;
+		height: 7px;
+		background: var(--accent);
+		border-radius: 50%;
+		flex: none;
+	}
+</style>

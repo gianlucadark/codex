@@ -1,0 +1,121 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CodexBackground from '../components/CodexBackground.astro';
+
+const title = "Folio perduto — 404 · Codex";
+const description = 'La pagina richiesta non esiste in questo codice.';
+---
+
+<Layout title={title} description={description}>
+	<main class="codex">
+		<CodexBackground showGrid={true} showStains={true} />
+
+		<div class="content">
+			<section class="lost" aria-label="Pagina non trovata">
+				<p class="folio">
+					<span class="bil" lang="it">f. ? — pagina perduta</span>
+					<span class="bil" lang="en">f. ? — lost page</span>
+				</p>
+				<h1>CDIV</h1>
+				<div class="rule" aria-hidden="true"></div>
+				<div class="bil-pair lead">
+					<p class="bil" lang="it">
+						Questo folio è andato perduto dal codice. Forse strappato, forse mai scritto.
+					</p>
+					<p class="bil" lang="en">
+						This folio is missing from the codex. Perhaps torn out, perhaps never written.
+					</p>
+				</div>
+				<a class="back" href="/">
+					<span aria-hidden="true">←</span>
+					<span class="bil" lang="it">Torna alla copertina</span>
+					<span class="bil" lang="en">Back to cover</span>
+				</a>
+			</section>
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.codex {
+		position: relative;
+		min-height: 100vh;
+		overflow: hidden;
+		background: radial-gradient(
+			125% 85% at 26% 10%,
+			#f0e6c9 0%,
+			#e8d9b5 42%,
+			#ddca9f 72%,
+			var(--paper) 100%
+		);
+		color: var(--ink);
+	}
+
+	.content {
+		position: relative;
+		z-index: 2;
+		max-width: var(--page-max);
+		margin: 0 auto;
+	}
+
+	.lost {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 64px 26px;
+	}
+
+	.folio {
+		margin: 0 0 8px;
+		font-style: italic;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		font-size: 13px;
+		color: var(--brown-2);
+	}
+
+	h1 {
+		margin: 0;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(80px, 18vw, 180px);
+		line-height: 0.9;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.rule {
+		height: 1px;
+		width: 216px;
+		margin: 20px 0;
+		background: var(--accent);
+		opacity: 0.6;
+	}
+
+	.lead p {
+		margin: 0;
+		font-size: 20px;
+		color: var(--ink);
+		max-width: 46ch;
+	}
+
+	.back {
+		display: inline-block;
+		margin-top: 34px;
+		font-style: italic;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-size: 12px;
+		color: var(--brown);
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+
+	.back:hover {
+		color: var(--accent);
+	}
+</style>

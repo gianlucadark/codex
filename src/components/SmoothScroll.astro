@@ -1,0 +1,184 @@
+---
+/**
+ * Motion del codice — Lenis (smooth scroll inerziale) + GSAP ScrollTrigger
+ * (la regia di rivelazione allo scroll).
+ *
+ * Lenis dà alla pagina la glissata "che gira il foglio". ScrollTrigger ci
+ * appoggia sopra la coreografia: ogni sezione si rivela come inchiostro che si
+ * posa, i filetti crescono, i diagrammi si assemblano. Lenis e ScrollTrigger
+ * sono sincronizzati sullo stesso ticker così lo scroll-driven non sfarfalla.
+ *
+ * Tutto è disattivato con `prefers-reduced-motion: reduce` (fallback allo
+ * `scroll-behavior: smooth` nativo). Lo stato iniziale "nascosto" delle
+ * rivelazioni è impostato via JS/CSS solo quando il movimento è permesso
+ * (classe `.js-motion` aggiunta pre-paint nel Layout): senza JS o in reduced
+ * motion il contenuto resta interamente visibile.
+ *
+ * I link àncora dell'indice ("Insula") sono instradati in Lenis perché scorrano
+ * dolcemente rispettando l'offset della nav fissa.
+ */
+---
+
+<script>
+	import Lenis from 'lenis';
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const html = document.documentElement;
+
+	if (!reduce) {
+		try {
+			gsap.registerPlugin(ScrollTrigger);
+
+			const lenis = new Lenis({
+				duration: 1.1,
+				// easeOutExpo — quick to start, long gentle settle, like a heavy page.
+				easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+				smoothWheel: true,
+			});
+
+			// Lenis ↔ ScrollTrigger: un solo ciclo guida entrambi.
+			lenis.on('scroll', ScrollTrigger.update);
+			gsap.ticker.add((time: number) => lenis.raf(time * 1000));
+			gsap.ticker.lagSmoothing(0);
+
+			setupReveals();
+
+			// I font self-hosted cambiano le metriche: ricalcola i trigger a caricamento.
+			document.fonts?.ready.then(() => ScrollTrigger.refresh());
+			window.addEventListener('load', () => ScrollTrigger.refresh());
+
+			// Clearance for the floating nav — mirrors `scroll-padding-top` in CSS.
+			const NAV_OFFSET = 96;
+
+			document.addEventListener('click', (e) => {
+				const link = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as
+					| HTMLAnchorElement
+					| null;
+				if (!link) return;
+
+				const url = new URL(link.href, location.href);
+				// Only intercept same-page hash links (e.g. "/#chi-sono").
+				if (url.pathname !== location.pathname || !url.hash) return;
+
+				const target = document.querySelector(url.hash);
+				if (!target) return;
+
+				e.preventDefault();
+				lenis.scrollTo(target as HTMLElement, { offset: -NAV_OFFSET });
+				history.pushState(null, '', url.hash);
+			});
+
+			// Expose for other scripts / debugging.
+			(window as unknown as { lenis?: Lenis }).lenis = lenis;
+		} catch (err) {
+			// Se il motore d'animazione fallisce, non lasciare il contenuto nascosto.
+			html.classList.remove('js-motion');
+			console.error('[codex] motion init failed:', err);
+		}
+	}
+
+	/**
+	 * La regia: legge gli attributi `data-reveal*` posati sui componenti e
+	 * costruisce una coreografia sobria, on-brand col manoscritto.
+	 */
+	function setupReveals() {
+		const trig = (el: Element) => ({ trigger: el, start: 'top 85%', once: true });
+
+		gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {
+			const kind = el.getAttribute('data-reveal');
+
+			if (kind === 'stagger') {
+				// Liste/griglie: i figli si posano in sequenza.
+				const items = el.children;
+				gsap.set(el, { autoAlpha: 1 });
+				gsap.set(items, { autoAlpha: 0, y: 16, filter: 'blur(5px)' });
+				gsap.to(items, {
+					autoAlpha: 1,
+					y: 0,
+					filter: 'blur(0px)',
+					duration: 0.8,
+					ease: 'power3.out',
+					stagger: 0.08,
+					scrollTrigger: trig(el),
+				});
+			} else if (kind === 'rule') {
+				// Filetti tracciati a secco: crescono dal centro.
+				gsap.set(el, { autoAlpha: 1, scaleX: 0, transformOrigin: 'center center' });
+				gsap.to(el, {
+					scaleX: 1,
+					duration: 0.7,
+					ease: 'power2.out',
+					scrollTrigger: { ...trig(el), start: 'top 88%' },
+				});
+			} else if (kind === 'diagram') {
+				// Il diagramma "scientifico" si costruisce pezzo per pezzo, col compasso.
+				// Solo opacità: i pezzi usano transform CSS (rotate/translate) che non vanno toccati.
+				const parts = el.children;
+				gsap.set(el, { autoAlpha: 1 });
+				gsap.set(parts, { autoAlpha: 0 });
+				gsap.to(parts, {
+					autoAlpha: 1,
+					duration: 0.45,
+					ease: 'power2.out',
+					stagger: 0.07,
+					scrollTrigger: trig(el),
+				});
+			} else if (kind === 'margin') {
+				// Le glosse si appoggiano nel margine (la rotazione inline resta intatta).
+				gsap.set(el, { autoAlpha: 0, y: 10 });
+				gsap.to(el, {
+					autoAlpha: 1,
+					y: 0,
+					duration: 0.9,
+					ease: 'power3.out',
+					scrollTrigger: { ...trig(el), start: 'top 92%' },
+				});
+			} else {
+				// Default — l'inchiostro che si posa e asciuga.
+				gsap.set(el, { autoAlpha: 0, y: 18, filter: 'blur(6px)' });
+				gsap.to(el, {
+					autoAlpha: 1,
+					y: 0,
+					filter: 'blur(0px)',
+					duration: 0.85,
+					ease: 'power3.out',
+					scrollTrigger: trig(el),
+				});
+			}
+		});
+
+		// Parallax leggero: macchie d'inchiostro che danno vita alla carta.
+		gsap.to('.stains', {
+			yPercent: 6,
+			ease: 'none',
+			scrollTrigger: {
+				trigger: document.documentElement,
+				start: 'top top',
+				end: 'bottom bottom',
+				scrub: 0.5,
+			},
+		});
+
+		// Profondità sulla tavola d'apertura (la "Homo Machina" deriva più lenta).
+		gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((el) => {
+			const amt = parseFloat(el.dataset.parallaxY || '18');
+			gsap.fromTo(
+				el,
+				{ y: -amt, scale: 1.12 },
+				{
+					y: amt,
+					scale: 1.12,
+					ease: 'none',
+					scrollTrigger: {
+						trigger: el,
+						start: 'top bottom',
+						end: 'bottom top',
+						scrub: true,
+					},
+				},
+			);
+		});
+	}
+</script>

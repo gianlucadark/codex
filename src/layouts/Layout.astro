@@ -1,23 +1,77 @@
+---
+import { Font } from 'astro:assets';
+import Navbar from '../components/Navbar.astro';
+import SmoothScroll from '../components/SmoothScroll.astro';
+import { site } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title = site.title, description = site.description } = Astro.props;
+
+// Absolute URLs for canonical + social cards.
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+const ogImage = new URL(site.ogImage, Astro.site ?? site.url).href;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang="it" data-lang="it">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<!-- Set the codex "voice" before paint to avoid a flash of the wrong language. -->
+		<script is:inline>
+			(function () {
+				try {
+					var l = localStorage.getItem('codex-lang');
+					if (l !== 'en') l = 'it';
+					document.documentElement.dataset.lang = l;
+					document.documentElement.lang = l;
+				} catch (e) {}
+			})();
+		</script>
+		<!-- Flag motion-capable readers pre-paint so the reveal targets can hide
+		     without a flash. Skipped under reduced motion / no JS → content stays visible. -->
+		<script is:inline>
+			(function () {
+				try {
+					if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+						document.documentElement.classList.add('js-motion');
+					}
+				} catch (e) {}
+			})();
+		</script>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<title>{title}</title>
+
+		<!-- Open Graph / social cards -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={site.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:locale" content={site.locale} />
+		<meta property="og:locale:alternate" content={site.localeAlternate} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+
+		<!-- Self-hosted fonts (preloaded) via Astro Fonts API -->
+		<Font cssVariable="--font-garamond" preload />
+		<Font cssVariable="--font-hand" preload />
 	</head>
 	<body>
+		<Navbar />
 		<slot />
+		<SmoothScroll />
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

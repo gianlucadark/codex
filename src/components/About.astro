@@ -1,0 +1,196 @@
+---
+import { Image } from 'astro:assets';
+import SectionHeader from './SectionHeader.astro';
+import MarginNote from './MarginNote.astro';
+import autoritratto from '../assets/autoritratto.webp';
+
+interface Props {
+	showAnnotations?: boolean;
+}
+
+const { showAnnotations = true } = Astro.props;
+
+const stats = [
+	{ value: '6+', it: 'anni', en: 'years' },
+	{ value: '10+', it: 'progetti', en: 'projects' },
+	{ value: '3', it: 'riconoscimenti', en: 'awards' },
+];
+---
+
+<section id="chi-sono" class="foglio" aria-label="Chi sono">
+	<SectionHeader latin="De Auctore" it="Chi sono" en="About" folio="f. II r" />
+
+	<div class="grid">
+		<div class="prose">
+			<h2 data-reveal>
+				<span class="bil" lang="it">Mente e mano,<br />codice e forma.</span>
+				<span class="bil" lang="en">Mind and hand,<br />code and form.</span>
+			</h2>
+			<div class="bil-pair lines" data-reveal>
+				<p class="line bil" lang="it">
+					Sono uno sviluppatore fullstack con sensibilità da designer. Trasformo idee
+					complesse in interfacce chiare, sistemi solidi ed esperienze web con una forte
+					componente visiva. Lavoro ogni giorno con React, Node e Three.js.
+				</p>
+				<p class="line bil" lang="en">
+					A fullstack developer with a designer's eye. I turn complex ideas into clear
+					interfaces, solid systems and web experiences with a strong visual layer. I work
+					daily with React, Node and Three.js.
+				</p>
+			</div>
+			<dl class="stats" data-reveal="stagger">
+				{
+					stats.map((s) => (
+						<div>
+							<dt>{s.value}</dt>
+							<dd>
+								<span class="bil" lang="it">{s.it}</span>
+								<span class="bil" lang="en">{s.en}</span>
+							</dd>
+						</div>
+					))
+				}
+			</dl>
+		</div>
+
+		<div class="portrait">
+			<div class="plate" data-reveal>
+				<div class="window">
+					<Image
+						class="portrait-img"
+						src={autoritratto}
+						alt="Autoritratto di Gianluca D'Arcangelo"
+						widths={[300, 600]}
+						sizes="240px"
+						loading="lazy"
+					/>
+				</div>
+				<div class="caption">
+					<span class="bil" lang="it">l'autore</span>
+					<span class="bil" lang="en">the author</span>
+				</div>
+			</div>
+			{
+				showAnnotations && (
+					<MarginNote style="bottom:-26px;left:-10px;transform:rotate(-7deg);">Sperlonga · IT</MarginNote>
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 240px;
+		gap: 48px;
+		align-items: start;
+		margin-top: 38px;
+	}
+
+	.prose {
+		border-left: 2px solid rgba(156, 67, 38, 0.5);
+		padding-left: 28px;
+	}
+
+	h2 {
+		margin: 0 0 16px;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(34px, 4.4vw, 52px);
+		line-height: 1;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.lines {
+		margin: 0 0 22px;
+	}
+
+	.line {
+		margin: 0;
+		font-size: 19px;
+		color: var(--ink);
+		max-width: 60ch;
+	}
+
+	.stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 26px;
+		margin: 0;
+	}
+
+	.stats dt {
+		font-family: var(--font-hand), cursive;
+		font-size: 34px;
+		color: var(--accent-ink);
+		line-height: 1;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.stats dd {
+		margin: 4px 0 0;
+		font-style: italic;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-size: 13px;
+		color: var(--brown);
+	}
+
+	.portrait {
+		position: relative;
+	}
+
+	.plate {
+		position: relative;
+		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
+		border: 1.4px solid var(--brown-3);
+		box-shadow: 0 10px 26px -18px rgba(58, 42, 24, 0.7);
+		padding: 14px 14px 18px;
+	}
+
+	.window {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 3 / 4;
+		border: 1px solid rgba(110, 86, 56, 0.5);
+		background: repeating-linear-gradient(
+			45deg,
+			rgba(110, 86, 56, 0.06) 0 8px,
+			transparent 8px 16px
+		);
+		overflow: hidden;
+	}
+
+	.portrait-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center 20%;
+		display: block;
+		filter: sepia(0.45) contrast(1.02) brightness(0.98)
+			drop-shadow(0 0 0 transparent);
+		mix-blend-mode: multiply;
+	}
+
+	.caption {
+		text-align: center;
+		margin-top: 12px;
+		font-family: var(--font-hand), cursive;
+		font-size: 32px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	@media (max-width: 860px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

@@ -1,0 +1,301 @@
+---
+// Uomo vitruviano "disegnato" a particelle.
+// Lo SVG è line-art (stroke nero, fill none): lo rasterizziamo su un canvas
+// nascosto, campioniamo i pixel della linea e da ognuno nasce una particella.
+// Il mouse respinge le particelle vicine, che poi tornano al loro posto.
+import vitruvian from '../assets/vitruvian.svg';
+
+interface Props {
+	class?: string;
+}
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={`vitruvian-particles ${className ?? ''}`} data-vitruvian {...rest}>
+	<canvas data-canvas aria-hidden="true"></canvas>
+	<img src={vitruvian.src} alt="" data-src hidden aria-hidden="true" decoding="async" />
+	<span class="vp-fallback bil" lang="it">Studio anatomico di un automa secondo le proporzioni vitruviane</span>
+</div>
+
+<style>
+	.vitruvian-particles {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 361.89 / 362.32;
+		overflow: hidden;
+	}
+
+	.vitruvian-particles canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+		touch-action: none;
+	}
+
+	.vp-fallback {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+</style>
+
+<script>
+	type P = {
+		hx: number; // home (CSS px)
+		hy: number;
+		snx: number; // posizione di partenza normalizzata (per l'intro)
+		sny: number;
+		x: number;
+		y: number;
+		vx: number;
+		vy: number;
+		r: number; // raggio del punto
+		a: number; // opacità a regime
+		delay: number; // sfasamento d'ingresso [0..1]
+		ph: number; // fase per il "respiro"/tremolio
+	};
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	function readInk(root: HTMLElement) {
+		const s = getComputedStyle(root);
+		return s.getPropertyValue('--ink').trim() || '#3a2a18';
+	}
+
+	function initVitruvian(root: HTMLElement) {
+		const canvas = root.querySelector<HTMLCanvasElement>('[data-canvas]');
+		const img = root.querySelector<HTMLImageElement>('[data-src]');
+		if (!canvas || !img) return;
+		const ctx = canvas.getContext('2d', { alpha: true });
+		if (!ctx) return;
+
+		const ink = readInk(root);
+		// Posizioni normalizzate [0..1] dei pixel della linea, campionate una volta.
+		let seeds: { nx: number; ny: number }[] = [];
+		let particles: P[] = [];
+		let cssW = 0;
+		let cssH = 0;
+		let dpr = 1;
+
+		// Coordinate del mouse in CSS px (relative al canvas); -1 = fuori.
+		const pointer = { x: -1, y: -1, active: false };
+		const RADIUS = 86; // raggio d'influenza del cursore
+		const FORCE = 2200; // intensità della repulsione
+		const SPRING = 0.045; // richiamo verso casa
+		const FRICTION = 0.86;
+
+		// Animazione d'ingresso: le particelle convergono lentamente.
+		const MOVE_MS = 1700; // durata del viaggio di ogni particella
+		const STAGGER_MS = 1600; // sfasamento totale tra prime e ultime
+		const INTRO_MS = MOVE_MS + STAGGER_MS;
+		let introStart = 0;
+		const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+		function sampleSeeds() {
+			// Alta risoluzione: anche i tratti sottili vengono rasterizzati.
+			const sw = 440;
+			const sh = Math.round((sw * 362.32) / 361.89);
+			const off = document.createElement('canvas');
+			off.width = sw;
+			off.height = sh;
+			const octx = off.getContext('2d');
+			if (!octx) return;
+			octx.drawImage(img!, 0, 0, sw, sh);
+			let data: Uint8ClampedArray;
+			try {
+				data = octx.getImageData(0, 0, sw, sh).data;
+			} catch {
+				return; // canvas "tainted": lasciamo il fallback testuale
+			}
+			// Campiona OGNI pixel della linea (così non si perde nessun tratto),
+			// poi dirada a caso per tenere le particelle distanziate e leggibili.
+			const keepProb = 0.14;
+			const found: { nx: number; ny: number }[] = [];
+			for (let y = 0; y < sh; y++) {
+				for (let x = 0; x < sw; x++) {
+					const alpha = data[(y * sw + x) * 4 + 3];
+					if (alpha > 60 && Math.random() < keepProb) {
+						found.push({ nx: x / sw, ny: y / sh });
+					}
+				}
+			}
+			seeds = found;
+		}
+
+		function buildParticles() {
+			particles = seeds.map((s) => {
+				const hx = s.nx * cssW;
+				const hy = s.ny * cssH;
+				// Parte da un punto sparso attorno alla figura, poi converge.
+				const ang = Math.random() * Math.PI * 2;
+				const spread = 0.35 + Math.random() * 0.5;
+				return {
+					hx,
+					hy,
+					snx: s.nx + Math.cos(ang) * spread,
+					sny: s.ny + Math.sin(ang) * spread,
+					x: hx,
+					y: hy,
+					vx: 0,
+					vy: 0,
+					r: 0.65 + Math.random() * 0.6,
+					a: 0.45 + Math.random() * 0.4,
+					// Si forma dall'alto verso il basso, con un po' di casualità.
+					delay: Math.min(1, s.ny * 0.8 + Math.random() * 0.25),
+					ph: Math.random() * Math.PI * 2,
+				};
+			});
+		}
+
+		function resize() {
+			const rect = root.getBoundingClientRect();
+			cssW = rect.width;
+			cssH = rect.height;
+			dpr = Math.min(window.devicePixelRatio || 1, 2);
+			canvas!.width = Math.round(cssW * dpr);
+			canvas!.height = Math.round(cssH * dpr);
+			ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+			if (seeds.length) {
+				if (particles.length) {
+					// Aggiorna le case mantenendo lo stato attuale.
+					for (let i = 0; i < particles.length; i++) {
+						particles[i].hx = seeds[i].nx * cssW;
+						particles[i].hy = seeds[i].ny * cssH;
+					}
+				} else {
+					buildParticles();
+				}
+			}
+			if (reduceMotion) drawStatic();
+		}
+
+		function drawStatic() {
+			ctx!.clearRect(0, 0, cssW, cssH);
+			ctx!.fillStyle = ink;
+			for (const p of particles) {
+				ctx!.globalAlpha = p.a;
+				ctx!.beginPath();
+				ctx!.arc(p.hx, p.hy, p.r, 0, Math.PI * 2);
+				ctx!.fill();
+			}
+			ctx!.globalAlpha = 1;
+		}
+
+		let raf = 0;
+		function tick(now: number) {
+			if (!introStart) introStart = now;
+			const elapsed = now - introStart;
+			const intro = elapsed < INTRO_MS;
+
+			ctx!.clearRect(0, 0, cssW, cssH);
+			ctx!.fillStyle = ink;
+			const r2 = RADIUS * RADIUS;
+
+			// "Respiro": un'onda radiale lenta che pulsa dal centro verso l'esterno.
+			const cx = cssW / 2;
+			const cy = cssH / 2;
+			const breathT = now * 0.0011; // velocità del respiro
+
+			for (const p of particles) {
+				if (intro) {
+					// Fase di formazione: interpola da sparso a casa, con stagger.
+					const local = (elapsed - p.delay * STAGGER_MS) / MOVE_MS;
+					const t = local <= 0 ? 0 : local >= 1 ? 1 : easeOutCubic(local);
+					const sx = p.snx * cssW;
+					const sy = p.sny * cssH;
+					p.x = sx + (p.hx - sx) * t;
+					p.y = sy + (p.hy - sy) * t;
+					ctx!.globalAlpha = p.a * t;
+				} else {
+					if (pointer.active) {
+						const dx = p.x - pointer.x;
+						const dy = p.y - pointer.y;
+						const d2 = dx * dx + dy * dy;
+						if (d2 < r2 && d2 > 0.01) {
+							const d = Math.sqrt(d2);
+							const f = (1 - d / RADIUS) * (FORCE / d);
+							p.vx += (dx / d) * f * 0.016;
+							p.vy += (dy / d) * f * 0.016;
+						}
+					}
+					// Onda radiale: le particelle si spostano lungo il raggio,
+					// con una fase che dipende dalla distanza dal centro (ripple).
+					const ddx = p.hx - cx;
+					const ddy = p.hy - cy;
+					const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+					const wave = Math.sin(breathT - dist * 0.021);
+					const off = wave * 3.4; // ampiezza del respiro (px)
+					const tx = p.hx + (ddx / dist) * off + Math.sin(now * 0.0014 + p.ph) * 0.5;
+					const ty = p.hy + (ddy / dist) * off + Math.cos(now * 0.0012 + p.ph) * 0.5;
+					// Richiamo verso il bersaglio
+					p.vx += (tx - p.x) * SPRING;
+					p.vy += (ty - p.y) * SPRING;
+					p.vx *= FRICTION;
+					p.vy *= FRICTION;
+					p.x += p.vx;
+					p.y += p.vy;
+					// Lieve pulsazione d'opacità sincronizzata col respiro.
+					ctx!.globalAlpha = p.a * (0.82 + 0.18 * (wave * 0.5 + 0.5));
+				}
+
+				ctx!.beginPath();
+				ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+				ctx!.fill();
+			}
+			ctx!.globalAlpha = 1;
+			raf = requestAnimationFrame(tick);
+		}
+
+		function onPointerMove(e: PointerEvent) {
+			const rect = canvas!.getBoundingClientRect();
+			pointer.x = e.clientX - rect.left;
+			pointer.y = e.clientY - rect.top;
+			pointer.active = true;
+		}
+		function onPointerLeave() {
+			pointer.active = false;
+		}
+
+		function start() {
+			sampleSeeds();
+			if (!seeds.length) return;
+			resize();
+			buildParticles();
+			if (reduceMotion) {
+				drawStatic();
+				return;
+			}
+			canvas!.addEventListener('pointermove', onPointerMove, { passive: true });
+			canvas!.addEventListener('pointerleave', onPointerLeave, { passive: true });
+			raf = requestAnimationFrame(tick);
+		}
+
+		const ro = new ResizeObserver(() => resize());
+		ro.observe(root);
+
+		// Mette in pausa quando fuori schermo per non sprecare cicli.
+		const io = new IntersectionObserver((entries) => {
+			for (const en of entries) {
+				if (reduceMotion || !seeds.length) continue;
+				if (en.isIntersecting && !raf) raf = requestAnimationFrame(tick);
+				else if (!en.isIntersecting && raf) {
+					cancelAnimationFrame(raf);
+					raf = 0;
+				}
+			}
+		});
+		io.observe(root);
+
+		if (img.complete && img.naturalWidth) start();
+		else img.addEventListener('load', start, { once: true });
+	}
+
+	function boot() {
+		document.querySelectorAll<HTMLElement>('[data-vitruvian]').forEach(initVitruvian);
+	}
+	if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+	else boot();
+</script>

@@ -1,0 +1,193 @@
+---
+import type { Project } from '../data/projects';
+
+interface Props {
+	project: Project;
+}
+
+const { project } = Astro.props;
+
+// Status is stored as a combined "italiano · english" string; split it so the
+// language switch shows only the active voice (like every other bilingual pair).
+const [statusIt, statusEn = statusIt] = project.status.split(' · ');
+---
+
+<a class="row" href={`/progetti/${project.slug}`} aria-label={`Apri la tavola ${project.numeral}: ${project.title}`}>
+	<div class="numeral">{project.numeral}</div>
+	<div class="body">
+		<div class="title-line">
+			<h3>{project.title}</h3>
+			<span class="stack">{project.stack}</span>
+		</div>
+		<p>
+			<span class="bil bil-inline" lang="it">{project.desc}</span>
+			<span class="bil bil-inline" lang="en">{project.descEn}</span>
+		</p>
+		<span class="cue">
+				<span class="bil" lang="it">apri la tavola</span>
+				<span class="bil" lang="en">open the plate</span>
+				<span class="arrow" aria-hidden="true">→</span>
+			</span>
+	</div>
+	<div class="meta">
+		<span class="year">{project.year}</span>
+		<span class="status">
+			<span class="bil" lang="it">{statusIt}</span>
+			<span class="bil" lang="en">{statusEn}</span>
+		</span>
+	</div>
+</a>
+
+<style>
+	.row {
+		display: grid;
+		grid-template-columns: 70px minmax(0, 1fr) 132px;
+		gap: 30px;
+		align-items: center;
+		padding: 28px 6px;
+		border-top: 1px solid rgba(110, 86, 56, 0.45);
+		text-decoration: none;
+		color: inherit;
+		transition: background 0.2s ease, padding 0.2s ease;
+	}
+
+	.row:hover {
+		background: rgba(156, 67, 38, 0.06);
+		padding-left: 14px;
+		padding-right: 14px;
+	}
+
+	/* Indicatore di focus da tastiera visibile (non basta il solo cambio di sfondo). */
+	.row:focus-visible {
+		background: rgba(156, 67, 38, 0.06);
+		padding-left: 14px;
+		padding-right: 14px;
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+
+	.numeral {
+		font-family: var(--font-hand), cursive;
+		font-size: 54px;
+		color: var(--accent-ink);
+		line-height: 0.8;
+		text-align: center;
+		transition: transform 0.2s ease;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.row:hover .numeral,
+	.row:focus-visible .numeral {
+		transform: scale(1.08);
+	}
+
+	.title-line {
+		display: flex;
+		align-items: baseline;
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	h3 {
+		margin: 0;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(30px, 3.4vw, 42px);
+		line-height: 1;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.stack {
+		font-style: italic;
+		letter-spacing: 0.06em;
+		font-size: 14px;
+		color: var(--accent-ink);
+	}
+
+	p {
+		margin: 7px 0 0;
+		font-size: 17px;
+		color: var(--ink-soft);
+		max-width: 64ch;
+	}
+
+	.cue {
+		display: inline-block;
+		margin-top: 10px;
+		font-style: italic;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-size: 11px;
+		color: var(--accent-ink);
+		opacity: 0;
+		transform: translateY(2px);
+		transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+
+	.row:hover .cue,
+	.row:focus-visible .cue {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.cue .arrow {
+		display: inline-block;
+		transition: transform 0.2s ease;
+	}
+
+	.row:hover .cue .arrow,
+	.row:focus-visible .cue .arrow {
+		transform: translateX(4px);
+	}
+
+	/* Meta column — the plate's dating & status, where the diagram used to sit. */
+	.meta {
+		justify-self: end;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 6px;
+		text-align: right;
+	}
+
+	.year {
+		font-style: italic;
+		letter-spacing: 0.04em;
+		font-size: 13px;
+		color: var(--brown-3);
+		white-space: nowrap;
+	}
+
+	.status {
+		font-style: italic;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		font-size: 11px;
+		color: var(--accent-ink);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 860px) {
+		.row {
+			grid-template-columns: 52px 1fr;
+			gap: 18px;
+		}
+		/* Drop the meta under the body instead of a third column. */
+		.meta {
+			grid-column: 2;
+			align-items: flex-start;
+			flex-direction: row;
+			gap: 14px;
+			text-align: left;
+			margin-top: 6px;
+		}
+		/* On touch screens there's no hover — always show the cue. */
+		.cue {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

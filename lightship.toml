@@ -1,0 +1,18 @@
+# Detected Astro project — build output is usually in "dist/".
+# Lightship configuration — https://github.com/gianlucadark/lightship
+#
+# Override rule severity or turn rules off. Values: "error" | "warn" | "off".
+[rules]
+# img-alt = "error"
+# meta-viewport = "off"
+
+# Glob paths to exclude from the analysis.
+[ignore]
+paths = [
+    # "**/404.html",
+    # "**/_*.html",
+]
+
+[output]
+# Default output format: pretty | compact | json | sarif | github
+format = "pretty"

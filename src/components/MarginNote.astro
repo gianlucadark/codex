@@ -1,0 +1,54 @@
+---
+/**
+ * Handwritten marginalia. Positioning differs per note, so the caller passes an
+ * inline `style` (absolute offsets + rotation); the component supplies the
+ * handwriting look and hides itself on narrow screens (like the print margin
+ * disappearing on a small page).
+ */
+interface Props {
+	style?: string;
+	tone?: 'accent' | 'muted';
+	class?: string;
+}
+
+const { style, tone = 'muted', class: className } = Astro.props;
+---
+
+<span class:list={['marg', tone, className]} style={style} data-reveal="margin" aria-hidden="true">
+	<slot />
+</span>
+
+<style>
+	.marg {
+		position: absolute;
+		font-family: var(--font-hand), cursive;
+		/* La grafia manoscritta è poco leggibile in piccolo: corpo più grande,
+		   interlinea più ariosa e un filo di spaziatura per arieggiare i tratti. */
+		font-size: 33px;
+		line-height: 1.35;
+		letter-spacing: 0.025em;
+		/* I tratti del font a mano sono sottili: l'antialiasing pieno li
+		   addensa e un'ombra dello stesso inchiostro fa da finto-grassetto,
+		   così la glossa resta leggibile sulla pergamena. */
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.marg.muted {
+		/* Inchiostro pieno per staccare nettamente dalla pergamena. */
+		color: var(--ink-strong);
+	}
+
+	.marg.accent {
+		/* Rosso rubrica scurito apposta per la glossa: il tono dell'accento
+		   (#9c4326) sulla pergamena ha poco contrasto a tratto sottile, questo
+		   resta chiaramente rosso ma si legge meglio. */
+		color: var(--accent-ink);
+	}
+
+	@media (max-width: 860px) {
+		.marg {
+			display: none !important;
+		}
+	}
+</style>

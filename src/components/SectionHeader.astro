@@ -1,0 +1,60 @@
+---
+/**
+ * The "running head" of a folio: a latin eyebrow followed by the section name
+ * in the active language, and the handwritten folio number on the right. The
+ * latin term stays fixed (it belongs to neither language); only the IT/EN voice
+ * switches with the language toggle. `rule` draws the underline used by the
+ * inner sections (the hero uses a borderless variant).
+ */
+interface Props {
+	/** Fixed latin term shown before the section name (optional). */
+	latin?: string;
+	/** Section name — Italian voice. */
+	it: string;
+	/** Section name — English voice. */
+	en: string;
+	folio: string;
+	rule?: boolean;
+}
+
+const { latin, it, en, folio, rule = true } = Astro.props;
+---
+
+<div class:list={['head', { ruled: rule }]} data-reveal>
+	<span class="eyebrow">
+		{latin && <span class="latin">{latin} — </span>}
+		<span class="bil" lang="it">{it}</span>
+		<span class="bil" lang="en">{en}</span>
+	</span>
+	<span class="folio">{folio}</span>
+</div>
+
+<style>
+	.head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+
+	.head.ruled {
+		border-bottom: 1.5px solid var(--accent);
+		padding-bottom: 8px;
+	}
+
+	.eyebrow {
+		font-style: italic;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		font-size: 14px;
+		color: var(--brown);
+	}
+
+	.folio {
+		font-family: var(--font-hand), cursive;
+		font-size: 30px;
+		letter-spacing: 0.02em;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+</style>

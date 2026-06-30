@@ -1,0 +1,240 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import MarginNote from './MarginNote.astro';
+
+interface Props {
+	showAnnotations?: boolean;
+}
+
+const { showAnnotations = true } = Astro.props;
+
+const facts = [
+	{ value: '166', it: 'glifi', en: 'glyphs' },
+	{ value: 'calt', it: 'varianti naturali', en: 'no repeats' },
+	{ value: 'fi · tt', it: 'legature', en: 'ligatures' },
+	{ value: '×3', it: 'TTF · WOFF · WOFF2', en: 'TTF · WOFF · WOFF2' },
+];
+---
+
+<section id="font" class="foglio" aria-label="Il font">
+	<SectionHeader latin="Manus Auctoris" it="Il font" en="The typeface" folio="f. III r" />
+
+	<div class="grid">
+		<div class="prose">
+			<h2 data-reveal>Gianluca Hand</h2>
+			<div class="bil-pair lines" data-reveal>
+				<p class="copy bil" lang="it">
+					Per titoli, glosse e dettagli manoscritti uso un carattere disegnato dalla mia
+					calligrafia. Ho digitalizzato la mia scrittura a mano, lettera per lettera, fino a
+					farne un font vero e proprio.
+				</p>
+				<p class="copy bil" lang="en">
+					Headings, marginal notes and handwritten details use a typeface drawn from my own
+					handwriting, digitised letter by letter into a real font.
+				</p>
+			</div>
+			<p class="signoff" data-reveal>
+				<span class="bil" lang="it">la mia mano, il mio codice.</span>
+				<span class="bil" lang="en">my hand, my code.</span>
+			</p>
+		</div>
+
+		<div class="plate" data-reveal>
+			<div class="sample">
+				<span class="line line-1"></span>
+				<span class="line line-2"></span>
+				<span class="baseline"></span>
+				<div class="glyphs">Aa Gg</div>
+			</div>
+			<div class="plate-foot">
+				<span class="bil" lang="it">scritto a mano</span>
+					<span class="bil" lang="en">hand-drawn</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="specimen" data-reveal="stagger">
+		<p>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
+		<p>a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
+		<p class="accent">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
+	</div>
+
+	<dl class="facts" data-reveal="stagger">
+		{
+			facts.map((f) => (
+				<div>
+					<dt>{f.value}</dt>
+					<dd>
+							<span class="bil" lang="it">{f.it}</span>
+							<span class="bil" lang="en">{f.en}</span>
+						</dd>
+				</div>
+			))
+		}
+	</dl>
+
+	{
+		showAnnotations && (
+			<MarginNote style="top:96px;right:18px;transform:rotate(6deg);text-align:right;width:130px;line-height:1.2;">
+				<span class="bil" lang="it">nessuna lettera<br />è mai uguale</span>
+				<span class="bil" lang="en">no letter is<br />ever the same</span>
+			</MarginNote>
+		)
+	}
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 48px;
+		align-items: center;
+		margin-top: 38px;
+	}
+
+	.prose {
+		border-left: 2px solid rgba(156, 67, 38, 0.5);
+		padding-left: 28px;
+	}
+
+	h2 {
+		margin: 0 0 16px;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: clamp(32px, 4.4vw, 52px);
+		line-height: 1;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.lines {
+		margin: 0 0 22px;
+	}
+
+	.copy {
+		margin: 0;
+		font-size: 19px;
+		color: var(--ink);
+		max-width: 54ch;
+	}
+
+	p.signoff {
+		margin: 0;
+		font-family: var(--font-hand), cursive;
+		font-size: 26px;
+		letter-spacing: 0.02em;
+		color: var(--accent-ink);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.plate {
+		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
+		border: 1.4px solid var(--brown-3);
+		box-shadow: 0 10px 26px -18px rgba(58, 42, 24, 0.7);
+		padding: 26px 28px;
+	}
+
+	.sample {
+		position: relative;
+	}
+
+	.line,
+	.baseline {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 1px;
+	}
+
+	.line {
+		background: rgba(156, 67, 38, 0.32);
+	}
+	.line-1 {
+		top: 16%;
+	}
+	.line-2 {
+		top: 50%;
+	}
+	.baseline {
+		bottom: 10%;
+		background: rgba(58, 42, 24, 0.5);
+	}
+
+	.glyphs {
+		position: relative;
+		font-family: var(--font-hand), cursive;
+		font-size: clamp(78px, 11vw, 132px);
+		line-height: 1.05;
+		color: var(--ink-strong);
+		text-align: center;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.plate-foot {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 16px;
+		font-style: italic;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		font-size: 11px;
+		color: var(--accent-ink);
+	}
+
+	.specimen {
+		margin-top: 42px;
+		border-top: 1px solid rgba(110, 86, 56, 0.45);
+		padding-top: 28px;
+	}
+
+	.specimen p {
+		margin: 0 0 6px;
+		max-width: none;
+		font-family: var(--font-hand), cursive;
+		font-size: clamp(22px, 3vw, 30px);
+		color: var(--ink);
+		line-height: 1.35;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.specimen p.accent {
+		margin-bottom: 0;
+		color: var(--accent-ink);
+	}
+
+	.facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 28px;
+		margin: 34px 0 0;
+	}
+
+	.facts dt {
+		font-family: var(--font-hand), cursive;
+		font-size: 30px;
+		letter-spacing: 0.02em;
+		color: var(--accent-ink);
+		line-height: 1;
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.facts dd {
+		margin: 4px 0 0;
+		font-style: italic;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		font-size: 12px;
+		color: var(--brown);
+	}
+
+	@media (max-width: 860px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

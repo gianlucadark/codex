@@ -12,8 +12,13 @@ export const site = {
 		"Portfolio di Gianluca D'Arcangelo, fullstack developer · 3D · UI/UX design. Un codice miniato fatto a mano.",
 	locale: 'it_IT',
 	localeAlternate: 'en_GB',
-	/** Open Graph share image, relative to the site root (in /public). */
-	ogImage: '/og.png',
+	/** Open Graph share image, relative to the site root (in /public).
+	 *  1200×630 JPG: gli scraper social (WhatsApp, in parte LinkedIn/X) non
+	 *  renderizzano WebP in modo affidabile, quindi la card resta JPG. */
+	ogImage: '/og.jpg',
+	ogImageWidth: 1200,
+	ogImageHeight: 630,
+	ogImageAlt: "Codex — portfolio di Gianluca D'Arcangelo",
 
 	/** Contatti. I link vuoti non vengono mostrati finché non li compili. */
 	contact: {

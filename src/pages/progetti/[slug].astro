@@ -36,7 +36,7 @@ const technologies = project.stack
 	.map((t) => t.trim())
 	.filter(Boolean);
 
-// Per-project social card: reuse the first plate instead of the generic og.png.
+// Per-project social card: reuse the first plate instead of the generic og.jpg.
 const ogImage = images[0]?.src ?? site.ogImage;
 
 // Structured data for the folio: a CreativeWork authored by the site owner.
@@ -52,14 +52,28 @@ const projectLd = {
 	author: { '@type': 'Person', name: site.name },
 	url: new URL(`/progetti/${project.slug}`, site.url).href,
 };
+
+// Breadcrumb trail: Home › Progetti › {project}. "Progetti" is the anchor on home.
+const breadcrumbLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'Codex', item: site.url },
+		{ '@type': 'ListItem', position: 2, name: 'Progetti', item: new URL('/#progetti', site.url).href },
+		{ '@type': 'ListItem', position: 3, name: project.title },
+	],
+};
 ---
 
 <Layout
 	title={pageTitle}
 	description={`${project.desc} — ${project.descEn}`}
 	image={ogImage}
+	imageAlt={`${project.title} — Codex`}
+	imageWidth={images[0]?.width}
+	imageHeight={images[0]?.height}
 	type="article"
-	jsonLd={projectLd}
+	jsonLd={[projectLd, breadcrumbLd]}
 >
 	<main class="codex">
 		<CodexBackground showGrid={true} showStains={true} />

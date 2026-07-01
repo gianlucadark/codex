@@ -10,6 +10,11 @@ interface Props {
 	description?: string;
 	/** Per-page OG/Twitter image (absolute or root-relative). Defaults to site.ogImage. */
 	image?: string;
+	/** Alt text for the social card. Defaults to site.ogImageAlt. */
+	imageAlt?: string;
+	/** Actual pixel size of `image`, emitted as og:image:width/height when known. */
+	imageWidth?: number;
+	imageHeight?: number;
 	/** og:type — "article" for project folios, "website" elsewhere. */
 	type?: 'website' | 'article';
 	/** Extra JSON-LD node(s) for this page (e.g. a CreativeWork for a project). */
@@ -20,6 +25,9 @@ const {
 	title = site.title,
 	description = site.description,
 	image = site.ogImage,
+	imageAlt = site.ogImageAlt,
+	imageWidth,
+	imageHeight,
 	type = 'website',
 	jsonLd,
 } = Astro.props;
@@ -28,6 +36,13 @@ const {
 const origin = Astro.site ?? site.url;
 const canonical = new URL(Astro.url.pathname, origin).href;
 const ogImage = new URL(image, origin).href;
+
+// og:image:width/height let crawlers render the card without a probe fetch. Emit
+// them only when known: the default site card is 1200×630; pages passing a custom
+// image (project plates) supply their own dimensions via props.
+const isDefaultImage = image === site.ogImage;
+const ogImageWidth = imageWidth ?? (isDefaultImage ? site.ogImageWidth : undefined);
+const ogImageHeight = imageHeight ?? (isDefaultImage ? site.ogImageHeight : undefined);
 
 // Structured data: the author identity is present on every folio; pages can add
 // their own node (a project CreativeWork) via the `jsonLd` prop.
@@ -41,7 +56,19 @@ const personLd: Record<string, unknown> = {
 	sameAs: [site.contact.linkedin],
 	address: { '@type': 'PostalAddress', addressLocality: site.contact.place },
 };
-const structuredData = [personLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
+// The site itself as a WebSite node — helps search engines tie pages to one work.
+const websiteLd: Record<string, unknown> = {
+	'@context': 'https://schema.org',
+	'@type': 'WebSite',
+	name: site.name,
+	url: site.url,
+	inLanguage: ['it', 'en'],
+};
+const structuredData = [
+	personLd,
+	websiteLd,
+	...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
+];
 
 // Same-URL bilingual: expose a shareable per-language URL for hreflang.
 const enUrl = new URL(canonical);
@@ -79,8 +106,12 @@ enUrl.searchParams.set('lang', 'en');
 			})();
 		</script>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- Tinge la chrome del browser mobile col tono pergamena del codice. -->
+		<meta name="theme-color" content="#d4be97" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
@@ -97,12 +128,16 @@ enUrl.searchParams.set('lang', 'en');
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
 		<meta property="og:image" content={ogImage} />
+		<meta property="og:image:alt" content={imageAlt} />
+		{ogImageWidth && <meta property="og:image:width" content={String(ogImageWidth)} />}
+		{ogImageHeight && <meta property="og:image:height" content={String(ogImageHeight)} />}
 		<meta property="og:locale" content={site.locale} />
 		<meta property="og:locale:alternate" content={site.localeAlternate} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+		<meta name="twitter:image:alt" content={imageAlt} />
 
 		<!-- Structured data (Schema.org) -->
 		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />

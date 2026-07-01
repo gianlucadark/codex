@@ -1,0 +1,16 @@
+{
+  "name": "Gianluca D'Arcangelo — Codex",
+  "short_name": "Codex",
+  "description": "Portfolio di Gianluca D'Arcangelo — un codice miniato fatto a mano.",
+  "lang": "it",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d4be97",
+  "theme_color": "#d4be97",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

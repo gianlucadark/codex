@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://codex-gianluca.vercel.app/sitemap-index.xml
+
+# Mappa per agenti/LLM (llmstxt.org)
+# LLMs: https://codex-gianluca.vercel.app/llms.txt

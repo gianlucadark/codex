@@ -33,12 +33,16 @@ export default defineConfig({
 			// comparivano in nessuno stile e generavano @font-face inutili.
 			weights: [400],
 			styles: ['normal', 'italic'],
+			// `swap`: il testo compare subito col fallback e passa al font quando è
+			// pronto — niente FOIT (testo invisibile durante il caricamento).
+			display: 'swap',
 			fallbacks: ['Georgia', 'serif'],
 		},
 		{
 			name: 'Gianluca Hand',
 			cssVariable: '--font-hand',
 			provider: fontProviders.local(),
+			display: 'swap',
 			fallbacks: ['cursive'],
 			options: {
 				variants: [

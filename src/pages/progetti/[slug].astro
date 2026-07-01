@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { getImage, Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import CodexBackground from '../../components/CodexBackground.astro';
 import FoglioDivider from '../../components/FoglioDivider.astro';
@@ -36,8 +36,16 @@ const technologies = project.stack
 	.map((t) => t.trim())
 	.filter(Boolean);
 
-// Per-project social card: reuse the first plate instead of the generic og.jpg.
-const ogImage = images[0]?.src ?? site.ogImage;
+// Per-project social card: convert the first plate to JPG. Gli scraper social
+// (WhatsApp, in parte LinkedIn/X) non renderizzano WebP in modo affidabile, quindi
+// la card di progetto va in JPG come il generico /og.jpg (fallback quando manca
+// un'immagine). Larghezza limitata alla sorgente per non fare upscaling.
+const ogSource = images[0];
+const ogWidth = ogSource ? Math.min(1200, ogSource.width) : undefined;
+const ogCard = ogSource ? await getImage({ src: ogSource, format: 'jpeg', width: ogWidth }) : null;
+const ogImage = ogCard?.src ?? site.ogImage;
+const ogImageHeight =
+	ogSource && ogWidth ? Math.round((ogWidth * ogSource.height) / ogSource.width) : undefined;
 
 // Structured data for the folio: a CreativeWork authored by the site owner.
 const year = project.year.match(/\d{4}/)?.[0];
@@ -70,8 +78,8 @@ const breadcrumbLd = {
 	description={`${project.desc} — ${project.descEn}`}
 	image={ogImage}
 	imageAlt={`${project.title} — Codex`}
-	imageWidth={images[0]?.width}
-	imageHeight={images[0]?.height}
+	imageWidth={ogWidth}
+	imageHeight={ogImageHeight}
 	type="article"
 	jsonLd={[projectLd, breadcrumbLd]}
 >

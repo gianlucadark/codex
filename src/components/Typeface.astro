@@ -14,6 +14,51 @@ const facts = [
 	{ value: 'fi · tt', it: 'legature', en: 'ligatures' },
 	{ value: '×3', it: 'TTF · WOFF · WOFF2', en: 'TTF · WOFF · WOFF2' },
 ];
+
+const stages = [
+	{
+		step: '01',
+		it: 'Campione',
+		en: 'Sample',
+		itText: 'Prima ho scritto alfabeti, numeri e segni su carta, cercando il ritmo naturale della mia mano.',
+		enText: 'First I wrote alphabets, numbers and marks on paper, keeping the natural rhythm of my hand.',
+	},
+	{
+		step: '02',
+		it: 'Disegno',
+		en: 'Drawing',
+		itText: 'Poi ho ripulito ogni forma senza renderla troppo perfetta: il tremolio resta parte della firma.',
+		enText: 'Then I cleaned each shape without making it too perfect: the small wobble stays part of the signature.',
+	},
+	{
+		step: '03',
+		it: 'Font',
+		en: 'Font',
+		itText: 'Infine ho costruito spaziature, accenti, legature e varianti per usarlo davvero nel sito.',
+		enText: 'Finally I built spacing, accents, ligatures and alternates so it could actually live on the site.',
+	},
+];
+
+const features = [
+	{
+		it: 'Titoli e firme',
+		en: 'Titles and signatures',
+		itText: 'Usato dove serve una voce personale, non per lunghi blocchi di lettura.',
+		enText: 'Used where a personal voice helps, not for long reading passages.',
+	},
+	{
+		it: 'Alternative automatiche',
+		en: 'Automatic alternates',
+		itText: 'Le varianti contestuali spezzano la ripetizione delle lettere uguali.',
+		enText: 'Contextual alternates break up repeated identical letters.',
+	},
+	{
+		it: 'Supporto web',
+		en: 'Web-ready',
+		itText: 'Esportato in formati leggeri e caricato come font self-hosted.',
+		enText: 'Exported in lightweight formats and loaded as a self-hosted font.',
+	},
+];
 ---
 
 <section id="font" class="foglio" aria-label="Il font">
@@ -26,11 +71,23 @@ const facts = [
 				<p class="copy bil" lang="it">
 					Per titoli, glosse e dettagli manoscritti uso un carattere disegnato dalla mia
 					calligrafia. Ho digitalizzato la mia scrittura a mano, lettera per lettera, fino a
-					farne un font vero e proprio.
+					farne un font vero e proprio, con imperfezioni controllate e piccoli cambi di ritmo.
 				</p>
 				<p class="copy bil" lang="en">
 					Headings, marginal notes and handwritten details use a typeface drawn from my own
-					handwriting, digitised letter by letter into a real font.
+					handwriting, digitised letter by letter into a real font, with controlled
+					imperfections and tiny shifts in rhythm.
+				</p>
+			</div>
+			<div class="bil-pair notes" data-reveal>
+				<p class="copy bil" lang="it">
+					Non è un vezzo decorativo: è una piccola infrastruttura d'identità. Mi permette di
+					far entrare nel portfolio la stessa mano che appunta, cancella, prova e riscrive
+					durante il lavoro.
+				</p>
+				<p class="copy bil" lang="en">
+					It is not just ornament: it is a small identity system. It brings into the portfolio
+					the same hand that annotates, crosses out, tests and rewrites during the work.
 				</p>
 			</div>
 			<p class="signoff" data-reveal>
@@ -48,7 +105,7 @@ const facts = [
 			</div>
 			<div class="plate-foot">
 				<span class="bil" lang="it">scritto a mano</span>
-					<span class="bil" lang="en">hand-drawn</span>
+				<span class="bil" lang="en">hand-drawn</span>
 			</div>
 		</div>
 	</div>
@@ -56,7 +113,29 @@ const facts = [
 	<div class="specimen" data-reveal="stagger">
 		<p>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
 		<p>a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
+		<p class="phrase">
+			<span class="bil" lang="it">Scrivere codice come si annota un margine.</span>
+			<span class="bil" lang="en">Writing code like annotating a margin.</span>
+		</p>
 		<p class="accent">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
+	</div>
+
+	<div class="process" data-reveal="stagger" aria-label="Processo del font">
+		{
+			stages.map((stage) => (
+				<article>
+					<span class="step">{stage.step}</span>
+					<h3>
+						<span class="bil" lang="it">{stage.it}</span>
+						<span class="bil" lang="en">{stage.en}</span>
+					</h3>
+					<p>
+						<span class="bil" lang="it">{stage.itText}</span>
+						<span class="bil" lang="en">{stage.enText}</span>
+					</p>
+				</article>
+			))
+		}
 	</div>
 
 	<dl class="facts" data-reveal="stagger">
@@ -65,13 +144,30 @@ const facts = [
 				<div>
 					<dt>{f.value}</dt>
 					<dd>
-							<span class="bil" lang="it">{f.it}</span>
-							<span class="bil" lang="en">{f.en}</span>
-						</dd>
+						<span class="bil" lang="it">{f.it}</span>
+						<span class="bil" lang="en">{f.en}</span>
+					</dd>
 				</div>
 			))
 		}
 	</dl>
+
+	<div class="usage" data-reveal="stagger" aria-label="Uso del font">
+		{
+			features.map((feature) => (
+				<div>
+					<h3>
+						<span class="bil" lang="it">{feature.it}</span>
+						<span class="bil" lang="en">{feature.en}</span>
+					</h3>
+					<p>
+						<span class="bil" lang="it">{feature.itText}</span>
+						<span class="bil" lang="en">{feature.enText}</span>
+					</p>
+				</div>
+			))
+		}
+	</div>
 
 	{
 		showAnnotations && (
@@ -109,6 +205,10 @@ const facts = [
 	}
 
 	.lines {
+		margin: 0 0 16px;
+	}
+
+	.notes {
 		margin: 0 0 22px;
 	}
 
@@ -184,6 +284,10 @@ const facts = [
 		color: var(--accent-ink);
 	}
 
+	.plate-foot .bil[lang='en'] {
+		margin-left: auto;
+	}
+
 	.specimen {
 		margin-top: 42px;
 		border-top: 1px solid rgba(110, 86, 56, 0.45);
@@ -204,6 +308,53 @@ const facts = [
 	.specimen p.accent {
 		margin-bottom: 0;
 		color: var(--accent-ink);
+	}
+
+	.specimen p.phrase {
+		margin: 10px 0 8px;
+		font-size: clamp(30px, 4.8vw, 48px);
+		line-height: 1.05;
+		color: var(--ink-strong);
+	}
+
+	.process {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 18px;
+		margin-top: 34px;
+	}
+
+	.process article,
+	.usage > div {
+		border-top: 1px solid rgba(110, 86, 56, 0.42);
+		padding-top: 16px;
+	}
+
+	.step {
+		display: block;
+		margin-bottom: 10px;
+		font-style: italic;
+		letter-spacing: 0.12em;
+		color: var(--accent-ink);
+	}
+
+	h3 {
+		margin: 0 0 8px;
+		font-family: var(--font-hand), cursive;
+		font-weight: 400;
+		font-size: 29px;
+		line-height: 1;
+		color: var(--ink-strong);
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+
+	.process p,
+	.usage p {
+		margin: 0;
+		font-size: 16px;
+		line-height: 1.5;
+		color: var(--ink-soft);
 	}
 
 	.facts {
@@ -232,8 +383,20 @@ const facts = [
 		color: var(--brown);
 	}
 
+	.usage {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+		margin-top: 32px;
+	}
+
 	@media (max-width: 860px) {
 		.grid {
+			grid-template-columns: 1fr;
+		}
+
+		.process,
+		.usage {
 			grid-template-columns: 1fr;
 		}
 	}

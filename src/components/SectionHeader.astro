@@ -54,7 +54,21 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 		font-size: 30px;
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
+		white-space: nowrap;
+		padding-left: 12px;
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
+	}
+
+	@media (max-width: 560px) {
+		.eyebrow {
+			/* La spaziatura ampia manda l'occhiello a capo in modo goffo: qui
+			   la stringo così il titolo di sezione resta su poche righe pulite. */
+			letter-spacing: 0.16em;
+			font-size: 12.5px;
+		}
+		.folio {
+			font-size: 26px;
+		}
 	}
 </style>

@@ -80,7 +80,8 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		font-style: normal;
 		letter-spacing: 0.02em;
 		text-transform: none;
-		font-size: 80px;
+		font-size: clamp(34px, 9vw, 80px);
+		line-height: 1;
 		color: var(--ink-soft);
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
@@ -182,7 +183,8 @@ import VitruvianParticles from './VitruvianParticles.astro';
 
 	.scroll-label {
 		font-family: var(--font-hand), cursive;
-		font-size: 45px;
+		font-size: clamp(30px, 7vw, 45px);
+		line-height: 1;
 		letter-spacing: 0.02em;
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
@@ -234,7 +236,7 @@ import VitruvianParticles from './VitruvianParticles.astro';
 
 	.cap-title {
 		font-family: var(--font-hand), cursive;
-		font-size: 44px;
+		font-size: clamp(32px, 7vw, 44px);
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 		line-height: 1;
@@ -288,9 +290,17 @@ import VitruvianParticles from './VitruvianParticles.astro';
 
 	/* ---- Responsive ---------------------------------------------------------- */
 	@media (max-width: 860px) {
+		.hero {
+			/* Lascia respirare il titolo sotto la capsula "Insula" fissa in alto. */
+			padding-top: clamp(72px, 12vh, 96px);
+		}
 		.incipit {
 			grid-template-columns: 1fr;
 			gap: 40px;
+		}
+		.runninghead {
+			justify-content: center;
+			text-align: center;
 		}
 		.plate {
 			max-width: 380px;
@@ -306,6 +316,16 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		}
 		.scroll {
 			justify-content: center;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.incipit {
+			gap: 30px;
+		}
+		.scroll {
+			flex-wrap: wrap;
+			gap: 8px;
 		}
 	}
 </style>

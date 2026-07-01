@@ -136,6 +136,12 @@ html[data-lang='en'] .bil[lang='it'] {
 	}
 }
 
+@media (max-width: 480px) {
+	.foglio {
+		padding: 52px 18px;
+	}
+}
+
 /*
  * Reveal allo scroll — stato iniziale anti-FOUC.
  * La classe `.js-motion` è posata pre-paint solo se il lettore accetta il

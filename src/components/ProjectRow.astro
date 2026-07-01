@@ -172,8 +172,12 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 
 	@media (max-width: 860px) {
 		.row {
-			grid-template-columns: 52px 1fr;
-			gap: 18px;
+			grid-template-columns: 48px 1fr;
+			gap: 16px;
+			padding: 22px 4px;
+		}
+		.numeral {
+			font-size: 42px;
 		}
 		/* Drop the meta under the body instead of a third column. */
 		.meta {

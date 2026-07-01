@@ -9,6 +9,12 @@ export default defineConfig({
 	site: site.url,
 	// Minify the generated HTML.
 	compressHTML: true,
+	build: {
+		// Il CSS del sito è minuscolo (~7 KB in tutto): incorporandolo nell'HTML
+		// eliminiamo le richieste di fogli di stile render-blocking, migliorando
+		// FCP/LCP (niente round-trip prima del primo paint).
+		inlineStylesheets: 'always',
+	},
 	// Pre-load project folios on hover for instant navigation.
 	prefetch: {
 		prefetchAll: true,
@@ -23,7 +29,9 @@ export default defineConfig({
 			name: 'EB Garamond',
 			cssVariable: '--font-garamond',
 			provider: fontProviders.google(),
-			weights: [400, 500, 600],
+			// Solo il peso realmente usato (il corpo del testo): 500/600 non
+			// comparivano in nessuno stile e generavano @font-face inutili.
+			weights: [400],
 			styles: ['normal', 'italic'],
 			fallbacks: ['Georgia', 'serif'],
 		},

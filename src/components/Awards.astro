@@ -112,6 +112,11 @@ const transparentPixel =
 			btn.addEventListener('click', () => {
 				img.src = btn.dataset.lightbox ?? '';
 				img.alt = btn.dataset.caption ?? '';
+				// Il placeholder parte a 1×1 per non ingombrare la dialog chiusa:
+				// tolgo gli attributi width/height così la foto reale prende la sua
+				// dimensione naturale (con i cap del CSS) invece di restare a 1px.
+				img.removeAttribute('width');
+				img.removeAttribute('height');
 				caption.textContent = btn.dataset.caption ?? '';
 				dialog.showModal();
 			});

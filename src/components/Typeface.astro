@@ -60,7 +60,7 @@ const { showAnnotations = true } = Astro.props;
 		<p class="accent">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
 	</div>
 
-	<div class="process" data-reveal="stagger" aria-label="Processo del font">
+	<div class="process" data-reveal="stagger" role="group" aria-label="Processo del font">
 		{
 			stages.map((stage) => (
 				<article>
@@ -89,7 +89,7 @@ const { showAnnotations = true } = Astro.props;
 		}
 	</dl>
 
-	<div class="usage" data-reveal="stagger" aria-label="Uso del font">
+	<div class="usage" data-reveal="stagger" role="group" aria-label="Uso del font">
 		{
 			features.map((feature) => (
 				<div>

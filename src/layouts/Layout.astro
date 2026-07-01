@@ -8,13 +8,44 @@ import '../styles/global.css';
 interface Props {
 	title?: string;
 	description?: string;
+	/** Per-page OG/Twitter image (absolute or root-relative). Defaults to site.ogImage. */
+	image?: string;
+	/** og:type — "article" for project folios, "website" elsewhere. */
+	type?: 'website' | 'article';
+	/** Extra JSON-LD node(s) for this page (e.g. a CreativeWork for a project). */
+	jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title = site.title, description = site.description } = Astro.props;
+const {
+	title = site.title,
+	description = site.description,
+	image = site.ogImage,
+	type = 'website',
+	jsonLd,
+} = Astro.props;
 
 // Absolute URLs for canonical + social cards.
-const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
-const ogImage = new URL(site.ogImage, Astro.site ?? site.url).href;
+const origin = Astro.site ?? site.url;
+const canonical = new URL(Astro.url.pathname, origin).href;
+const ogImage = new URL(image, origin).href;
+
+// Structured data: the author identity is present on every folio; pages can add
+// their own node (a project CreativeWork) via the `jsonLd` prop.
+const personLd: Record<string, unknown> = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: site.name,
+	jobTitle: site.role,
+	url: site.url,
+	email: `mailto:${site.contact.email}`,
+	sameAs: [site.contact.linkedin],
+	address: { '@type': 'PostalAddress', addressLocality: site.contact.place },
+};
+const structuredData = [personLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
+
+// Same-URL bilingual: expose a shareable per-language URL for hreflang.
+const enUrl = new URL(canonical);
+enUrl.searchParams.set('lang', 'en');
 ---
 
 <!doctype html>
@@ -25,8 +56,12 @@ const ogImage = new URL(site.ogImage, Astro.site ?? site.url).href;
 		<script is:inline>
 			(function () {
 				try {
-					var l = localStorage.getItem('codex-lang');
+					// A shareable ?lang=en|it wins over the stored preference and is
+					// persisted so the choice sticks on later visits.
+					var q = new URLSearchParams(location.search).get('lang');
+					var l = q === 'en' || q === 'it' ? q : localStorage.getItem('codex-lang');
 					if (l !== 'en') l = 'it';
+					if (q === 'en' || q === 'it') localStorage.setItem('codex-lang', l);
 					document.documentElement.dataset.lang = l;
 					document.documentElement.lang = l;
 				} catch (e) {}
@@ -49,10 +84,14 @@ const ogImage = new URL(site.ogImage, Astro.site ?? site.url).href;
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
+		<!-- Same-URL bilingual: point crawlers at the shareable per-language URLs. -->
+		<link rel="alternate" hreflang="it" href={canonical} />
+		<link rel="alternate" hreflang="en" href={enUrl.href} />
+		<link rel="alternate" hreflang="x-default" href={canonical} />
 		<title>{title}</title>
 
 		<!-- Open Graph / social cards -->
-		<meta property="og:type" content="website" />
+		<meta property="og:type" content={type} />
 		<meta property="og:site_name" content={site.name} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
@@ -64,6 +103,9 @@ const ogImage = new URL(site.ogImage, Astro.site ?? site.url).href;
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImage} />
+
+		<!-- Structured data (Schema.org) -->
+		<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
 		<!-- Self-hosted fonts (preloaded) via Astro Fonts API -->
 		<Font cssVariable="--font-garamond" preload />

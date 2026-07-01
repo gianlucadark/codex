@@ -20,5 +20,7 @@ export const site = {
 		email: 'gianlucadark1@gmail.com',
 		linkedin: 'https://www.linkedin.com/in/gianluca-d-arcangelo',
 		place: 'Sperlonga, Italia',
+		/** CV scaricabile: metti il PDF in /public e imposta il percorso (es. '/cv.pdf'). */
+		cv: '',
 	},
 } as const;

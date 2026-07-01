@@ -9,13 +9,7 @@
  * Links are absolute (/#anchor) so they work from any folio. Each link carries
  * both labels (data-it / data-en); the switch script swaps the visible one.
  */
-const links = [
-	{ it: 'Chi sono', en: 'About', href: '/#chi-sono' },
-	{ it: 'Il font', en: 'Typeface', href: '/#font' },
-	{ it: 'Progetti', en: 'Work', href: '/#progetti' },
-	{ it: 'Competenze', en: 'Skills', href: '/#competenze' },
-	{ it: 'Contatti', en: 'Contact', href: '/#contatti' },
-];
+import { navLinks as links } from '../data/nav';
 ---
 
 <header class="island" data-codex-nav>
@@ -341,6 +335,14 @@ const links = [
 		root.lang = lang;
 		try {
 			localStorage.setItem('codex-lang', lang);
+		} catch {}
+
+		// Keep the URL shareable: ?lang=en when English is primary, clean otherwise.
+		try {
+			const url = new URL(location.href);
+			if (lang === 'en') url.searchParams.set('lang', 'en');
+			else url.searchParams.delete('lang');
+			history.replaceState(null, '', url);
 		} catch {}
 
 		document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]').forEach((btn) => {

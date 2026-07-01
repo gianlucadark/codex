@@ -8,14 +8,18 @@
  * posa, i filetti crescono, i diagrammi si assemblano. Lenis e ScrollTrigger
  * sono sincronizzati sullo stesso ticker così lo scroll-driven non sfarfalla.
  *
+ * Lenis è attivo solo su viewport ampi: su mobile il suo peso non ripaga e lo
+ * scroll nativo (`scroll-behavior: smooth` + `scroll-padding-top`) copre gli
+ * stessi casi. Le reveal GSAP restano attive ovunque, anche senza Lenis.
+ *
  * Tutto è disattivato con `prefers-reduced-motion: reduce` (fallback allo
  * `scroll-behavior: smooth` nativo). Lo stato iniziale "nascosto" delle
  * rivelazioni è impostato via JS/CSS solo quando il movimento è permesso
  * (classe `.js-motion` aggiunta pre-paint nel Layout): senza JS o in reduced
  * motion il contenuto resta interamente visibile.
  *
- * I link àncora dell'indice ("Insula") sono instradati in Lenis perché scorrano
- * dolcemente rispettando l'offset della nav fissa.
+ * I link àncora dell'indice ("Insula") sono instradati in Lenis (quando attivo)
+ * perché scorrano dolcemente rispettando l'offset della nav fissa.
  */
 ---
 
@@ -31,47 +35,57 @@
 		try {
 			gsap.registerPlugin(ScrollTrigger);
 
-			const lenis = new Lenis({
-				duration: 1.1,
-				// easeOutExpo — quick to start, long gentle settle, like a heavy page.
-				easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-				smoothWheel: true,
-			});
+			// Lenis solo su viewport ampi (vedi nota nel frontmatter).
+			const enableLenis = window.matchMedia('(min-width: 861px)').matches;
 
-			// Lenis ↔ ScrollTrigger: un solo ciclo guida entrambi.
-			lenis.on('scroll', ScrollTrigger.update);
-			gsap.ticker.add((time: number) => lenis.raf(time * 1000));
-			gsap.ticker.lagSmoothing(0);
+			if (enableLenis) {
+				const lenis = new Lenis({
+					duration: 1.1,
+					// easeOutExpo — quick to start, long gentle settle, like a heavy page.
+					easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+					smoothWheel: true,
+				});
+
+				// Lenis + ScrollTrigger: un solo ciclo guida entrambi.
+				lenis.on('scroll', ScrollTrigger.update);
+				gsap.ticker.add((time: number) => lenis.raf(time * 1000));
+				gsap.ticker.lagSmoothing(0);
+
+				// Clearance per la nav fissa — legge la variabile CSS condivisa così
+				// resta in sync con `scroll-padding-top`.
+				const navOffset =
+					parseInt(
+						getComputedStyle(document.documentElement).getPropertyValue('--nav-offset'),
+						10,
+					) || 96;
+
+				document.addEventListener('click', (e) => {
+					const link = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as
+						| HTMLAnchorElement
+						| null;
+					if (!link) return;
+
+					const url = new URL(link.href, location.href);
+					// Only intercept same-page hash links (e.g. "/#chi-sono").
+					if (url.pathname !== location.pathname || !url.hash) return;
+
+					const target = document.querySelector(url.hash);
+					if (!target) return;
+
+					e.preventDefault();
+					lenis.scrollTo(target as HTMLElement, { offset: -navOffset });
+					history.pushState(null, '', url.hash);
+				});
+
+				// Expose for other scripts / debugging.
+				(window as unknown as { lenis?: Lenis }).lenis = lenis;
+			}
 
 			setupReveals();
 
 			// I font self-hosted cambiano le metriche: ricalcola i trigger a caricamento.
 			document.fonts?.ready.then(() => ScrollTrigger.refresh());
 			window.addEventListener('load', () => ScrollTrigger.refresh());
-
-			// Clearance for the floating nav — mirrors `scroll-padding-top` in CSS.
-			const NAV_OFFSET = 96;
-
-			document.addEventListener('click', (e) => {
-				const link = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as
-					| HTMLAnchorElement
-					| null;
-				if (!link) return;
-
-				const url = new URL(link.href, location.href);
-				// Only intercept same-page hash links (e.g. "/#chi-sono").
-				if (url.pathname !== location.pathname || !url.hash) return;
-
-				const target = document.querySelector(url.hash);
-				if (!target) return;
-
-				e.preventDefault();
-				lenis.scrollTo(target as HTMLElement, { offset: -NAV_OFFSET });
-				history.pushState(null, '', url.hash);
-			});
-
-			// Expose for other scripts / debugging.
-			(window as unknown as { lenis?: Lenis }).lenis = lenis;
 		} catch (err) {
 			// Se il motore d'animazione fallisce, non lasciare il contenuto nascosto.
 			html.classList.remove('js-motion');

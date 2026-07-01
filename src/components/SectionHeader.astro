@@ -6,6 +6,8 @@
  * switches with the language toggle. `rule` draws the underline used by the
  * inner sections (the hero uses a borderless variant).
  */
+import Bilingual from './Bilingual.astro';
+
 interface Props {
 	/** Fixed latin term shown before the section name (optional). */
 	latin?: string;
@@ -23,8 +25,7 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 <div class:list={['head', { ruled: rule }]} data-reveal>
 	<span class="eyebrow">
 		{latin && <span class="latin">{latin} — </span>}
-		<span class="bil" lang="it">{it}</span>
-		<span class="bil" lang="en">{en}</span>
+		<Bilingual it={it} en={en} />
 	</span>
 	<span class="folio">{folio}</span>
 </div>
@@ -43,15 +44,15 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 
 	.eyebrow {
 		font-style: italic;
-		letter-spacing: 0.28em;
+		letter-spacing: 0.24em;
 		text-transform: uppercase;
-		font-size: 14px;
+		font-size: 15px;
 		color: var(--brown);
 	}
 
 	.folio {
 		font-family: var(--font-hand), cursive;
-		font-size: 30px;
+		font-size: 34px;
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 		white-space: nowrap;
@@ -64,11 +65,11 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 		.eyebrow {
 			/* La spaziatura ampia manda l'occhiello a capo in modo goffo: qui
 			   la stringo così il titolo di sezione resta su poche righe pulite. */
-			letter-spacing: 0.16em;
-			font-size: 12.5px;
+			letter-spacing: 0.13em;
+			font-size: 13.5px;
 		}
 		.folio {
-			font-size: 26px;
+			font-size: 30px;
 		}
 	}
 </style>

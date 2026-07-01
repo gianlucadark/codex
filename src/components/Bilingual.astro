@@ -1,0 +1,27 @@
+---
+/**
+ * The codex's two voices, in one place. Renders the Italian and English text as
+ * a `.bil` pair with native `lang` attributes; the language switch (see
+ * global.css) shows only the active voice and hides the other.
+ *
+ * Use for plain-text pairs instead of hand-writing the two `<span class="bil">`.
+ * `as` picks the wrapping tag (span by default), `class` adds extra classes to
+ * BOTH voices so existing selectors keep working.
+ *
+ *   <Bilingual it="Progetti" en="Work" />
+ *   <Bilingual as="p" class="copy" it={project.summary} en={project.summaryEn} />
+ */
+interface Props {
+	it: string;
+	en: string;
+	as?: keyof astroHTML.JSX.IntrinsicElements;
+	class?: string;
+}
+
+const { it, en, as = 'span', class: className } = Astro.props as Props;
+// `Tag` is a dynamic element name; cast so it's treated as a valid JSX tag.
+const Tag = as as any;
+---
+
+<Tag class:list={['bil', className]} lang="it">{it}</Tag>
+<Tag class:list={['bil', className]} lang="en">{en}</Tag>

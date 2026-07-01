@@ -1,7 +1,8 @@
 ---
-import SectionHeader from './SectionHeader.astro';
+import Section from './Section.astro';
 import ProjectRow from './ProjectRow.astro';
 import MarginNote from './MarginNote.astro';
+import Bilingual from './Bilingual.astro';
 import { projects } from '../data/projects';
 
 interface Props {
@@ -11,40 +12,30 @@ interface Props {
 const { showAnnotations = true } = Astro.props;
 ---
 
-<section id="progetti" class="foglio" aria-label="Progetti">
-	<SectionHeader latin="Tabulae Inventionum" it="Progetti" en="Work" folio="f. IV r" />
-	<p class="subtitle" data-reveal>
-		<span class="bil" lang="it">Prodotti, strumenti ed esperienze interattive</span>
-		<span class="bil" lang="en">Products, tools and interactive experiences</span>
-	</p>
-
+<Section
+	id="progetti"
+	label="Progetti"
+	latin="Tabulae Inventionum"
+	it="Progetti"
+	en="Work"
+	folio="f. IV r"
+	subtitleIt="Prodotti, strumenti ed esperienze interattive"
+	subtitleEn="Products, tools and interactive experiences"
+>
 	<div class="list" data-reveal="stagger">
 		{projects.map((project) => <ProjectRow project={project} />)}
 	</div>
 
 	{
 		showAnnotations && (
-			<MarginNote style="top:60px;right:18px;transform:rotate(5deg);">
-					<span class="bil" lang="it">+ molti altri…</span>
-					<span class="bil" lang="en">+ many more…</span>
-				</MarginNote>
+			<MarginNote slot="note" style="top:60px;right:18px;transform:rotate(5deg);">
+				<Bilingual it="+ molti altri…" en="+ many more…" />
+			</MarginNote>
 		)
 	}
-</section>
+</Section>
 
 <style>
-	.subtitle {
-		margin: 14px 0 34px;
-		font-family: var(--font-hand), cursive;
-		font-size: 31px;
-		letter-spacing: 0.015em;
-		color: var(--ink-strong);
-		/* La grafia ha tratti sottili: niente subpixel-smoothing aggressivo e un
-		   text-shadow dello stesso inchiostro per un finto-grassetto leggibile. */
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
-	}
-
 	.list {
 		display: flex;
 		flex-direction: column;

@@ -35,6 +35,16 @@ export interface Project {
 	summaryEn: string;
 	/** Bilingual feature bullets — the "note di bottega". */
 	highlights: { it: string; en: string }[];
+	/**
+	 * Optional case-study narrative for the detail folio. Each block is bilingual
+	 * and rendered only when present, so you can flesh out a project's story
+	 * (problem → approach → result) without touching the template.
+	 */
+	caseStudy?: {
+		problem?: { it: string; en: string };
+		approach?: { it: string; en: string };
+		result?: { it: string; en: string };
+	};
 	/** Optional outbound links (live demo, repo, case study), label per language. */
 	links?: { it: string; en: string; href: string }[];
 	/**

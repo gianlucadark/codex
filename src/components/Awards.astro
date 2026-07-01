@@ -1,11 +1,8 @@
 ---
 import { Image } from 'astro:assets';
-import SectionHeader from './SectionHeader.astro';
+import Section from './Section.astro';
 import MarginNote from './MarginNote.astro';
-
-import siteOfTheDay from '../assets/awards/site-of-the-day.webp';
-import wdAwardsNominee from '../assets/awards/wd-awards-nominee.webp';
-import favouriteWebDesign from '../assets/awards/favourite-web-design.webp';
+import { awards } from '../data/awards';
 
 interface Props {
 	showAnnotations?: boolean;
@@ -13,50 +10,25 @@ interface Props {
 
 const { showAnnotations = true } = Astro.props;
 
-/**
- * Riconoscimenti — tre "lauri" del codice, con il certificato originale
- * incorniciato come una tavola del codice.
- */
-const awards = [
-	{
-		seal: 'SOTD',
-		title: 'Site of the Day',
-		category: 'Design Nominees',
-		date: 'MMXXVI',
-		image: siteOfTheDay,
-	},
-	{
-		seal: 'NOM',
-		title: 'Awards Nominee',
-		category: 'WD Awards',
-		date: 'MMXXVI',
-		image: wdAwardsNominee,
-	},
-	{
-		seal: 'FAV',
-		title: 'Favourite Web Design',
-		category: 'WD Awards',
-		date: 'MMXXVI',
-		image: favouriteWebDesign,
-	},
-];
-
 const transparentPixel =
 	'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 ---
 
-<section id="riconoscimenti" class="foglio" aria-label="Riconoscimenti">
-	<SectionHeader latin="Honores & Lauri" it="Riconoscimenti" en="Awards" folio="f. V r" />
-	<p class="subtitle" data-reveal>
-		<span class="bil" lang="it">I lauri del codice</span>
-		<span class="bil" lang="en">Selected awards</span>
-	</p>
-
+<Section
+	id="riconoscimenti"
+	label="Riconoscimenti"
+	latin="Honores & Lauri"
+	it="Riconoscimenti"
+	en="Awards"
+	folio="f. V r"
+	subtitleIt="I lauri del codice"
+	subtitleEn="Selected awards"
+>
 	<div class="grid" data-reveal="stagger">
 		{
 			awards.map((award) => (
 				<figure class="award">
-					<div class="plate">
+					<div class="plate codex-plate">
 						<button
 							type="button"
 							class="window"
@@ -86,12 +58,6 @@ const transparentPixel =
 		}
 	</div>
 
-	{
-		showAnnotations && (
-			<MarginNote style="top:64px;right:18px;transform:rotate(5deg);">honoris causa</MarginNote>
-		)
-	}
-
 	<dialog class="lightbox" aria-label="Certificato ingrandito">
 		<button type="button" class="lb-close" aria-label="Chiudi">×</button>
 		<figure>
@@ -99,7 +65,15 @@ const transparentPixel =
 			<figcaption></figcaption>
 		</figure>
 	</dialog>
-</section>
+
+	{
+		showAnnotations && (
+			<MarginNote slot="note" style="top:64px;right:18px;transform:rotate(5deg);">
+				honoris causa
+			</MarginNote>
+		)
+	}
+</Section>
 
 <script>
 	const dialog = document.querySelector<HTMLDialogElement>('.lightbox');
@@ -131,18 +105,6 @@ const transparentPixel =
 </script>
 
 <style>
-	.subtitle {
-		margin: 14px 0 34px;
-		font-family: var(--font-hand), cursive;
-		font-size: 31px;
-		letter-spacing: 0.015em;
-		color: var(--ink-strong);
-		/* La grafia ha tratti sottili: niente subpixel-smoothing aggressivo e un
-		   text-shadow dello stesso inchiostro per un finto-grassetto leggibile. */
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
-	}
-
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -156,8 +118,6 @@ const transparentPixel =
 	.plate {
 		position: relative;
 		padding: clamp(8px, 1vw, 14px);
-		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
-		border: 1.4px solid var(--brown-3);
 		box-shadow: 0 12px 28px -20px rgba(58, 42, 24, 0.75);
 		transition: transform 0.25s ease, box-shadow 0.25s ease;
 	}
@@ -267,7 +227,7 @@ const transparentPixel =
 
 	.title {
 		font-family: var(--font-hand), cursive;
-		font-size: 27px;
+		font-size: clamp(32px, 3.4vw, 40px);
 		letter-spacing: 0.02em;
 		line-height: 1.05;
 		color: var(--accent-ink);
@@ -280,7 +240,7 @@ const transparentPixel =
 		font-style: italic;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
-		font-size: 13px;
+		font-size: 14px;
 		color: var(--brown);
 	}
 

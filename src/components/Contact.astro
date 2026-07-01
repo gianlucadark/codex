@@ -1,6 +1,7 @@
 ---
 import SectionHeader from './SectionHeader.astro';
 import MarginNote from './MarginNote.astro';
+import Bilingual from './Bilingual.astro';
 import { site } from '../data/site';
 
 interface Props {
@@ -9,10 +10,21 @@ interface Props {
 
 const { showAnnotations = true } = Astro.props;
 
-const { email, linkedin, place } = site.contact;
-const links = [
-	{ it: 'email', en: 'email', text: email, href: `mailto:${email}` },
+interface ContactLink {
+	it: string;
+	en: string;
+	text: string;
+	href?: string;
+	/** Show a "copy" button next to the value (e.g. for the email). */
+	copy?: boolean;
+}
+
+const { email, linkedin, place, cv } = site.contact;
+const links: ContactLink[] = [
+	{ it: 'email', en: 'email', text: email, href: `mailto:${email}`, copy: true },
 	{ it: 'linkedin', en: 'linkedin', text: linkedin.replace(/^https?:\/\//, ''), href: linkedin },
+	// Il CV compare solo se `site.contact.cv` punta a un file reale in /public.
+	...(cv ? [{ it: 'cv', en: 'cv', text: 'cv.pdf', href: cv } satisfies ContactLink] : []),
 	{ it: 'luogo', en: 'place', text: place },
 	// Solo i contatti compilati: i link vuoti restano fuori invece di puntare
 	// a un href vuoto.
@@ -25,21 +37,29 @@ const links = [
 	<div class="grid">
 		<div>
 			<h2 data-reveal>
-				<span class="bil" lang="it">Costruiamo qualcosa di solido, chiaro e memorabile.</span>
-				<span class="bil" lang="en">Let's build something solid, clear and memorable.</span>
+				<Bilingual it="Costruiamo qualcosa di solido, chiaro e memorabile." en="Let's build something solid, clear and memorable." />
 			</h2>
 			<ul data-reveal="stagger">
 				{
 					links.map((link) => (
 						<li>
 							<span class="key">
-								<span class="bil" lang="it">{link.it}</span>
-								<span class="bil" lang="en">{link.en}</span>
+								<Bilingual it={link.it} en={link.en} />
 							</span>
 							{link.href ? (
 								<a href={link.href}>{link.text}</a>
 							) : (
 								<span class="val">{link.text}</span>
+							)}
+							{link.copy && (
+								<button
+									type="button"
+									class="copy-btn"
+									data-copy={link.text}
+									aria-label={`Copia ${link.text}`}
+								>
+									<Bilingual it="copia" en="copy" />
+								</button>
 							)}
 						</li>
 					))
@@ -58,19 +78,32 @@ const links = [
 	</div>
 
 	<div class="explicit" data-reveal>
-		<span class="bil" lang="it">Explicit codex · Qui finisce il codice · Sperlonga MMXXVI</span>
-		<span class="bil" lang="en">Explicit codex · Here ends the codex · Sperlonga MMXXVI</span>
+		<Bilingual it="Explicit codex · Qui finisce il codice · Sperlonga MMXXVI" en="Explicit codex · Here ends the codex · Sperlonga MMXXVI" />
 	</div>
 
 	{
 		showAnnotations && (
 			<MarginNote style="bottom:120px;left:20px;transform:rotate(-6deg);">
-					<span class="bil" lang="it">parliamone</span>
-					<span class="bil" lang="en">let's talk</span>
+					<Bilingual it="parliamone" en="let's talk" />
 				</MarginNote>
 		)
 	}
 </section>
+
+<script>
+	// Bottone "copia": mette il valore (l'email) negli appunti con feedback breve.
+	document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+				btn.classList.add('copied');
+				window.setTimeout(() => btn.classList.remove('copied'), 1600);
+			} catch {
+				/* clipboard non disponibile: il link mailto resta il fallback */
+			}
+		});
+	});
+</script>
 
 <style>
 	.contact {
@@ -142,6 +175,39 @@ const links = [
 
 	a:hover {
 		color: var(--accent-ink);
+	}
+
+	/* Bottone "copia" accanto all'email: piccolo, discreto, tono rubrica. */
+	.copy-btn {
+		flex: none;
+		padding: 3px 10px;
+		font-family: var(--font-garamond), Georgia, serif;
+		font-style: italic;
+		font-size: 13px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--brown);
+		background: rgba(156, 67, 38, 0.06);
+		border: 1px solid rgba(156, 67, 38, 0.3);
+		border-radius: 5px;
+		cursor: pointer;
+		transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+	}
+
+	.copy-btn:hover,
+	.copy-btn:focus-visible {
+		color: var(--accent-ink);
+		background: rgba(156, 67, 38, 0.12);
+		border-color: var(--accent);
+	}
+
+	.copy-btn.copied {
+		color: var(--accent-ink);
+		border-color: var(--accent);
+	}
+
+	.copy-btn.copied::after {
+		content: ' ✓';
 	}
 
 	.sign {

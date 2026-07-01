@@ -3,7 +3,9 @@ import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import CodexBackground from '../../components/CodexBackground.astro';
 import FoglioDivider from '../../components/FoglioDivider.astro';
+import Bilingual from '../../components/Bilingual.astro';
 import { projects } from '../../data/projects';
+import { site } from '../../data/site';
 
 export function getStaticPaths() {
 	return projects.map((project, i) => {
@@ -20,15 +22,44 @@ const { project, prev, next } = Astro.props;
 const pageTitle = `${project.title.replace(' Browser Extension', ' Extension')} — Codex`;
 const images = project.images ?? [];
 const highlights = project.highlights ?? [];
+
+// Optional "problem → approach → result" narrative, only the filled blocks.
+const caseBlocks = project.caseStudy
+	? [
+			{ it: 'Problema', en: 'Problem', body: project.caseStudy.problem },
+			{ it: 'Approccio', en: 'Approach', body: project.caseStudy.approach },
+			{ it: 'Risultato', en: 'Result', body: project.caseStudy.result },
+		].filter((b) => b.body)
+	: [];
 const technologies = project.stack
 	.split('·')
 	.map((t) => t.trim())
 	.filter(Boolean);
+
+// Per-project social card: reuse the first plate instead of the generic og.png.
+const ogImage = images[0]?.src ?? site.ogImage;
+
+// Structured data for the folio: a CreativeWork authored by the site owner.
+const year = project.year.match(/\d{4}/)?.[0];
+const projectLd = {
+	'@context': 'https://schema.org',
+	'@type': 'CreativeWork',
+	name: project.title,
+	description: project.descEn,
+	inLanguage: ['it', 'en'],
+	...(year ? { dateCreated: year } : {}),
+	keywords: technologies.join(', '),
+	author: { '@type': 'Person', name: site.name },
+	url: new URL(`/progetti/${project.slug}`, site.url).href,
+};
 ---
 
 <Layout
 	title={pageTitle}
 	description={`${project.desc} — ${project.descEn}`}
+	image={ogImage}
+	type="article"
+	jsonLd={projectLd}
 >
 	<main class="codex">
 		<CodexBackground showGrid={true} showStains={true} />
@@ -37,8 +68,7 @@ const technologies = project.stack
 			<article class="foglio detail" aria-label={`Tavola ${project.numeral}: ${project.title}`}>
 				<a class="back" href="/#progetti">
 					<span aria-hidden="true">←</span>
-						<span class="bil" lang="it">Torna all'indice</span>
-						<span class="bil" lang="en">Back to index</span>
+						<Bilingual it="Torna all'indice" en="Back to index" />
 				</a>
 
 				<div class="layout">
@@ -49,26 +79,40 @@ const technologies = project.stack
 						<div class="prose-body">
 							<div class="desc-col">
 								<div class="bil-pair desc">
-									<p class="bil" lang="it">{project.summary}</p>
-									<p class="bil" lang="en">{project.summaryEn}</p>
+									<Bilingual as="p" it={project.summary} en={project.summaryEn} />
 								</div>
 
 								{
 									highlights.length > 0 && (
 										<section class="highlights" aria-label="Punti principali">
 											<h2>
-												<span class="bil" lang="it">Cosa fa</span>
-												<span class="bil" lang="en">What it does</span>
+												<Bilingual it="Cosa fa" en="What it does" />
 											</h2>
 											<ul>
 												{highlights.map((item) => (
 													<li>
 														<span class="mark" aria-hidden="true" />
-														<span class="bil" lang="it">{item.it}</span>
-														<span class="bil" lang="en">{item.en}</span>
+														<Bilingual it={item.it} en={item.en} />
 													</li>
 												))}
 											</ul>
+										</section>
+									)
+								}
+
+								{
+									caseBlocks.length > 0 && (
+										<section class="case" aria-label="Caso di studio">
+											{caseBlocks.map((block) => (
+												<div class="case-block">
+													<h2>
+														<Bilingual it={block.it} en={block.en} />
+													</h2>
+													<p>
+														<Bilingual it={block.body!.it} en={block.body!.en} />
+													</p>
+												</div>
+											))}
 										</section>
 									)
 								}
@@ -78,8 +122,7 @@ const technologies = project.stack
 										<div class="links">
 											{project.links.map((link) => (
 												<a class="link" href={link.href} target="_blank" rel="noopener noreferrer">
-													<span class="bil" lang="it">{link.it}</span>
-													<span class="bil" lang="en">{link.en}</span>
+													<Bilingual it={link.it} en={link.en} />
 													<span aria-hidden="true">↗</span>
 												</a>
 											))}
@@ -90,8 +133,7 @@ const technologies = project.stack
 
 							<aside class="scheda" aria-label="Scheda tecnica">
 								<h2 class="scheda-title">
-									<span class="bil" lang="it">Tecnologie</span>
-									<span class="bil" lang="en">Technologies</span>
+									<Bilingual it="Tecnologie" en="Technologies" />
 								</h2>
 								<ul class="tech-list">
 									{technologies.map((t) => <li>{t}</li>)}
@@ -100,22 +142,19 @@ const technologies = project.stack
 								<dl class="meta">
 									<div>
 										<dt>
-											<span class="bil" lang="it">Anno</span>
-											<span class="bil" lang="en">Year</span>
+											<Bilingual it="Anno" en="Year" />
 										</dt>
 										<dd>{project.year}</dd>
 									</div>
 									<div>
 										<dt>
-											<span class="bil" lang="it">Ruolo</span>
-											<span class="bil" lang="en">Role</span>
+											<Bilingual it="Ruolo" en="Role" />
 										</dt>
 										<dd>{project.role}</dd>
 									</div>
 									<div>
 										<dt>
-											<span class="bil" lang="it">Stato</span>
-											<span class="bil" lang="en">Status</span>
+											<Bilingual it="Stato" en="Status" />
 										</dt>
 										<dd>{project.status}</dd>
 									</div>
@@ -128,7 +167,7 @@ const technologies = project.stack
 						{
 							images.length > 0 ? (
 								images.map((shot, i) => (
-									<figure class="plate">
+									<figure class="plate codex-plate">
 										<div class="window">
 											<Image
 												src={shot}
@@ -148,7 +187,7 @@ const technologies = project.stack
 									</figure>
 								))
 							) : (
-								<figure class="plate">
+								<figure class="plate codex-plate">
 									<div class="window empty">
 										<span class="slot-hint bil" lang="it">[ foto ]</span>
 										<span class="slot-hint bil" lang="en">[ photo ]</span>
@@ -169,15 +208,13 @@ const technologies = project.stack
 					<a class="pager-link prev" href={`/progetti/${prev.slug}`}>
 						<span class="dir">
 							<span aria-hidden="true">←</span>
-							<span class="bil" lang="it">prec.</span>
-							<span class="bil" lang="en">prev</span>
+							<Bilingual it="prec." en="prev" />
 						</span>
 						<span class="ptitle">{prev.title}</span>
 					</a>
 					<a class="pager-link next" href={`/progetti/${next.slug}`}>
 						<span class="dir">
-							<span class="bil" lang="it">succ.</span>
-							<span class="bil" lang="en">next</span>
+							<Bilingual it="succ." en="next" />
 							<span aria-hidden="true">→</span>
 						</span>
 						<span class="ptitle">{next.title}</span>
@@ -318,6 +355,30 @@ const technologies = project.stack
 		background: var(--accent);
 	}
 
+	/* Caso di studio: problema → approccio → risultato (mostrato solo se compilato). */
+	.case {
+		margin-top: 28px;
+		display: grid;
+		gap: 20px;
+	}
+
+	.case-block h2 {
+		margin: 0 0 6px;
+		font-style: italic;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-size: 13px;
+		font-weight: 400;
+		color: var(--brown);
+	}
+
+	.case-block p {
+		margin: 0;
+		font-size: 17px;
+		line-height: 1.55;
+		color: var(--ink);
+	}
+
 	/* Scheda tecnica ------------------------------------------------------ */
 	.scheda {
 		border-top: 1.4px solid rgba(156, 67, 38, 0.5);
@@ -410,8 +471,6 @@ const technologies = project.stack
 		position: relative;
 		margin: 0;
 		padding: 14px;
-		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
-		border: 1.4px solid var(--brown-3);
 		box-shadow: 0 14px 30px -20px rgba(58, 42, 24, 0.75);
 	}
 

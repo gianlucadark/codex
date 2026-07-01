@@ -1,0 +1,67 @@
+---
+/**
+ * A "foglio" of the codex: the shared section shell used by the inner sections
+ * (Projects, Awards, …). It wires up the running head (SectionHeader), the
+ * optional handwritten subtitle and the standard `.foglio` padding, so each
+ * section only provides its own body.
+ *
+ * The body goes in the default slot; an optional marginal gloss goes in the
+ * `note` slot (kept as a slot so callers can drop a bilingual or a plain-latin
+ * MarginNote, and gate it on their own `showAnnotations` flag).
+ *
+ *   <Section id="progetti" label="Progetti" latin="Tabulae Inventionum"
+ *            it="Progetti" en="Work" folio="f. IV r"
+ *            subtitleIt="…" subtitleEn="…">
+ *     <div class="list">…</div>
+ *     <MarginNote slot="note" …>…</MarginNote>
+ *   </Section>
+ */
+import SectionHeader from './SectionHeader.astro';
+import Bilingual from './Bilingual.astro';
+
+interface Props {
+	/** Anchor id (used by the index links). */
+	id: string;
+	/** Accessible section label. */
+	label: string;
+	latin?: string;
+	it: string;
+	en: string;
+	folio: string;
+	/** Optional handwritten subtitle, shown under the running head. */
+	subtitleIt?: string;
+	subtitleEn?: string;
+}
+
+const { id, label, latin, it, en, folio, subtitleIt, subtitleEn } = Astro.props;
+const hasSubtitle = Boolean(subtitleIt && subtitleEn);
+---
+
+<section id={id} class="foglio" aria-label={label}>
+	<SectionHeader latin={latin} it={it} en={en} folio={folio} />
+	{
+		hasSubtitle && (
+			<p class="subtitle" data-reveal>
+				<Bilingual it={subtitleIt!} en={subtitleEn!} />
+			</p>
+		)
+	}
+
+	<slot />
+	<slot name="note" />
+</section>
+
+<style>
+	.subtitle {
+		margin: 14px 0 34px;
+		font-family: var(--font-hand), cursive;
+		font-size: clamp(36px, 4.6vw, 48px);
+		line-height: 1.05;
+		letter-spacing: 0.015em;
+		color: var(--ink-strong);
+		/* La grafia ha tratti sottili: niente subpixel-smoothing aggressivo e un
+		   text-shadow dello stesso inchiostro per un finto-grassetto leggibile. */
+		-webkit-font-smoothing: auto;
+		text-shadow: var(--hand-bold);
+	}
+</style>

@@ -1,32 +1,7 @@
 ---
 import SectionHeader from './SectionHeader.astro';
-
-const groups = [
-	{
-		title: 'Frontend',
-		descIt: 'Architetture Angular scalabili, UI curate e codice mantenibile.',
-		descEn: 'Scalable Angular architectures, polished UI and maintainable code.',
-		items: ['Angular · TypeScript', 'React · Astro', 'RxJS · NgRx', 'Accessibilità · Performance'],
-	},
-	{
-		title: 'Backend',
-		descIt: 'Integrazione con servizi Java, API REST e basi dati enterprise.',
-		descEn: 'Integration with Java services, REST APIs and enterprise databases.',
-		items: ['Java · Spring Boot', 'REST Controllers', 'JSP', 'OracleDB'],
-	},
-	{
-		title: 'UI/UX · 3D',
-		descIt: 'Approccio ibrido tra sviluppo e design, dal prototipo al dettaglio.',
-		descEn: 'A hybrid development and design approach, from prototype to detail.',
-		items: ['Figma', 'Google UX Design', 'Blender', 'User Experience'],
-	},
-	{
-		title: 'Tooling',
-		descIt: 'Pipeline, qualità del codice, deploy e sperimentazione web avanzata.',
-		descEn: 'Pipelines, code quality, deploys and advanced web experimentation.',
-		items: ['Git', 'Jenkins', 'Rust · WebAssembly'],
-	},
-];
+import Bilingual from './Bilingual.astro';
+import { skillGroups as groups } from '../data/skills';
 ---
 
 <section id="competenze" class="foglio" aria-label="Competenze">
@@ -38,8 +13,7 @@ const groups = [
 				<div class="group">
 					<h3>{group.title}</h3>
 					<p class="group-desc">
-						<span class="bil" lang="it">{group.descIt}</span>
-						<span class="bil" lang="en">{group.descEn}</span>
+						<Bilingual it={group.descIt} en={group.descEn} />
 					</p>
 					<div class="rule" />
 					<ul>
@@ -68,7 +42,7 @@ const groups = [
 		margin: 0 0 4px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: 30px;
+		font-size: 34px;
 		color: var(--accent-ink);
 		line-height: 1;
 		-webkit-font-smoothing: auto;
@@ -78,7 +52,7 @@ const groups = [
 	.group-desc {
 		margin: 8px 0 0;
 		min-height: 3.1em;
-		font-size: 16px;
+		font-size: 17px;
 		line-height: 1.35;
 		color: var(--ink-soft);
 	}

@@ -33,6 +33,9 @@
 	/* Shared measurements */
 	--page-max: 1180px;
 	--folio-pad-x: 64px;
+	/* Clearance under the floating "Insula" nav — shared by CSS scroll-padding
+	   and the JS anchor scroll (see SmoothScroll.astro). */
+	--nav-offset: 96px;
 
 	/* Font stacks are injected by the Astro Fonts API:
 	   --font-garamond and --font-hand. */
@@ -55,7 +58,7 @@ html {
 	   active it adds `.lenis-smooth` and forces this back to `auto`. */
 	scroll-behavior: smooth;
 	/* Keep anchored sections clear of the floating "Insula" nav. */
-	scroll-padding-top: 96px;
+	scroll-padding-top: var(--nav-offset);
 }
 
 /* Lenis smooth scroll — recommended base styles. */
@@ -122,6 +125,18 @@ html[data-lang='en'] .bil[lang='it'] {
 	display: flex;
 	flex-direction: column;
 	gap: 5px;
+}
+
+/*
+ * Superficie "tavola" condivisa — la pergamena incorniciata riusata da ritratto,
+ * lauri, campione del font e tavole di progetto. Solo il fondo e il filetto
+ * rubrica stanno qui; padding, ombra ed eventuale doppio filetto interno
+ * restano nel contesto di ogni componente (che aggiunge anche la classe locale
+ * `plate` per i suoi selettori interni, es. hover o `.window`).
+ */
+.codex-plate {
+	background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
+	border: 1.4px solid var(--brown-3);
 }
 
 /* A "foglio" — one leaf/page of the codex. Shared padding so sections align. */

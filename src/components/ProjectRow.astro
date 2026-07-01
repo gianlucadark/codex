@@ -1,5 +1,6 @@
 ---
 import type { Project } from '../data/projects';
+import Bilingual from './Bilingual.astro';
 
 interface Props {
 	project: Project;
@@ -20,20 +21,17 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 			<span class="stack">{project.stack}</span>
 		</div>
 		<p>
-			<span class="bil bil-inline" lang="it">{project.desc}</span>
-			<span class="bil bil-inline" lang="en">{project.descEn}</span>
+			<Bilingual class="bil-inline" it={project.desc} en={project.descEn} />
 		</p>
 		<span class="cue">
-				<span class="bil" lang="it">apri la tavola</span>
-				<span class="bil" lang="en">open the plate</span>
+				<Bilingual it="apri la tavola" en="open the plate" />
 				<span class="arrow" aria-hidden="true">→</span>
 			</span>
 	</div>
 	<div class="meta">
 		<span class="year">{project.year}</span>
 		<span class="status">
-			<span class="bil" lang="it">{statusIt}</span>
-			<span class="bil" lang="en">{statusEn}</span>
+			<Bilingual it={statusIt} en={statusEn} />
 		</span>
 	</div>
 </a>
@@ -68,7 +66,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 
 	.numeral {
 		font-family: var(--font-hand), cursive;
-		font-size: 54px;
+		font-size: 60px;
 		color: var(--accent-ink);
 		line-height: 0.8;
 		text-align: center;
@@ -93,7 +91,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		margin: 0;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: clamp(30px, 3.4vw, 42px);
+		font-size: clamp(34px, 3.9vw, 48px);
 		line-height: 1;
 		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
@@ -103,13 +101,13 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 	.stack {
 		font-style: italic;
 		letter-spacing: 0.06em;
-		font-size: 14px;
+		font-size: 15px;
 		color: var(--accent-ink);
 	}
 
 	p {
 		margin: 7px 0 0;
-		font-size: 17px;
+		font-size: 18px;
 		color: var(--ink-soft);
 		max-width: 64ch;
 	}
@@ -120,7 +118,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		font-style: italic;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		font-size: 12px;
+		font-size: 13px;
 		color: var(--accent-ink);
 		opacity: 0;
 		transform: translateY(2px);
@@ -156,8 +154,10 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 	.year {
 		font-style: italic;
 		letter-spacing: 0.04em;
-		font-size: 14px;
-		color: var(--brown-3);
+		font-size: 15px;
+		/* --brown (≈6.5:1 su pergamena) invece di --brown-3 (≈3.8:1): a 15px il
+		   testo deve superare 4.5:1 per l'AA. --brown-3 resta per bordi/filetti. */
+		color: var(--brown);
 		white-space: nowrap;
 	}
 
@@ -165,7 +165,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		font-style: italic;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: 12px;
+		font-size: 13px;
 		color: var(--accent-ink);
 		white-space: nowrap;
 	}
@@ -177,7 +177,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 			padding: 22px 4px;
 		}
 		.numeral {
-			font-size: 42px;
+			font-size: 48px;
 		}
 		/* Drop the meta under the body instead of a third column. */
 		.meta {

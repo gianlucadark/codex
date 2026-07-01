@@ -80,6 +80,20 @@ export const projects: Project[] = [
 			{ it: 'Report dettagliati con punteggi per ogni area di qualità.', en: 'Detailed reports with scores for each quality area.' },
 			{ it: 'Suggerimenti mirati per l’esperienza utente e la visibilità sugli AI search engine.', en: 'Targeted suggestions for user experience and AI search engine visibility.' },
 		],
+		caseStudy: {
+			problem: {
+				it: 'Avevo bisogno di monitorare la qualità dei miei progetti — UX, accessibilità, SEO, AEO — senza saltare tra strumenti diversi e report scollegati.',
+				en: 'I needed to monitor the quality of my own projects — UX, accessibility, SEO, AEO — without hopping between separate tools and disconnected reports.',
+			},
+			approach: {
+				it: 'Ho raccolto tutti i controlli in un’unica web app: scansiona una pagina, evidenzia i problemi e li traduce in punteggi e priorità d’intervento leggibili.',
+				en: 'I gathered every check into a single web app: it scans a page, surfaces issues and translates them into readable scores and improvement priorities.',
+			},
+			result: {
+				it: 'È diventato il punto di partenza di una piccola famiglia di strumenti di qualità: la stessa analisi l’ho poi portata nel browser (estensione) e nella pipeline (Lightship).',
+				en: 'It became the starting point of a small family of quality tools: the same analysis later moved into the browser (extension) and into the pipeline (Lightship).',
+			},
+		},
 		links: [{ it: 'demo · live', en: 'demo · live', href: 'https://uxability.vercel.app' }],
 		images: [uxabilityCover],
 	},
@@ -105,6 +119,20 @@ export const projects: Project[] = [
 			{ it: 'Errori mostrati in tempo reale, direttamente sul sito.', en: 'Errors shown in real time, right on the site.' },
 			{ it: 'Nessuno strumento esterno: tutto nel browser.', en: 'No external tools needed — everything in the browser.' },
 		],
+		caseStudy: {
+			problem: {
+				it: 'Gli stessi controlli di UXability mi servivano mentre navigavo, non solo aprendo un’app a parte: volevo vedere i problemi sul sito, nel momento in cui lo guardavo.',
+				en: 'I wanted the same UXability checks while browsing, not only by opening a separate app: I needed to see issues on the site, right as I was looking at it.',
+			},
+			approach: {
+				it: 'Ho portato l’analisi dentro il browser come estensione: con un clic controlla accessibilità, usabilità, SEO e AEO della pagina aperta e mostra gli errori in tempo reale.',
+				en: 'I brought the analysis into the browser as an extension: one click checks accessibility, usability, SEO and AEO of the open page and shows the errors in real time.',
+			},
+			result: {
+				it: 'La seconda tappa della famiglia UXability: l’analisi entra nel flusso di lavoro quotidiano, senza dover passare da strumenti esterni.',
+				en: 'The second step of the UXability family: the analysis enters the everyday workflow, with no need for external tools.',
+			},
+		},
 		images: [uxabilityExtensionCover],
 	},
 	{
@@ -130,6 +158,20 @@ export const projects: Project[] = [
 			{ it: 'Alternativa immersiva alla tradizionale pagina web.', en: 'An immersive alternative to the traditional web page.' },
 		],
 		links: [{ it: 'demo · live', en: 'demo · live', href: 'https://gianlucadarcangelo.vercel.app' }],
+		caseStudy: {
+			problem: {
+				it: 'Nessun problema da risolvere, ma una passione da inseguire: ricreare Windows XP e integrarlo con il 3D, trasformando una presentazione personale in qualcosa da esplorare.',
+				en: 'No problem to solve, but a passion to chase: recreate Windows XP and integrate it with 3D, turning a personal presentation into something to explore.',
+			},
+			approach: {
+				it: 'Ho costruito una scena 3D esplorabile ispirata a Windows XP, in cui si interagisce con gli elementi e si scoprono progetti e tecnologie seguendo un percorso narrativo.',
+				en: 'I built an explorable 3D scene inspired by Windows XP, where you interact with its elements and discover projects and technologies along a narrative path.',
+			},
+			result: {
+				it: 'Un’alternativa immersiva alla classica pagina web: la presentazione personale diventa un ambiente da attraversare, non una pagina da scorrere.',
+				en: 'An immersive alternative to the classic web page: the personal presentation becomes an environment to move through, not a page to scroll.',
+			},
+		},
 		images: [portfolio3dCover, portfolio3dCover2],
 	},
 	{
@@ -154,6 +196,20 @@ export const projects: Project[] = [
 			{ it: 'Report dettagliati prima della pubblicazione.', en: 'Detailed reports before publishing.' },
 			{ it: 'Blocca le build che non rispettano i requisiti di qualità configurati.', en: 'Blocks builds that fail the configured quality requirements.' },
 		],
+		caseStudy: {
+			problem: {
+				it: 'Sito ed estensione controllavano la qualità a lavoro finito: i problemi emergevano troppo tardi. Volevo gli stessi controlli prima del deploy, dentro il flusso di sviluppo.',
+				en: 'The site and extension checked quality once the work was done: issues surfaced too late. I wanted the same checks before deploy, inside the development flow.',
+			},
+			approach: {
+				it: 'Ho scritto una CLI che analizza codice e output prima della pubblicazione — accessibilità, semantica HTML, SEO, performance, asset — e può bloccare le build sotto soglia in CI/CD.',
+				en: 'I built a CLI that analyses code and output before publishing — accessibility, HTML semantics, SEO, performance, assets — and can block builds below the threshold in CI/CD.',
+			},
+			result: {
+				it: 'Chiude il cerchio della famiglia UXability: la stessa idea di qualità va dal sito al browser fino alla pipeline, spostando i controlli il più a monte possibile. (Questo stesso portfolio la usa.)',
+				en: 'It closes the loop of the UXability family: the same quality idea runs from the site to the browser to the pipeline, pushing checks as far upstream as possible. (This very portfolio uses it.)',
+			},
+		},
 		links: [{ it: 'npm · package', en: 'npm · package', href: 'https://www.npmjs.com/package/lightship-cli' }],
 		images: [lightshipCover],
 	},
@@ -179,6 +235,20 @@ export const projects: Project[] = [
 			{ it: 'Documenti scrivibili a mano, modificabili e rielaborabili.', en: 'Documents you can write by hand, edit and rework.' },
 			{ it: 'La pagina si rigenera al variare del documento.', en: 'The page regenerates as the document changes.' },
 		],
+		caseStudy: {
+			problem: {
+				it: 'La generative UI di solito parte da un prompt e da chi sa scriverlo. Volevo testarla in modo diverso: renderla accessibile a chiunque, partendo da qualcosa che tutti già usano.',
+				en: 'Generative UI usually starts from a prompt and from someone who knows how to write it. I wanted to test it differently: make it accessible to anyone, starting from something everyone already uses.',
+			},
+			approach: {
+				it: 'Creta prende un documento Word, ne legge la struttura e genera una landing page: titoli, sezioni e gerarchie diventano layout e componenti, mentre il testo resta intatto.',
+				en: 'Creta takes a Word document, reads its structure and generates a landing page: headings, sections and hierarchy become layout and components, while the text stays intact.',
+			},
+			result: {
+				it: 'Chiunque, scrivendo e modificando un normale documento, ottiene una landing coerente che si rigenera al variare del testo — senza toccare codice o design.',
+				en: 'Anyone, by writing and editing an ordinary document, gets a coherent landing page that regenerates as the text changes — without touching code or design.',
+			},
+		},
 		images: [cretaCover],
 	},
 ];

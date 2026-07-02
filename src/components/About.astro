@@ -194,6 +194,29 @@ const stats = [
 	@media (max-width: 860px) {
 		.grid {
 			grid-template-columns: 1fr;
+			justify-items: center;
+		}
+
+		/* Niente più filetto/indentazione a sinistra: su una colonna sola
+		   sballa il centro. Il testo si allinea al centro come nella hero. */
+		.prose {
+			border-left: none;
+			padding-left: 0;
+			text-align: center;
+		}
+
+		.line {
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.stats {
+			justify-content: center;
+		}
+
+		.portrait {
+			max-width: 300px;
+			width: 100%;
 		}
 	}
 </style>

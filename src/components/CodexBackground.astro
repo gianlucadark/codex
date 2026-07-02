@@ -154,4 +154,36 @@ const grain =
 		inset: 24px;
 		border-color: rgba(110, 86, 56, 0.3);
 	}
+
+	/* Mobile: pagina più pulita. Le macchie d'inchiostro e le bande laterali
+	   brunite della vignetta, su schermi stretti, si accavallano al testo e
+	   sembrano smudge scuri: qui tolgo le macchie e lascio solo un alone
+	   radiale morbido, con grana e cornice più leggere. */
+	@media (max-width: 768px) {
+		.stains {
+			display: none;
+		}
+
+		.grain {
+			opacity: 0.12;
+		}
+
+		.vignette {
+			background: radial-gradient(
+				140% 120% at 50% 42%,
+				transparent 62%,
+				rgba(90, 60, 28, 0.12) 88%,
+				rgba(58, 38, 16, 0.26) 100%
+			);
+			box-shadow: inset 0 0 90px 10px rgba(90, 60, 28, 0.14);
+		}
+
+		.frame-outer {
+			inset: 10px;
+		}
+
+		.frame-inner {
+			inset: 15px;
+		}
+	}
 </style>

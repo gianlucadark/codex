@@ -122,7 +122,7 @@ const links: ContactLink[] = [
 		margin: 0 0 22px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: clamp(32px, 4.6vw, 54px);
+		font-size: var(--hand-title);
 		line-height: 1;
 		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
@@ -151,8 +151,9 @@ const links: ContactLink[] = [
 		flex: none;
 		width: 130px;
 		font-family: var(--font-hand), cursive;
-		font-size: 23px;
-		letter-spacing: 0.02em;
+		font-size: var(--hand-label);
+		line-height: 1;
+		letter-spacing: 0.015em;
 		color: var(--accent-ink);
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
@@ -160,7 +161,8 @@ const links: ContactLink[] = [
 
 	a,
 	.val {
-		font-size: 19px;
+		font-size: clamp(20px, 2.1vw, 23px);
+		line-height: 1.25;
 		color: var(--ink);
 		text-decoration: none;
 		/* Email/URL lunghi non devono sfondare la pagina su schermi stretti. */
@@ -237,7 +239,7 @@ const links: ContactLink[] = [
 
 	.seal-mark {
 		font-family: var(--font-hand), cursive;
-		font-size: 44px;
+		font-size: var(--hand-caption);
 		color: var(--accent-ink);
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
@@ -245,7 +247,7 @@ const links: ContactLink[] = [
 
 	.signature {
 		font-family: var(--font-hand), cursive;
-		font-size: 30px;
+		font-size: var(--hand-label);
 		letter-spacing: 0.02em;
 		color: var(--ink-strong);
 		line-height: 1;

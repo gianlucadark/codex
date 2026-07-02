@@ -2,7 +2,7 @@
  * Codex — global foundations.
  * The whole portfolio is themed as an illuminated manuscript: aged paper,
  * a rubric-red accent for initials/headings, and two voices —
- * EB Garamond (the printed text) and Gianluca Hand (the handwritten gloss).
+ * EB Garamond (the printed text) and Gianluca Hand (the handwritten notes).
  */
 
 :root {
@@ -21,7 +21,7 @@
 
 	/* Earthy browns for secondary text & rules.
 	   Scuriti rispetto alla pergamena per tenere leggibili etichette piccole,
-	   glosse bilingui e sottotitoli a mano (il tono resta terroso). */
+	   note bilingui e sottotitoli a mano (il tono resta terroso). */
 	--brown: #513d22;
 	--brown-2: #5a4024;
 	--brown-3: #6e5638;
@@ -39,6 +39,16 @@
 
 	/* Font stacks are injected by the Astro Fonts API:
 	   --font-garamond and --font-hand. */
+
+	/* Shared scale for Gianluca Hand. The handwriting loses legibility when it
+	   is too small, so these tokens keep the handwritten voice large and dark
+	   enough across section headings, captions, notes and UI labels. */
+	--hand-folio: clamp(34px, 3.2vw, 38px);
+	--hand-label: clamp(30px, 3.4vw, 38px);
+	--hand-caption: clamp(30px, 3.8vw, 42px);
+	--hand-title: clamp(42px, 5vw, 54px);
+	--hand-heading: clamp(44px, 5.8vw, 64px);
+	--hand-display: clamp(60px, 7vw, 80px);
 
 	/* Finto-grassetto per la grafia: i tratti del font a mano sono sottili e
 	   l'antialiasing pieno li smaglia; un'ombra dello stesso inchiostro li

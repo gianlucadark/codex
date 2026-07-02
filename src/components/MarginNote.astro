@@ -24,12 +24,12 @@ const { style, tone = 'muted', class: className } = Astro.props;
 		font-family: var(--font-hand), cursive;
 		/* La grafia manoscritta è poco leggibile in piccolo: corpo più grande,
 		   interlinea più ariosa e un filo di spaziatura per arieggiare i tratti. */
-		font-size: 33px;
+		font-size: var(--hand-label);
 		line-height: 1.35;
 		letter-spacing: 0.025em;
 		/* I tratti del font a mano sono sottili: l'antialiasing pieno li
 		   addensa e un'ombra dello stesso inchiostro fa da finto-grassetto,
-		   così la glossa resta leggibile sulla pergamena. */
+		   così la nota resta leggibile sulla pergamena. */
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
 	}
@@ -40,7 +40,7 @@ const { style, tone = 'muted', class: className } = Astro.props;
 	}
 
 	.marg.accent {
-		/* Rosso rubrica scurito apposta per la glossa: il tono dell'accento
+		/* Rosso rubrica scurito apposta per la nota: il tono dell'accento
 		   (#9c4326) sulla pergamena ha poco contrasto a tratto sottile, questo
 		   resta chiaramente rosso ma si legge meglio. */
 		color: var(--accent-ink);

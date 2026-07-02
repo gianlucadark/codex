@@ -21,7 +21,7 @@ const { showAnnotations = true } = Astro.props;
 				<Bilingual
 					as="p"
 					class="copy"
-					it="Per titoli, glosse e dettagli manoscritti uso un carattere disegnato dalla mia calligrafia. Ho digitalizzato la mia scrittura a mano, lettera per lettera, fino a farne un font vero e proprio, con imperfezioni controllate e piccoli cambi di ritmo."
+					it="Per titoli, note e dettagli manoscritti uso un carattere disegnato dalla mia calligrafia. Ho digitalizzato la mia scrittura a mano, lettera per lettera, fino a farne un font vero e proprio, con imperfezioni controllate e piccoli cambi di ritmo."
 					en="Headings, marginal notes and handwritten details use a typeface drawn from my own handwriting, digitised letter by letter into a real font, with controlled imperfections and tiny shifts in rhythm."
 				/>
 			</div>
@@ -76,6 +76,22 @@ const { showAnnotations = true } = Astro.props;
 		}
 	</div>
 
+	<div class="usage" data-reveal="stagger" role="group" aria-label="Uso del font">
+		{
+			features.map((feature, i) => (
+				<div>
+					<span class="step">{String(i + 4).padStart(2, '0')}</span>
+					<h3>
+						<Bilingual it={feature.it} en={feature.en} />
+					</h3>
+					<p>
+						<Bilingual it={feature.itText} en={feature.enText} />
+					</p>
+				</div>
+			))
+		}
+	</div>
+
 	<dl class="facts" data-reveal="stagger">
 		{
 			facts.map((f) => (
@@ -88,21 +104,6 @@ const { showAnnotations = true } = Astro.props;
 			))
 		}
 	</dl>
-
-	<div class="usage" data-reveal="stagger" role="group" aria-label="Uso del font">
-		{
-			features.map((feature) => (
-				<div>
-					<h3>
-						<Bilingual it={feature.it} en={feature.en} />
-					</h3>
-					<p>
-						<Bilingual it={feature.itText} en={feature.enText} />
-					</p>
-				</div>
-			))
-		}
-	</div>
 
 	{
 		showAnnotations && (
@@ -132,7 +133,7 @@ const { showAnnotations = true } = Astro.props;
 		margin: 0 0 16px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: clamp(40px, 5.2vw, 64px);
+		font-size: var(--hand-heading);
 		line-height: 1;
 		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
@@ -157,7 +158,7 @@ const { showAnnotations = true } = Astro.props;
 	p.signoff {
 		margin: 0;
 		font-family: var(--font-hand), cursive;
-		font-size: clamp(30px, 3.6vw, 38px);
+		font-size: var(--hand-label);
 		line-height: 1.05;
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
@@ -199,7 +200,7 @@ const { showAnnotations = true } = Astro.props;
 	.glyphs {
 		position: relative;
 		font-family: var(--font-hand), cursive;
-		font-size: clamp(78px, 11vw, 132px);
+		font-size: clamp(88px, 11vw, 132px);
 		line-height: 1.05;
 		color: var(--ink-strong);
 		text-align: center;
@@ -232,7 +233,7 @@ const { showAnnotations = true } = Astro.props;
 		margin: 0 0 6px;
 		max-width: none;
 		font-family: var(--font-hand), cursive;
-		font-size: clamp(26px, 3.5vw, 38px);
+		font-size: var(--hand-label);
 		color: var(--ink);
 		line-height: 1.35;
 		-webkit-font-smoothing: auto;
@@ -246,7 +247,7 @@ const { showAnnotations = true } = Astro.props;
 
 	.specimen p.phrase {
 		margin: 10px 0 8px;
-		font-size: clamp(38px, 5.6vw, 60px);
+		font-size: var(--hand-title);
 		line-height: 1.05;
 		color: var(--ink-strong);
 	}
@@ -266,18 +267,22 @@ const { showAnnotations = true } = Astro.props;
 
 	.step {
 		display: block;
-		margin-bottom: 10px;
+		margin-bottom: 12px;
 		font-style: italic;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
+		font-size: 16px;
+		line-height: 1.2;
+		font-weight: 600;
 		color: var(--accent-ink);
 	}
 
 	h3 {
-		margin: 0 0 8px;
+		margin: 0 0 10px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: 34px;
-		line-height: 1;
+		font-size: var(--hand-title);
+		line-height: 1.02;
+		letter-spacing: 0.012em;
 		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
@@ -286,9 +291,9 @@ const { showAnnotations = true } = Astro.props;
 	.process p,
 	.usage p {
 		margin: 0;
-		font-size: 17px;
-		line-height: 1.5;
-		color: var(--ink-soft);
+		font-size: clamp(18px, 1.8vw, 20px);
+		line-height: 1.55;
+		color: var(--ink);
 	}
 
 	.facts {
@@ -300,7 +305,7 @@ const { showAnnotations = true } = Astro.props;
 
 	.facts dt {
 		font-family: var(--font-hand), cursive;
-		font-size: 36px;
+		font-size: var(--hand-label);
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 		line-height: 1;

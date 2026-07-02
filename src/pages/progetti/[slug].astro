@@ -307,7 +307,7 @@ const breadcrumbLd = {
 		margin: 0;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
-		font-size: clamp(44px, 6.4vw, 72px);
+		font-size: var(--hand-heading);
 		line-height: 0.92;
 		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
@@ -344,11 +344,12 @@ const breadcrumbLd = {
 	.highlights h2 {
 		margin: 0 0 12px;
 		font-style: italic;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: 13px;
-		font-weight: 400;
-		color: var(--brown);
+		font-size: clamp(16px, 1.8vw, 19px);
+		line-height: 1.25;
+		font-weight: 600;
+		color: var(--ink-strong);
 	}
 
 	.highlights ul {
@@ -385,13 +386,14 @@ const breadcrumbLd = {
 	}
 
 	.case-block h2 {
-		margin: 0 0 6px;
+		margin: 0 0 8px;
 		font-style: italic;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: 13px;
-		font-weight: 400;
-		color: var(--brown);
+		font-size: clamp(16px, 1.8vw, 19px);
+		line-height: 1.25;
+		font-weight: 600;
+		color: var(--ink-strong);
 	}
 
 	.case-block p {
@@ -410,11 +412,12 @@ const breadcrumbLd = {
 	.scheda-title {
 		margin: 0 0 12px;
 		font-style: italic;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		font-size: 13px;
-		font-weight: 400;
-		color: var(--brown);
+		font-size: clamp(16px, 1.8vw, 19px);
+		line-height: 1.25;
+		font-weight: 600;
+		color: var(--ink-strong);
 	}
 
 	.tech-list {
@@ -529,10 +532,12 @@ const breadcrumbLd = {
 
 	.caption {
 		text-align: center;
-		margin-top: 12px;
+		margin-top: 14px;
 		font-family: var(--font-hand), cursive;
-		font-size: 21px;
-		color: var(--accent-ink);
+		font-size: var(--hand-caption);
+		line-height: 1.05;
+		letter-spacing: 0.015em;
+		color: var(--ink-strong);
 		-webkit-font-smoothing: auto;
 		text-shadow: var(--hand-bold);
 	}

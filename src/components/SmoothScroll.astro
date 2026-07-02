@@ -1,22 +1,24 @@
 ---
 /**
- * Motion del codice — Lenis (smooth scroll inerziale) + GSAP ScrollTrigger
- * (la regia di rivelazione allo scroll).
+ * Motion del codice — IntersectionObserver (la regia di rivelazione) + Lenis
+ * (smooth scroll inerziale, solo desktop e caricato in lazy).
  *
- * Lenis dà alla pagina la glissata "che gira il foglio". ScrollTrigger ci
- * appoggia sopra la coreografia: ogni sezione si rivela come inchiostro che si
- * posa, i filetti crescono, i diagrammi si assemblano. Lenis e ScrollTrigger
- * sono sincronizzati sullo stesso ticker così lo scroll-driven non sfarfalla.
+ * Le rivelazioni allo scroll sono coreografate in puro CSS: le ricette
+ * (opacità, deriva, sfocatura, filetti che crescono) vivono in
+ * `src/styles/global.css` e questo script si limita ad aggiungere
+ * `.is-revealed` quando l'elemento entra nel viewport — stessi punti di
+ * innesco e stessi easing della vecchia regia GSAP, ma senza spedire al
+ * lettore ~130 KB di libreria.
  *
- * Lenis è attivo solo su viewport ampi: su mobile il suo peso non ripaga e lo
- * scroll nativo (`scroll-behavior: smooth` + `scroll-padding-top`) copre gli
- * stessi casi. Le reveal GSAP restano attive ovunque, anche senza Lenis.
+ * Lenis dà alla pagina la glissata "che gira il foglio". È attivo solo su
+ * viewport ampi e viene importato dinamicamente a browser inattivo: su mobile
+ * non viene mai scaricato e lo scroll nativo (`scroll-behavior: smooth` +
+ * `scroll-padding-top`) copre gli stessi casi.
  *
- * Tutto è disattivato con `prefers-reduced-motion: reduce` (fallback allo
- * `scroll-behavior: smooth` nativo). Lo stato iniziale "nascosto" delle
- * rivelazioni è impostato via JS/CSS solo quando il movimento è permesso
- * (classe `.js-motion` aggiunta pre-paint nel Layout): senza JS o in reduced
- * motion il contenuto resta interamente visibile.
+ * Tutto è disattivato con `prefers-reduced-motion: reduce`. Lo stato iniziale
+ * "nascosto" delle rivelazioni è impostato via CSS solo quando il movimento è
+ * permesso (classe `.js-motion` aggiunta pre-paint nel Layout): senza JS o in
+ * reduced motion il contenuto resta interamente visibile.
  *
  * I link àncora dell'indice ("Insula") sono instradati in Lenis (quando attivo)
  * perché scorrano dolcemente rispettando l'offset della nav fissa.
@@ -24,70 +26,15 @@
 ---
 
 <script>
-	import Lenis from 'lenis';
-	import { gsap } from 'gsap';
-	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
 	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	const html = document.documentElement;
 
 	if (!reduce) {
 		try {
-			gsap.registerPlugin(ScrollTrigger);
-
-			// Lenis solo su viewport ampi (vedi nota nel frontmatter).
-			const enableLenis = window.matchMedia('(min-width: 861px)').matches;
-
-			if (enableLenis) {
-				const lenis = new Lenis({
-					duration: 1.1,
-					// easeOutExpo — quick to start, long gentle settle, like a heavy page.
-					easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-					smoothWheel: true,
-				});
-
-				// Lenis + ScrollTrigger: un solo ciclo guida entrambi.
-				lenis.on('scroll', ScrollTrigger.update);
-				gsap.ticker.add((time: number) => lenis.raf(time * 1000));
-				gsap.ticker.lagSmoothing(0);
-
-				// Clearance per la nav fissa — legge la variabile CSS condivisa così
-				// resta in sync con `scroll-padding-top`.
-				const navOffset =
-					parseInt(
-						getComputedStyle(document.documentElement).getPropertyValue('--nav-offset'),
-						10,
-					) || 96;
-
-				document.addEventListener('click', (e) => {
-					const link = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as
-						| HTMLAnchorElement
-						| null;
-					if (!link) return;
-
-					const url = new URL(link.href, location.href);
-					// Only intercept same-page hash links (e.g. "/#chi-sono").
-					if (url.pathname !== location.pathname || !url.hash) return;
-
-					const target = document.querySelector(url.hash);
-					if (!target) return;
-
-					e.preventDefault();
-					lenis.scrollTo(target as HTMLElement, { offset: -navOffset });
-					history.pushState(null, '', url.hash);
-				});
-
-				// Expose for other scripts / debugging.
-				(window as unknown as { lenis?: Lenis }).lenis = lenis;
-			}
-
 			setupReveals();
-
-			// I font self-hosted cambiano le metriche: ricalcola i trigger a caricamento.
-			document.fonts?.ready.then(() => ScrollTrigger.refresh());
-			window.addEventListener('load', () => ScrollTrigger.refresh());
+			setupLenis();
 		} catch (err) {
-			// Se il motore d'animazione fallisce, non lasciare il contenuto nascosto.
+			// Se la regia fallisce, non lasciare il contenuto nascosto.
 			html.classList.remove('js-motion');
 			console.error('[codex] motion init failed:', err);
 		}
@@ -95,104 +42,126 @@
 
 	/**
 	 * La regia: legge gli attributi `data-reveal*` posati sui componenti e
-	 * costruisce una coreografia sobria, on-brand col manoscritto.
+	 * aggiunge `.is-revealed` quando l'elemento supera la sua linea di innesco
+	 * (le frazioni rispecchiano i vecchi `start` di ScrollTrigger). Le ricette
+	 * visive stanno in global.css.
+	 *
+	 * Si controllano le posizioni a ogni scroll (throttled con rAF) invece di
+	 * usare un IntersectionObserver: con gli scroll rapidi un elemento può
+	 * passare da sotto a sopra il viewport tra due frame senza mai
+	 * "intersecare", e l'observer non emetterebbe nulla. Come ScrollTrigger,
+	 * a fine pagina si rivela tutto ciò che resta (il colophon non potrebbe
+	 * mai superare la sua linea di innesco).
 	 */
 	function setupReveals() {
-		const trig = (el: Element) => ({ trigger: el, start: 'top 85%', once: true });
+		const pending: { el: HTMLElement; line: number }[] = [];
 
-		gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {
+		document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
 			const kind = el.getAttribute('data-reveal');
 
 			if (kind === 'stagger') {
-				// Liste/griglie: i figli si posano in sequenza.
-				const items = el.children;
-				gsap.set(el, { autoAlpha: 1 });
-				gsap.set(items, { autoAlpha: 0, y: 16, filter: 'blur(5px)' });
-				gsap.to(items, {
-					autoAlpha: 1,
-					y: 0,
-					filter: 'blur(0px)',
-					duration: 0.8,
-					ease: 'power3.out',
-					stagger: 0.08,
-					scrollTrigger: trig(el),
-				});
-			} else if (kind === 'rule') {
-				// Filetti tracciati a secco: crescono dal centro.
-				gsap.set(el, { autoAlpha: 1, scaleX: 0, transformOrigin: 'center center' });
-				gsap.to(el, {
-					scaleX: 1,
-					duration: 0.7,
-					ease: 'power2.out',
-					scrollTrigger: { ...trig(el), start: 'top 88%' },
-				});
-			} else if (kind === 'diagram') {
-				// Il diagramma "scientifico" si costruisce pezzo per pezzo, col compasso.
-				// Solo opacità: i pezzi usano transform CSS (rotate/translate) che non vanno toccati.
-				const parts = el.children;
-				gsap.set(el, { autoAlpha: 1 });
-				gsap.set(parts, { autoAlpha: 0 });
-				gsap.to(parts, {
-					autoAlpha: 1,
-					duration: 0.45,
-					ease: 'power2.out',
-					stagger: 0.07,
-					scrollTrigger: trig(el),
-				});
-			} else if (kind === 'margin') {
-				// Le note si appoggiano nel margine (la rotazione inline resta intatta).
-				gsap.set(el, { autoAlpha: 0, y: 10 });
-				gsap.to(el, {
-					autoAlpha: 1,
-					y: 0,
-					duration: 0.9,
-					ease: 'power3.out',
-					scrollTrigger: { ...trig(el), start: 'top 92%' },
-				});
-			} else {
-				// Default — l'inchiostro che si posa e asciuga.
-				gsap.set(el, { autoAlpha: 0, y: 18, filter: 'blur(6px)' });
-				gsap.to(el, {
-					autoAlpha: 1,
-					y: 0,
-					filter: 'blur(0px)',
-					duration: 0.85,
-					ease: 'power3.out',
-					scrollTrigger: trig(el),
+				// Liste/griglie: i figli si posano in sequenza (sfasamento crescente,
+				// letto dall'animazione `codexRevealStep` con fill backwards).
+				Array.from(el.children).forEach((child, i) => {
+					(child as HTMLElement).style.animationDelay = `${i * 80}ms`;
 				});
 			}
+
+			pending.push({ el, line: kind === 'rule' ? 0.88 : kind === 'margin' ? 0.92 : 0.85 });
 		});
 
-		// Parallax leggero: macchie d'inchiostro che danno vita alla carta.
-		gsap.to('.stains', {
-			yPercent: 6,
-			ease: 'none',
-			scrollTrigger: {
-				trigger: document.documentElement,
-				start: 'top top',
-				end: 'bottom bottom',
-				scrub: 0.5,
-			},
-		});
+		let queued = false;
+		const sweep = () => {
+			queued = false;
+			const vh = window.innerHeight;
+			const atEnd =
+				window.scrollY + vh >= document.documentElement.scrollHeight - 2;
+			for (let i = pending.length - 1; i >= 0; i--) {
+				const { el, line } = pending[i];
+				if (atEnd || el.getBoundingClientRect().top <= vh * line) {
+					el.classList.add('is-revealed');
+					pending.splice(i, 1);
+				}
+			}
+			if (!pending.length) {
+				removeEventListener('scroll', onScroll);
+				removeEventListener('resize', onScroll);
+			}
+		};
+		const onScroll = () => {
+			if (!queued) {
+				queued = true;
+				requestAnimationFrame(sweep);
+			}
+		};
 
-		// Profondità sulla tavola d'apertura (la "Homo Machina" deriva più lenta).
-		gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((el) => {
-			const amt = parseFloat(el.dataset.parallaxY || '18');
-			gsap.fromTo(
-				el,
-				{ y: -amt, scale: 1.12 },
-				{
-					y: amt,
-					scale: 1.12,
-					ease: 'none',
-					scrollTrigger: {
-						trigger: el,
-						start: 'top bottom',
-						end: 'bottom top',
-						scrub: true,
-					},
-				},
-			);
-		});
+		addEventListener('scroll', onScroll, { passive: true });
+		addEventListener('resize', onScroll, { passive: true });
+		sweep(); // stato iniziale: rivela ciò che è già in vista o oltrepassato
+	}
+
+	/**
+	 * Lenis solo su viewport ampi (su mobile il suo peso non ripaga) e importato
+	 * a browser inattivo: il chunk non compete mai con font, immagini e primo
+	 * paint. Nell'attesa lo scroll nativo copre gli stessi casi.
+	 */
+	function setupLenis() {
+		if (!window.matchMedia('(min-width: 861px)').matches) return;
+
+		const load = () => {
+			import('lenis')
+				.then(({ default: Lenis }) => {
+					const lenis = new Lenis({
+						duration: 1.1,
+						// easeOutExpo — quick to start, long gentle settle, like a heavy page.
+						easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+						smoothWheel: true,
+						autoRaf: true,
+					});
+
+					// Lenis posa da solo la classe `lenis` ma NON `lenis-smooth`:
+					// global.css la usa per forzare `scroll-behavior: auto` (il CSS
+					// smooth nativo combatterebbe con lo scroll virtuale di Lenis e
+					// falserebbe l'atterraggio dei link àncora).
+					document.documentElement.classList.add('lenis-smooth');
+
+					// Clearance per la nav fissa — legge la variabile CSS condivisa così
+					// resta in sync con `scroll-padding-top`.
+					const navOffset =
+						parseInt(
+							getComputedStyle(document.documentElement).getPropertyValue('--nav-offset'),
+							10,
+						) || 96;
+
+					document.addEventListener('click', (e) => {
+						const link = (e.target as HTMLElement)?.closest?.('a[href*="#"]') as
+							| HTMLAnchorElement
+							| null;
+						if (!link) return;
+
+						const url = new URL(link.href, location.href);
+						// Only intercept same-page hash links (e.g. "/#chi-sono").
+						if (url.pathname !== location.pathname || !url.hash) return;
+
+						const target = document.querySelector(url.hash);
+						if (!target) return;
+
+						e.preventDefault();
+						lenis.scrollTo(target as HTMLElement, { offset: -navOffset });
+						history.pushState(null, '', url.hash);
+					});
+
+					// Expose for other scripts / debugging.
+					(window as unknown as { lenis?: unknown }).lenis = lenis;
+				})
+				// Se il chunk non arriva, lo scroll nativo resta al comando.
+				.catch((err) => console.error('[codex] lenis load failed:', err));
+		};
+
+		if ('requestIdleCallback' in window) {
+			(window as Window & typeof globalThis).requestIdleCallback(load);
+		} else {
+			setTimeout(load, 1200);
+		}
 	}
 </script>

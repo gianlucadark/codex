@@ -168,20 +168,128 @@ html[data-lang='en'] .bil[lang='it'] {
 }
 
 /*
- * Reveal allo scroll — stato iniziale anti-FOUC.
+ * Reveal allo scroll — coreografia in puro CSS.
  * La classe `.js-motion` è posata pre-paint solo se il lettore accetta il
- * movimento; gli elementi marcati `data-reveal*` partono nascosti e GSAP li
- * rivela entrando nel viewport. Senza JS o in reduced motion la classe non
- * c'è → tutto resta visibile, nessuna animazione.
+ * movimento; gli elementi marcati `data-reveal*` partono nascosti e un piccolo
+ * IntersectionObserver (SmoothScroll.astro) aggiunge `.is-revealed` entrando
+ * nel viewport. Senza JS o in reduced motion la classe non c'è → tutto resta
+ * visibile, nessuna animazione.
+ *
+ * Le ricette replicano la vecchia regia GSAP: durate, distanze ed easing sono
+ * gli stessi (power3.out → quart-out, power2.out → cubic-out). Si usano le
+ * proprietà `translate`/`scale` (non `transform`) così le rotazioni inline
+ * delle note a margine restano intatte, e animazioni con fill `backwards`
+ * (non transition) così a fine rivelazione l'elemento torna esattamente al
+ * suo stile naturale — niente transform/filtri residui.
  */
-.js-motion [data-reveal],
-.js-motion [data-reveal='stagger'] > * {
+.js-motion [data-reveal='']:not(.is-revealed),
+.js-motion [data-reveal='margin']:not(.is-revealed),
+.js-motion [data-reveal='stagger']:not(.is-revealed) > * {
 	opacity: 0;
+}
+
+/* Default — l'inchiostro che si posa e asciuga. */
+.js-motion [data-reveal=''].is-revealed {
+	animation: codexRevealInk 0.85s cubic-bezier(0.165, 0.84, 0.44, 1) backwards;
+}
+
+/* Liste/griglie: i figli si posano in sequenza (delay inline da SmoothScroll). */
+.js-motion [data-reveal='stagger'].is-revealed > * {
+	animation: codexRevealStep 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) backwards;
+}
+
+/* Filetti tracciati a secco: crescono dal centro. */
+.js-motion [data-reveal='rule']:not(.is-revealed) {
+	scale: 0 1;
+}
+.js-motion [data-reveal='rule'].is-revealed {
+	animation: codexRevealRule 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) backwards;
+}
+
+/* Le note si appoggiano nel margine (la rotazione inline resta intatta). */
+.js-motion [data-reveal='margin'].is-revealed {
+	animation: codexRevealMargin 0.9s cubic-bezier(0.165, 0.84, 0.44, 1) backwards;
+}
+
+@keyframes codexRevealInk {
+	from {
+		opacity: 0;
+		translate: 0 18px;
+		filter: blur(6px);
+	}
+}
+
+@keyframes codexRevealStep {
+	from {
+		opacity: 0;
+		translate: 0 16px;
+		filter: blur(5px);
+	}
+}
+
+@keyframes codexRevealRule {
+	from {
+		scale: 0 1;
+	}
+	to {
+		scale: 1 1;
+	}
+}
+
+@keyframes codexRevealMargin {
+	from {
+		opacity: 0;
+		translate: 0 10px;
+	}
 }
 
 /* Gli elementi in parallax sono visibili: derivano soltanto, non si rivelano. */
 .js-motion [data-parallax] {
 	opacity: 1;
+}
+
+/*
+ * Parallax leggero — scroll-driven animations, pure CSS.
+ * Chromium e Safari muovono le macchie d'inchiostro e la tavola d'apertura;
+ * dove `animation-timeline` non è supportato (Firefox) la deriva sparisce e
+ * la pagina resta semplicemente ferma — impercettibile per un drift del 6%.
+ */
+@supports (animation-timeline: view()) {
+	.js-motion .stains {
+		animation: codexStainsDrift linear both;
+	}
+
+	.js-motion [data-parallax] {
+		animation: codexPlateDrift linear both;
+	}
+
+	/* Le timeline stanno in regole separate con selettore diverso: il
+	   minificatore (LightningCSS) altrimenti fonde `animation-timeline` nello
+	   shorthand `animation`, che i browser scartano come non valido. */
+	html.js-motion .stains {
+		animation-timeline: scroll(root);
+	}
+
+	html.js-motion [data-parallax] {
+		animation-timeline: view();
+	}
+
+	@keyframes codexStainsDrift {
+		to {
+			translate: 0 6%;
+		}
+	}
+
+	@keyframes codexPlateDrift {
+		from {
+			translate: 0 calc(var(--parallax-y, 18px) * -1);
+			scale: 1.12;
+		}
+		to {
+			translate: 0 var(--parallax-y, 18px);
+			scale: 1.12;
+		}
+	}
 }
 
 @keyframes codexBob {

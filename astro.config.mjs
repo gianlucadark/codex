@@ -49,10 +49,9 @@ export default defineConfig({
 					{
 						weight: 400,
 						style: 'normal',
-						src: [
-							'./src/assets/mioFont/GianlucaHand-Regular.woff2',
-							'./src/assets/mioFont/GianlucaHand-Regular.woff',
-						],
+						// Solo woff2: ogni browser che sa caricare font web moderni lo
+						// supporta; la sorgente woff raddoppiava soltanto i file in dist.
+						src: ['./src/assets/mioFont/GianlucaHand-Regular.woff2'],
 					},
 				],
 			},

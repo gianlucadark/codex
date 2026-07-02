@@ -5,10 +5,13 @@ export interface NavLink {
 	href: string;
 }
 
+// L'ordine rispecchia la successione delle sezioni nella pagina
+// (index.astro): Chi sono → Progetti → Competenze → Il font → Riconoscimenti → Contatti.
 export const navLinks: NavLink[] = [
 	{ it: 'Chi sono', en: 'About', href: '/#chi-sono' },
-	{ it: 'Il font', en: 'Typeface', href: '/#font' },
 	{ it: 'Progetti', en: 'Work', href: '/#progetti' },
 	{ it: 'Competenze', en: 'Skills', href: '/#competenze' },
+	{ it: 'Il font', en: 'Typeface', href: '/#font' },
+	{ it: 'Riconoscimenti', en: 'Awards', href: '/#riconoscimenti' },
 	{ it: 'Contatti', en: 'Contact', href: '/#contatti' },
 ];

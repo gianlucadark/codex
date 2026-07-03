@@ -1,0 +1,33 @@
+---
+import { Image } from 'astro:assets';
+import logoGd from '../assets/logo-gd-transparent.png';
+
+interface Props {
+	alt?: string;
+	loading?: 'eager' | 'lazy';
+}
+
+const { alt = 'GD', loading = 'eager' } = Astro.props;
+---
+
+<Image
+	class="logo-gd"
+	src={logoGd}
+	alt={alt}
+	width={224}
+	height={224}
+	format="webp"
+	quality={86}
+	loading={loading}
+	decoding="async"
+/>
+
+<style>
+	.logo-gd {
+		display: block;
+		width: 42px;
+		aspect-ratio: 1;
+		height: auto;
+		object-fit: contain;
+	}
+</style>

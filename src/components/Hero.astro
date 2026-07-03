@@ -60,7 +60,8 @@ import VitruvianParticles from './VitruvianParticles.astro';
 
 <style>
 	.hero {
-		padding-top: clamp(48px, 8vh, 84px);
+		/* Parte sotto la capsula "Insula" fissa: il running head non va coperto. */
+		padding-top: calc(var(--nav-offset) + clamp(4px, 1.5vh, 16px));
 		padding-bottom: clamp(32px, 5vh, 70px);
 	}
 
@@ -283,7 +284,7 @@ import VitruvianParticles from './VitruvianParticles.astro';
 	@media (max-width: 860px) {
 		.hero {
 			/* Lascia respirare il titolo sotto la capsula "Insula" fissa in alto. */
-			padding-top: clamp(72px, 12vh, 96px);
+			padding-top: calc(var(--nav-offset) + clamp(8px, 3vh, 28px));
 		}
 		.incipit {
 			grid-template-columns: 1fr;

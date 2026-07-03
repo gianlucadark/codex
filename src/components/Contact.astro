@@ -2,6 +2,7 @@
 import SectionHeader from './SectionHeader.astro';
 import MarginNote from './MarginNote.astro';
 import Bilingual from './Bilingual.astro';
+import LogoGD from './LogoGD.astro';
 import { site } from '../data/site';
 
 interface Props {
@@ -69,8 +70,7 @@ const links: ContactLink[] = [
 
 		<div class="sign" data-reveal>
 			<div class="seal">
-				<span class="seal-ring"></span>
-				<span class="seal-mark">GD</span>
+				<LogoGD loading="lazy" />
 			</div>
 			<div class="signature">Gianluca</div>
 			<div class="flourish" data-reveal="rule"></div>
@@ -221,28 +221,14 @@ const links: ContactLink[] = [
 		width: 118px;
 		height: 118px;
 		margin: 0 auto 18px;
-		border: 2px solid var(--accent);
-		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: radial-gradient(closest-side, rgba(156, 67, 38, 0.16), rgba(156, 67, 38, 0.05));
 		transform: rotate(-7deg);
 	}
 
-	.seal-ring {
-		position: absolute;
-		inset: 8px;
-		border: 1px solid rgba(156, 67, 38, 0.55);
-		border-radius: 50%;
-	}
-
-	.seal-mark {
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-caption);
-		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
+	.seal :global(.logo-gd) {
+		width: 112px;
 	}
 
 	.signature {

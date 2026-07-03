@@ -276,7 +276,8 @@ const breadcrumbLd = {
 	/* Back link ----------------------------------------------------------- */
 	.back {
 		display: inline-block;
-		margin: 14px 0 28px;
+		/* Parte sotto la capsula "Insula" fissa, così non resta coperto. */
+		margin: calc(var(--nav-offset) - 8px) 0 28px;
 		font-style: italic;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;

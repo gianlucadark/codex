@@ -37,9 +37,9 @@ import LogoGD from './LogoGD.astro';
 	<span class="sep sep-lang" aria-hidden="true"></span>
 
 	<div class="lang" role="group" aria-label="Lingua · language">
-		<button type="button" class="lang-btn active" data-lang-btn="it" aria-pressed="true">it</button>
+		<button type="button" class="lang-btn hand-bold active" data-lang-btn="it" aria-pressed="true">it</button>
 		<span class="lang-div" aria-hidden="true">·</span>
-		<button type="button" class="lang-btn" data-lang-btn="en" aria-pressed="false">en</button>
+		<button type="button" class="lang-btn hand-bold" data-lang-btn="en" aria-pressed="false">en</button>
 	</div>
 
 	<button
@@ -66,7 +66,7 @@ import LogoGD from './LogoGD.astro';
 		gap: 16px;
 		padding: 8px 15px 8px 13px;
 		max-width: calc(100vw - 24px);
-		border: 1.4px solid var(--accent);
+		border: var(--hairline) solid var(--accent);
 		border-radius: 8px;
 		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
 		box-shadow:
@@ -181,8 +181,6 @@ import LogoGD from './LogoGD.astro';
 		border: none;
 		cursor: pointer;
 		color: var(--brown);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 		padding: 7px 9px;
 		border-radius: 4px;
 		transition:
@@ -261,7 +259,7 @@ import LogoGD from './LogoGD.astro';
 			top: 68px;
 			left: 50%;
 			width: min(320px, calc(100vw - 24px));
-			border: 1.4px solid var(--accent);
+			border: var(--hairline) solid var(--accent);
 			border-radius: 8px;
 			background: linear-gradient(180deg, rgba(243, 233, 206, 0.98), rgba(231, 218, 187, 0.98));
 			box-shadow: 0 18px 32px -16px rgba(58, 42, 24, 0.85);

@@ -95,7 +95,7 @@ const breadcrumbLd = {
 
 				<div class="layout">
 					<div class="prose">
-						<h1>{project.title}</h1>
+						<h1 class="hand-bold">{project.title}</h1>
 						<p class="tech">{project.stack}</p>
 
 						<div class="prose-body">
@@ -190,7 +190,7 @@ const breadcrumbLd = {
 							images.length > 0 ? (
 								images.map((shot, i) => (
 									<figure class="plate codex-plate">
-										<div class="window">
+										<div class="window codex-window">
 											<Image
 												src={shot}
 												alt={`${project.title} — anteprima ${i + 1}`}
@@ -199,7 +199,7 @@ const breadcrumbLd = {
 												style={project.slug === 'lightship' ? 'object-fit: contain;' : undefined}
 											/>
 										</div>
-										<figcaption class="caption">
+										<figcaption class="caption codex-caption">
 											<span class="bil" lang="it">
 												tav. {project.numeral}{images.length > 1 ? `.${i + 1}` : ''} · {project.title}
 											</span>
@@ -211,11 +211,11 @@ const breadcrumbLd = {
 								))
 							) : (
 								<figure class="plate codex-plate">
-									<div class="window empty">
+									<div class="window codex-window empty">
 										<span class="slot-hint bil" lang="it">[ foto ]</span>
 										<span class="slot-hint bil" lang="en">[ photo ]</span>
 									</div>
-									<figcaption class="caption">
+									<figcaption class="caption codex-caption">
 										<span class="bil" lang="it">tav. {project.numeral} · {project.title}</span>
 										<span class="bil" lang="en">pl. {project.numeral} · {project.title}</span>
 									</figcaption>
@@ -266,7 +266,7 @@ const breadcrumbLd = {
 	.content {
 		position: relative;
 		z-index: 2;
-		max-width: 980px;
+		max-width: var(--page-max-narrow);
 		margin: 0 auto;
 	}
 
@@ -312,8 +312,6 @@ const breadcrumbLd = {
 		font-size: var(--hand-heading);
 		line-height: 0.92;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.tech {
@@ -407,7 +405,7 @@ const breadcrumbLd = {
 
 	/* Scheda tecnica ------------------------------------------------------ */
 	.scheda {
-		border-top: 1.4px solid rgba(156, 67, 38, 0.5);
+		border-top: var(--hairline) solid rgba(156, 67, 38, 0.5);
 		padding-top: 16px;
 	}
 
@@ -502,18 +500,10 @@ const breadcrumbLd = {
 	}
 
 	.window {
-		position: relative;
 		aspect-ratio: 16 / 9;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border: 1px solid rgba(110, 86, 56, 0.5);
-		background: repeating-linear-gradient(
-			45deg,
-			rgba(110, 86, 56, 0.06) 0 8px,
-			transparent 8px 16px
-		);
-		overflow: hidden;
 	}
 
 	/* Foto reale: riempie il riquadro, mostrata originale senza effetti. */
@@ -533,15 +523,9 @@ const breadcrumbLd = {
 	}
 
 	.caption {
-		text-align: center;
-		margin-top: 14px;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-caption);
 		line-height: 1.05;
 		letter-spacing: 0.015em;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	/* Pager --------------------------------------------------------------- */
@@ -584,7 +568,7 @@ const breadcrumbLd = {
 		color: var(--accent-ink);
 	}
 
-	@media (max-width: 760px) {
+	@media (max-width: 768px) {
 		.layout {
 			gap: 32px;
 		}

@@ -16,7 +16,7 @@ const description = 'La pagina richiesta non esiste in questo codice. Torna alla
 					<span class="bil" lang="it">f. ? — pagina perduta</span>
 					<span class="bil" lang="en">f. ? — lost page</span>
 				</p>
-				<h1>CDIV</h1>
+				<h1 class="hand-bold">CDIV</h1>
 				<div class="rule" aria-hidden="true"></div>
 				<div class="bil-pair lead">
 					<p class="bil" lang="it">
@@ -84,13 +84,11 @@ const description = 'La pagina richiesta non esiste in questo codice. Torna alla
 		font-size: clamp(96px, 18vw, 180px);
 		line-height: 0.9;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.rule {
 		height: 1px;
-		width: 216px;
+		width: var(--rule-length);
 		margin: 20px 0;
 		background: var(--accent);
 		opacity: 0.6;

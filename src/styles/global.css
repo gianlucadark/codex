@@ -21,7 +21,12 @@
 
 	/* Earthy browns for secondary text & rules.
 	   Scuriti rispetto alla pergamena per tenere leggibili etichette piccole,
-	   note bilingui e sottotitoli a mano (il tono resta terroso). */
+	   note bilingui e sottotitoli a mano (il tono resta terroso).
+	   Misurati sul fondo più chiaro (--paper #d4be97, il caso peggiore —
+	   le tavole e i gradienti di pagina sono tutti più chiari): --brown 5.7:1,
+	   --brown-2 5.3:1 → superano l'AA (4.5:1) anche per testo piccolo.
+	   --brown-3 è 3.8:1: SOLO bordi e filetti, mai testo (per testo usa
+	   --brown/--brown-2; un bruno scuro AA equivalente sarebbe #60492c, 4.7:1). */
 	--brown: #513d22;
 	--brown-2: #5a4024;
 	--brown-3: #6e5638;
@@ -32,10 +37,17 @@
 
 	/* Shared measurements */
 	--page-max: 1180px;
+	/* Misura di lettura stretta dei fogli di progetto: una colonna sola
+	   (~64ch a 18px) invece della copertina a due colonne (--page-max). */
+	--page-max-narrow: 980px;
 	--folio-pad-x: 64px;
 	/* Clearance under the floating "Insula" nav — shared by CSS scroll-padding
 	   and the JS anchor scroll (see SmoothScroll.astro). */
 	--nav-offset: 96px;
+	/* Peso standard del filetto (bordi tavola, insula, lightbox, scheda). */
+	--hairline: 1.4px;
+	/* Larghezza del filetto rubrica tra i fogli (FoglioDivider, 404). */
+	--rule-length: 216px;
 
 	/* Font stacks are injected by the Astro Fonts API:
 	   --font-garamond and --font-hand. */
@@ -114,6 +126,14 @@ a {
 	color: inherit;
 }
 
+/* Anello di fuoco rubrica — indicatore tastiera condiviso per link e bottoni.
+   I componenti con un indicatore su misura (riga progetti) lo sovrascrivono. */
+a:focus-visible,
+button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
 /*
  * Switch lingua — la doppia voce del codice.
  * Only one language is visible at a time: the element matching the active
@@ -146,7 +166,36 @@ html[data-lang='en'] .bil[lang='it'] {
  */
 .codex-plate {
 	background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
-	border: 1.4px solid var(--brown-3);
+	border: var(--hairline) solid var(--brown-3);
+}
+
+/* Riquadro tratteggiato dentro una tavola — la pergamena a righe usata da
+   ritratto, lauri e tavole di progetto. Dimensioni/display/cursore restano
+   nel contesto del componente (che aggiunge anche la classe locale `window`
+   per i suoi selettori interni). */
+.codex-window {
+	position: relative;
+	border: 1px solid rgba(110, 86, 56, 0.5);
+	background: repeating-linear-gradient(45deg, rgba(110, 86, 56, 0.06) 0 8px, transparent 8px 16px);
+	overflow: hidden;
+}
+
+/* Didascalia manoscritta sotto una tavola; colore e spaziatura fine restano
+   nel contesto del componente (classe locale `caption`). */
+.codex-caption {
+	text-align: center;
+	margin-top: 12px;
+	font-family: var(--font-hand), cursive;
+	font-size: var(--hand-caption);
+	-webkit-font-smoothing: auto;
+	text-shadow: var(--hand-bold);
+}
+
+/* Finto-grassetto della grafia (vedi --hand-bold sopra): da posare su ogni
+   testo scritto a mano che non passi già per .codex-caption. */
+.hand-bold {
+	-webkit-font-smoothing: auto;
+	text-shadow: var(--hand-bold);
 }
 
 /* A "foglio" — one leaf/page of the codex. Shared padding so sections align. */
@@ -155,6 +204,12 @@ html[data-lang='en'] .bil[lang='it'] {
 	padding: 74px var(--folio-pad-x);
 }
 
+/* Breakpoint del codice — le media query non leggono le custom property,
+   quindi qui sotto sta il contratto in chiaro:
+     860px  collasso di layout (colonna singola, nav mobile)
+     768px  alleggerimenti tablet (sfondo decorativo, foglio di progetto)
+     560px  testo compatto (occhielli, contatti)
+     480px  padding minimi */
 @media (max-width: 860px) {
 	.foglio {
 		padding: 64px 26px;

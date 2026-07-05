@@ -4,14 +4,14 @@ import VitruvianParticles from './VitruvianParticles.astro';
 
 <section class="hero foglio" aria-label="Copertina">
 	<div class="runninghead">
-		<span class="latin">Codex · Portfolio</span>
+		<span class="latin hand-bold">Codex · Portfolio</span>
 	</div>
 
 	<div class="incipit">
 		<!-- Colonna del testo: l'incipit del codice -->
 		<div class="intro">
 			<p class="place">Anno Domini MMXXVI · Sperlonga</p>
-			<h1>Gianluca<br />D'Arcangelo</h1>
+			<h1 class="hand-bold">Gianluca<br />D'Arcangelo</h1>
 
 			<div class="flourish" aria-hidden="true">
 				<svg viewBox="0 0 240 24" preserveAspectRatio="xMinYMid meet">
@@ -40,8 +40,8 @@ import VitruvianParticles from './VitruvianParticles.astro';
 			</div>
 
 			<div class="scroll">
-				<span class="scroll-label bil" lang="it">esplora il codice</span>
-					<span class="scroll-label bil" lang="en">explore the codex</span>
+				<span class="scroll-label hand-bold bil" lang="it">esplora il codice</span>
+					<span class="scroll-label hand-bold bil" lang="en">explore the codex</span>
 				<span class="arrow" aria-hidden="true">↓</span>
 			</div>
 		</div>
@@ -52,7 +52,7 @@ import VitruvianParticles from './VitruvianParticles.astro';
 				<VitruvianParticles data-parallax style="--parallax-y: 16px" />
 			</div>
 			<figcaption>
-				<span class="cap-title">Homo Machina</span>
+				<span class="cap-title hand-bold">Homo Machina</span>
 			</figcaption>
 		</figure>
 	</div>
@@ -84,8 +84,6 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		font-size: var(--hand-display);
 		line-height: 1;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	/* ---- Pagina d'incipit: testo a sinistra, tavola a destra ---------------- */
@@ -118,8 +116,6 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		font-size: clamp(44px, min(7.4vw, 9.5vh), 100px);
 		line-height: 0.9;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.flourish {
@@ -187,8 +183,6 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		font-size: var(--hand-caption);
 		line-height: 1;
 		letter-spacing: 0.02em;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.arrow {
@@ -241,8 +235,6 @@ import VitruvianParticles from './VitruvianParticles.astro';
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 		line-height: 1;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	/* ---- Keyframes ----------------------------------------------------------- */

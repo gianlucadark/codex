@@ -31,7 +31,7 @@ const transparentPixel =
 					<div class="plate codex-plate">
 						<button
 							type="button"
-							class="window"
+							class="window codex-window"
 							data-lightbox={award.image.src}
 							data-caption={`${award.title} — ${award.category} · ${award.date}`}
 							aria-label={`Ingrandisci il certificato ${award.title}`}
@@ -43,12 +43,12 @@ const transparentPixel =
 								sizes="(max-width: 860px) 360px, 33vw"
 								loading="lazy"
 							/>
-							<span class="seal">{award.seal}</span>
+							<span class="seal hand-bold">{award.seal}</span>
 							<span class="zoom-hint" aria-hidden="true">⤢</span>
 						</button>
 					</div>
 					<figcaption>
-						<span class="title">{award.title}</span>
+						<span class="title hand-bold">{award.title}</span>
 						<span class="meta">
 							{award.category} · {award.date}
 						</span>
@@ -138,26 +138,13 @@ const transparentPixel =
 	}
 
 	.window {
-		position: relative;
 		display: block;
 		width: 100%;
 		aspect-ratio: 4 / 3;
 		padding: 0;
-		border: 1px solid rgba(110, 86, 56, 0.5);
-		background: repeating-linear-gradient(
-			45deg,
-			rgba(110, 86, 56, 0.06) 0 8px,
-			transparent 8px 16px
-		);
-		overflow: hidden;
 		cursor: zoom-in;
 		font: inherit;
 		color: inherit;
-	}
-
-	.window:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
 	}
 
 	.zoom-hint {
@@ -206,14 +193,12 @@ const transparentPixel =
 		justify-content: center;
 		width: 46px;
 		height: 46px;
-		border: 1.4px solid var(--accent);
+		border: var(--hairline) solid var(--accent);
 		border-radius: 50%;
 		font-family: var(--font-hand), cursive;
 		font-size: 22px;
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 		background: rgba(212, 190, 151, 0.9);
 	}
 
@@ -231,8 +216,6 @@ const transparentPixel =
 		letter-spacing: 0.02em;
 		line-height: 1.05;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.meta {
@@ -262,7 +245,7 @@ const transparentPixel =
 		max-height: 92vh;
 		overflow: visible;
 		padding: clamp(10px, 1.4vw, 18px);
-		border: 1.4px solid var(--brown-3);
+		border: var(--hairline) solid var(--brown-3);
 		background: linear-gradient(180deg, var(--plate-top), var(--plate-bottom));
 		box-shadow: 0 30px 70px -30px rgba(58, 42, 24, 0.9);
 	}
@@ -305,7 +288,7 @@ const transparentPixel =
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border: 1.4px solid var(--brown-3);
+		border: var(--hairline) solid var(--brown-3);
 		border-radius: 50%;
 		background: var(--plate-top);
 		color: var(--accent);
@@ -313,10 +296,5 @@ const transparentPixel =
 		line-height: 1;
 		cursor: pointer;
 		box-shadow: 0 6px 16px -8px rgba(58, 42, 24, 0.8);
-	}
-
-	.lb-close:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
 	}
 </style>

@@ -37,14 +37,14 @@ const links: ContactLink[] = [
 
 	<div class="grid">
 		<div>
-			<h2 data-reveal>
+			<h3 class="hand-bold" data-reveal>
 				<Bilingual it="Raccontami la tua idea..." en="Tell me your idea..." />
-			</h2>
+			</h3>
 			<ul data-reveal="stagger">
 				{
 					links.map((link) => (
 						<li>
-							<span class="key">
+							<span class="key hand-bold">
 								<Bilingual it={link.it} en={link.en} />
 							</span>
 							{link.href ? (
@@ -72,7 +72,7 @@ const links: ContactLink[] = [
 			<div class="seal">
 				<LogoGD loading="lazy" />
 			</div>
-			<div class="signature">Gianluca</div>
+			<div class="signature hand-bold">Gianluca</div>
 			<div class="flourish" data-reveal="rule"></div>
 		</div>
 	</div>
@@ -118,15 +118,13 @@ const links: ContactLink[] = [
 		margin-top: 40px;
 	}
 
-	h2 {
+	h3 {
 		margin: 0 0 22px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
 		font-size: var(--hand-title);
 		line-height: 1;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	ul {
@@ -155,8 +153,6 @@ const links: ContactLink[] = [
 		line-height: 1;
 		letter-spacing: 0.015em;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	a,
@@ -237,8 +233,6 @@ const links: ContactLink[] = [
 		letter-spacing: 0.02em;
 		color: var(--ink-strong);
 		line-height: 1;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.flourish {

@@ -21,7 +21,7 @@ const zwsp = String.fromCharCode(0x200b);
 
 	<div class="grid">
 		<div class="prose">
-			<h2 data-reveal>Gianluca Hand</h2>
+			<h3 class="type-name hand-bold" data-reveal>Gianluca Hand</h3>
 			<div class="bil-pair lines" data-reveal>
 				<Bilingual
 					as="p"
@@ -38,7 +38,7 @@ const zwsp = String.fromCharCode(0x200b);
 					en="It is not just ornament: it is a small identity system. It brings into the portfolio the same hand that annotates, crosses out, tests and rewrites during the work."
 				/>
 			</div>
-			<p class="signoff" data-reveal>
+			<p class="signoff hand-bold" data-reveal>
 				<Bilingual it="la mia mano, il mio codice." en="my hand, my code." />
 			</p>
 		</div>
@@ -48,7 +48,7 @@ const zwsp = String.fromCharCode(0x200b);
 				<span class="line line-1"></span>
 				<span class="line line-2"></span>
 				<span class="baseline"></span>
-				<div class="glyphs">Aa Gg</div>
+				<div class="glyphs hand-bold">Aa Gg</div>
 			</div>
 			<div class="plate-foot">
 				<Bilingual it="scritto a mano" en="hand-drawn" />
@@ -73,7 +73,7 @@ const zwsp = String.fromCharCode(0x200b);
 		</div>
 		<div class="scrittoio-line">
 			<input
-				class="scrittoio-input"
+				class="scrittoio-input hand-bold"
 				type="text"
 				maxlength="80"
 				autocomplete="off"
@@ -82,7 +82,7 @@ const zwsp = String.fromCharCode(0x200b);
 				placeholder={zwsp}
 				aria-labelledby="scrittoio-label"
 			/>
-			<span class="scrittoio-hint" aria-hidden="true">
+			<span class="scrittoio-hint hand-bold" aria-hidden="true">
 				<span class="bil" lang="it">scrivi qui…</span>
 				<span class="bil" lang="en">write here…</span>
 			</span>
@@ -90,12 +90,12 @@ const zwsp = String.fromCharCode(0x200b);
 	</div>
 	
 	<div class="specimen" data-reveal="stagger">
-		<p>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
-		<p>a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
-		<p class="phrase">
+		<p class="hand-bold">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
+		<p class="hand-bold">a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
+		<p class="phrase hand-bold">
 			<Bilingual it="Scrivere codice come si annota un margine." en="Writing code like annotating a margin." />
 		</p>
-		<p class="accent">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
+		<p class="accent hand-bold">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
 	</div>
 
 
@@ -104,7 +104,7 @@ const zwsp = String.fromCharCode(0x200b);
 			stages.map((stage) => (
 				<article>
 					<span class="step">{stage.step}</span>
-					<h3>
+					<h3 class="hand-bold">
 						<Bilingual it={stage.it} en={stage.en} />
 					</h3>
 					<p>
@@ -120,7 +120,7 @@ const zwsp = String.fromCharCode(0x200b);
 			features.map((feature, i) => (
 				<div>
 					<span class="step">{String(i + 4).padStart(2, '0')}</span>
-					<h3>
+					<h3 class="hand-bold">
 						<Bilingual it={feature.it} en={feature.en} />
 					</h3>
 					<p>
@@ -135,7 +135,7 @@ const zwsp = String.fromCharCode(0x200b);
 		{
 			facts.map((f) => (
 				<div>
-					<dt>{f.value}</dt>
+					<dt class="hand-bold">{f.value}</dt>
 					<dd>
 						<Bilingual it={f.it} en={f.en} />
 					</dd>
@@ -168,15 +168,13 @@ const zwsp = String.fromCharCode(0x200b);
 		padding-left: 28px;
 	}
 
-	h2 {
+	.type-name {
 		margin: 0 0 16px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
 		font-size: var(--hand-heading);
 		line-height: 1;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.lines {
@@ -201,8 +199,6 @@ const zwsp = String.fromCharCode(0x200b);
 		line-height: 1.05;
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.plate {
@@ -243,8 +239,6 @@ const zwsp = String.fromCharCode(0x200b);
 		line-height: 1.05;
 		color: var(--ink-strong);
 		text-align: center;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.plate-foot {
@@ -275,8 +269,6 @@ const zwsp = String.fromCharCode(0x200b);
 		font-size: var(--hand-label);
 		color: var(--ink);
 		line-height: 1.35;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.specimen p.accent {
@@ -298,7 +290,7 @@ const zwsp = String.fromCharCode(0x200b);
 		background:
 			linear-gradient(90deg, rgba(156, 67, 38, 0.18), transparent 16%, transparent 84%, rgba(156, 67, 38, 0.16)),
 			linear-gradient(180deg, rgba(255, 249, 226, 0.74), rgba(223, 203, 159, 0.46));
-		border: 1.4px solid rgba(124, 47, 23, 0.72);
+		border: var(--hairline) solid rgba(124, 47, 23, 0.72);
 		box-shadow:
 			0 18px 34px -28px rgba(58, 42, 24, 0.85),
 			inset 0 0 0 3px rgba(255, 247, 219, 0.42);
@@ -372,8 +364,6 @@ const zwsp = String.fromCharCode(0x200b);
 		letter-spacing: 0.02em;
 		color: var(--ink-strong);
 		caret-color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.scrittoio-hint {
@@ -388,8 +378,6 @@ const zwsp = String.fromCharCode(0x200b);
 		line-height: normal;
 		color: var(--ink-soft);
 		opacity: 0.8;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 		transition: opacity 0.25s ease;
 	}
 
@@ -429,8 +417,6 @@ const zwsp = String.fromCharCode(0x200b);
 		line-height: 1.02;
 		letter-spacing: 0.012em;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.process p,
@@ -454,8 +440,6 @@ const zwsp = String.fromCharCode(0x200b);
 		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 		line-height: 1;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.facts dd {

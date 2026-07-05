@@ -14,7 +14,7 @@ interface Props {
 const { style, tone = 'muted', class: className } = Astro.props;
 ---
 
-<span class:list={['marg', tone, className]} style={style} data-reveal="margin" aria-hidden="true">
+<span class:list={['marg', 'hand-bold', tone, className]} style={style} data-reveal="margin" aria-hidden="true">
 	<slot />
 </span>
 
@@ -27,11 +27,6 @@ const { style, tone = 'muted', class: className } = Astro.props;
 		font-size: var(--hand-label);
 		line-height: 1.35;
 		letter-spacing: 0.025em;
-		/* I tratti del font a mano sono sottili: l'antialiasing pieno li
-		   addensa e un'ombra dello stesso inchiostro fa da finto-grassetto,
-		   così la nota resta leggibile sulla pergamena. */
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.marg.muted {

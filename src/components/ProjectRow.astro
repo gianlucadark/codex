@@ -14,10 +14,10 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 ---
 
 <a class="row" href={`/progetti/${project.slug}`} aria-label={`Apri la tavola ${project.numeral}: ${project.title}`}>
-	<div class="numeral">{project.numeral}</div>
+	<div class="numeral hand-bold">{project.numeral}</div>
 	<div class="body">
 		<div class="title-line">
-			<h3>{project.title}</h3>
+			<h3 class="hand-bold">{project.title}</h3>
 			<span class="stack">{project.stack}</span>
 		</div>
 		<p>
@@ -71,8 +71,6 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		line-height: 0.8;
 		text-align: center;
 		transition: transform 0.2s ease;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.row:hover .numeral,
@@ -94,8 +92,6 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		font-size: var(--hand-title);
 		line-height: 1;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.stack {

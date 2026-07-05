@@ -41,7 +41,7 @@ const hasSubtitle = Boolean(subtitleIt && subtitleEn);
 	<SectionHeader latin={latin} it={it} en={en} folio={folio} />
 	{
 		hasSubtitle && (
-			<p class="subtitle" data-reveal>
+			<p class="subtitle hand-bold" data-reveal>
 				<Bilingual it={subtitleIt!} en={subtitleEn!} />
 			</p>
 		)
@@ -59,9 +59,5 @@ const hasSubtitle = Boolean(subtitleIt && subtitleEn);
 		line-height: 1.05;
 		letter-spacing: 0.015em;
 		color: var(--ink-strong);
-		/* La grafia ha tratti sottili: niente subpixel-smoothing aggressivo e un
-		   text-shadow dello stesso inchiostro per un finto-grassetto leggibile. */
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 </style>

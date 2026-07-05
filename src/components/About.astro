@@ -22,10 +22,10 @@ const stats = [
 
 	<div class="grid">
 		<div class="prose">
-			<h2 data-reveal>
+			<h3 class="hand-bold" data-reveal>
 				<span class="bil" lang="it">Mente e mano,<br />codice e forma.</span>
 				<span class="bil" lang="en">Mind and hand,<br />code and form.</span>
-			</h2>
+			</h3>
 			<div class="bil-pair lines" data-reveal>
 				<p class="line bil" lang="it">
 					Sono uno sviluppatore fullstack con la testa da designer: mi interessa tanto come
@@ -47,7 +47,7 @@ const stats = [
 				{
 					stats.map((s) => (
 						<div>
-							<dt>{s.value}</dt>
+							<dt class="hand-bold">{s.value}</dt>
 							<dd>
 								<span class="bil" lang="it">{s.it}</span>
 								<span class="bil" lang="en">{s.en}</span>
@@ -60,7 +60,7 @@ const stats = [
 
 		<div class="portrait">
 			<div class="plate codex-plate" data-reveal>
-				<div class="window">
+				<div class="window codex-window">
 					<Image
 						class="portrait-img"
 						src={autoritratto}
@@ -70,7 +70,7 @@ const stats = [
 						loading="lazy"
 					/>
 				</div>
-				<div class="caption">
+				<div class="caption codex-caption">
 					<span class="bil" lang="it">l'autore</span>
 					<span class="bil" lang="en">the author</span>
 				</div>
@@ -98,15 +98,13 @@ const stats = [
 		padding-left: 28px;
 	}
 
-	h2 {
+	h3 {
 		margin: 0 0 16px;
 		font-family: var(--font-hand), cursive;
 		font-weight: 400;
 		font-size: var(--hand-title);
 		line-height: 1;
 		color: var(--ink-strong);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.lines {
@@ -132,8 +130,6 @@ const stats = [
 		font-size: var(--hand-label);
 		color: var(--accent-ink);
 		line-height: 1;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.stats dd {
@@ -156,16 +152,8 @@ const stats = [
 	}
 
 	.window {
-		position: relative;
 		width: 100%;
 		aspect-ratio: 3 / 4;
-		border: 1px solid rgba(110, 86, 56, 0.5);
-		background: repeating-linear-gradient(
-			45deg,
-			rgba(110, 86, 56, 0.06) 0 8px,
-			transparent 8px 16px
-		);
-		overflow: hidden;
 	}
 
 	.portrait-img {
@@ -180,15 +168,9 @@ const stats = [
 	}
 
 	.caption {
-		text-align: center;
-		margin-top: 12px;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-caption);
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		color: var(--accent-ink);
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	@media (max-width: 860px) {

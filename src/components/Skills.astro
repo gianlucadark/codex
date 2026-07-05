@@ -11,7 +11,7 @@ import { skillGroups as groups } from '../data/skills';
 		{
 			groups.map((group) => (
 				<div class="group">
-					<h3>{group.title}</h3>
+					<h3 class="hand-bold">{group.title}</h3>
 					<p class="group-desc">
 						<Bilingual it={group.descIt} en={group.descEn} />
 					</p>
@@ -45,12 +45,12 @@ import { skillGroups as groups } from '../data/skills';
 		font-size: var(--hand-caption);
 		color: var(--accent-ink);
 		line-height: 1;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	.group-desc {
 		margin: 8px 0 0;
+		/* Forza due righe anche quando il testo ne occupa una sola, così i filetti
+		   sotto restano allineati tra le card della griglia. */
 		min-height: 3.1em;
 		font-size: 17px;
 		line-height: 1.35;

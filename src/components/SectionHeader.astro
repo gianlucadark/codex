@@ -23,11 +23,11 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 ---
 
 <div class:list={['head', { ruled: rule }]} data-reveal>
-	<span class="eyebrow">
+	<h2 class="eyebrow">
 		{latin && <span class="latin">{latin} — </span>}
 		<Bilingual it={it} en={en} />
-	</span>
-	<span class="folio">{folio}</span>
+	</h2>
+	<span class="folio hand-bold">{folio}</span>
 </div>
 
 <style>
@@ -38,11 +38,13 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 	}
 
 	.head.ruled {
-		border-bottom: 1.5px solid var(--accent);
+		border-bottom: var(--hairline) solid var(--accent);
 		padding-bottom: 8px;
 	}
 
 	.eyebrow {
+		margin: 0;
+		font-weight: 400;
 		font-style: italic;
 		letter-spacing: 0.24em;
 		text-transform: uppercase;
@@ -57,8 +59,6 @@ const { latin, it, en, folio, rule = true } = Astro.props;
 		color: var(--accent-ink);
 		white-space: nowrap;
 		padding-left: 12px;
-		-webkit-font-smoothing: auto;
-		text-shadow: var(--hand-bold);
 	}
 
 	@media (max-width: 560px) {

@@ -101,7 +101,7 @@ const breadcrumbLd = {
 						<div class="prose-body">
 							<div class="desc-col">
 								<div class="bil-pair desc">
-									<Bilingual as="p" it={project.summary} en={project.summaryEn} />
+									<Bilingual as="p" it={project.summary} en={project.summaryEn}/>
 								</div>
 
 								{
@@ -196,6 +196,7 @@ const breadcrumbLd = {
 												alt={`${project.title} — anteprima ${i + 1}`}
 												widths={[480, 760, 1040]}
 												sizes="(max-width: 880px) 92vw, 880px"
+												style={project.slug === 'lightship' ? 'object-fit: contain;' : undefined}
 											/>
 										</div>
 										<figcaption class="caption">
@@ -331,9 +332,9 @@ const breadcrumbLd = {
 		align-items: start;
 	}
 
-	.desc p {
+	.desc :global(p) {
 		margin: 0;
-		font-size: 20px;
+		font-size: 18px;
 		line-height: 1.55;
 		color: var(--ink);
 	}
@@ -366,7 +367,7 @@ const breadcrumbLd = {
 		grid-template-columns: 9px minmax(0, 1fr);
 		gap: 12px;
 		align-items: baseline;
-		font-size: 17px;
+		font-size: 18px;
 		line-height: 1.45;
 		color: var(--ink);
 	}
@@ -399,7 +400,7 @@ const breadcrumbLd = {
 
 	.case-block p {
 		margin: 0;
-		font-size: 17px;
+		font-size: 18px;
 		line-height: 1.55;
 		color: var(--ink);
 	}
@@ -432,7 +433,7 @@ const breadcrumbLd = {
 
 	.tech-list li {
 		font-family: var(--font-garamond), Georgia, serif;
-		font-size: 15px;
+		font-size: 16px;
 		line-height: 1.15;
 		padding: 6px 11px;
 		color: var(--ink);
@@ -457,7 +458,7 @@ const breadcrumbLd = {
 	.meta dd {
 		margin: 2px 0 0;
 		font-family: var(--font-garamond), Georgia, serif;
-		font-size: 16px;
+		font-size: 17px;
 		color: var(--ink-strong);
 	}
 
@@ -470,7 +471,7 @@ const breadcrumbLd = {
 	}
 
 	.link {
-		font-size: 17px;
+		font-size: 18px;
 		color: var(--ink);
 		text-decoration: none;
 		border-bottom: 1px solid rgba(58, 42, 24, 0.3);

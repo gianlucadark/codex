@@ -21,7 +21,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.61.1",
-    "lightship-cli": "^1.0.1",
+    "lightship-cli": "^1.0.2",
     "playwright": "^1.61.1",
     "typescript": "^6.0.3"
   }

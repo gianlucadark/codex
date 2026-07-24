@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar.astro';
 import SmoothScroll from '../components/SmoothScroll.astro';
 import { site } from '../data/site';
 import '../styles/global.css';
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
 	title?: string;
@@ -79,6 +80,7 @@ enUrl.searchParams.set('lang', 'en');
 <html lang="it" data-lang="it">
 	<head>
 		<meta charset="UTF-8" />
+		<Analytics />
 		<!-- Set the codex "voice" before paint to avoid a flash of the wrong language. -->
 		<script is:inline>
 			(function () {

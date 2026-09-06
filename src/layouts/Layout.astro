@@ -80,7 +80,6 @@ enUrl.searchParams.set('lang', 'en');
 <html lang="it" data-lang="it">
 	<head>
 		<meta charset="UTF-8" />
-		<Analytics />
 		<!-- Set the codex "voice" before paint to avoid a flash of the wrong language. -->
 		<script is:inline>
 			(function () {
@@ -153,5 +152,9 @@ enUrl.searchParams.set('lang', 'en');
 		<Navbar />
 		<slot />
 		<SmoothScroll />
+		<!-- Analytics renders a custom element: keep it in body so the HTML parser
+		     does not close head before the metadata and font preloads. Its endpoint
+		     is provided by Vercel, and is unavailable in local/static previews. -->
+		{import.meta.env.VERCEL === '1' && <Analytics />}
 	</body>
 </html>

@@ -11,7 +11,7 @@
  * lettore ~130 KB di libreria.
  *
  * Lenis dà alla pagina la glissata "che gira il foglio". È attivo solo su
- * viewport ampi e viene importato dinamicamente a browser inattivo: su mobile
+ * viewport ampi e viene importato alla prima richiesta di scroll: su mobile
  * non viene mai scaricato e lo scroll nativo (`scroll-behavior: smooth` +
  * `scroll-padding-top`) copre gli stessi casi.
  *
@@ -76,13 +76,16 @@
 			const vh = window.innerHeight;
 			const atEnd =
 				window.scrollY + vh >= document.documentElement.scrollHeight - 2;
+			const revealed: HTMLElement[] = [];
 			for (let i = pending.length - 1; i >= 0; i--) {
 				const { el, line } = pending[i];
 				if (atEnd || el.getBoundingClientRect().top <= vh * line) {
-					el.classList.add('is-revealed');
+					revealed.push(el);
 					pending.splice(i, 1);
 				}
 			}
+			// Complete geometry reads before changing styles to avoid repeated layouts.
+			for (const el of revealed) el.classList.add('is-revealed');
 			if (!pending.length) {
 				removeEventListener('scroll', onScroll);
 				removeEventListener('resize', onScroll);
@@ -102,8 +105,8 @@
 
 	/**
 	 * Lenis solo su viewport ampi (su mobile il suo peso non ripaga) e importato
-	 * a browser inattivo: il chunk non compete mai con font, immagini e primo
-	 * paint. Nell'attesa lo scroll nativo copre gli stessi casi.
+	 * alla prima richiesta di scroll: il chunk non compete con font, immagini e
+	 * primo paint. Nell'attesa lo scroll nativo copre gli stessi casi.
 	 */
 	function setupLenis() {
 		if (!window.matchMedia('(min-width: 861px)').matches) return;
@@ -158,10 +161,17 @@
 				.catch((err) => console.error('[codex] lenis load failed:', err));
 		};
 
-		if ('requestIdleCallback' in window) {
-			(window as Window & typeof globalThis).requestIdleCallback(load);
-		} else {
-			setTimeout(load, 1200);
-		}
+		// Fetch the enhancement when scrolling is first requested. Native scrolling
+		// handles that first event while the module loads.
+		const activate = () => {
+			removeEventListener('wheel', activate);
+			removeEventListener('keydown', onKey);
+			load();
+		};
+		const onKey = (event: KeyboardEvent) => {
+			if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) activate();
+		};
+		addEventListener('wheel', activate, { passive: true });
+		addEventListener('keydown', onKey);
 	}
 </script>

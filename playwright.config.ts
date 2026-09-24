@@ -16,12 +16,15 @@ export default defineConfig({
 	use: {
 		baseURL: 'http://localhost:4329',
 		trace: 'on-first-retry',
+		// Exercise the native GPU on Windows; software ANGLE can stall large
+		// WebGL screenshots even when the interactive browser is smooth.
+		launchOptions: process.platform === 'win32' ? { args: ['--use-angle=d3d11'] } : {},
 	},
 	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 	// Dedicated port + no reuse so the run always hits the built preview, never a
 	// stray `astro dev` server (whose images are unoptimised /@fs/ paths).
 	webServer: {
-		command: 'npm run preview -- --port 4329',
+		command: 'node ./node_modules/astro/bin/astro.mjs preview --port 4329',
 		url: 'http://localhost:4329',
 		reuseExistingServer: false,
 		timeout: 120_000,

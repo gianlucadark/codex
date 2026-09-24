@@ -27,3 +27,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# chromium / playwright debug logs
+/debug.log
+
+# local tooling, not needed for deploy (Blender pipeline, QA, audits)
+/docs/
+/scripts/
+/reports/

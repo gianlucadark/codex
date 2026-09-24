@@ -69,6 +69,16 @@
 	--hand-bold: 0 0 0.45px currentColor;
 }
 
+/* The cinematic cover is progressively enhanced; the page exists without JS. */
+html[data-codex-intro] { overflow: hidden; }
+html[data-codex-intro] body { overflow: hidden; }
+html[data-codex-intro='pending']::after {
+	/* Stessa pergamena del foglio d'attesa (CodexEntrance): mai un lampo nero. */
+	content: ''; position: fixed; inset: 0; z-index: 10000;
+	background: radial-gradient(125% 85% at 26% 10%, #ead8b1 0%, #e2d0a8 42%, #dbc8a0 72%, var(--paper) 100%);
+}
+@media print { .codex-entrance { display: none !important; } }
+
 *,
 *::before,
 *::after {

@@ -7,6 +7,7 @@ import '../styles/global.css';
 import Analytics from '@vercel/analytics/astro';
 
 interface Props {
+	entrance?: boolean;
 	title?: string;
 	description?: string;
 	/** Per-page OG/Twitter image (absolute or root-relative). Defaults to site.ogImage. */
@@ -23,6 +24,7 @@ interface Props {
 }
 
 const {
+	entrance = false,
 	title = site.title,
 	description = site.description,
 	image = site.ogImage,
@@ -80,6 +82,24 @@ enUrl.searchParams.set('lang', 'en');
 <html lang="it" data-lang="it">
 	<head>
 		<meta charset="UTF-8" />
+		{entrance && <script is:inline>
+			(function () {
+				var show = !location.hash;
+				var mode = new URLSearchParams(location.search).get('intro');
+				try { if (sessionStorage.getItem('codex-entered-v1')) show = false; } catch (e) {}
+				if (mode === '1' && !location.hash) show = true;
+				if (mode === '0') show = false;
+				if (show) {
+					document.documentElement.dataset.codexIntro = 'pending';
+					// A failed script must never leave a reader behind a loading screen.
+					setTimeout(function () {
+						if (document.documentElement.dataset.codexIntro === 'pending') {
+							document.documentElement.removeAttribute('data-codex-intro');
+						}
+					}, 8000);
+				}
+			})();
+		</script>}
 		<!-- Set the codex "voice" before paint to avoid a flash of the wrong language. -->
 		<script is:inline>
 			(function () {

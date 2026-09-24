@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import CodexEntrance from '../components/CodexEntrance.astro';
 import CodexBackground from '../components/CodexBackground.astro';
 import FoglioDivider from '../components/FoglioDivider.astro';
 import Hero from '../components/Hero.astro';
@@ -16,7 +17,8 @@ const showStains = true;
 const showGrid = true;
 ---
 
-<Layout>
+<Layout entrance>
+	<CodexEntrance />
 	<main class="codex">
 		<CodexBackground showGrid={showGrid} showStains={showStains} />
 

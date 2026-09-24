@@ -112,6 +112,7 @@
 		if (!window.matchMedia('(min-width: 861px)').matches) return;
 
 		const load = () => {
+			if (html.hasAttribute('data-codex-intro')) return;
 			import('lenis')
 				.then(({ default: Lenis }) => {
 					const lenis = new Lenis({
@@ -164,6 +165,7 @@
 		// Fetch the enhancement when scrolling is first requested. Native scrolling
 		// handles that first event while the module loads.
 		const activate = () => {
+			if (html.hasAttribute('data-codex-intro')) return;
 			removeEventListener('wheel', activate);
 			removeEventListener('keydown', onKey);
 			load();

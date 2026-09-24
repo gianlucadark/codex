@@ -1,0 +1,230 @@
+---
+import Bilingual from './Bilingual.astro';
+---
+
+<dialog class="codex-entrance" aria-labelledby="entrance-title" aria-describedby="entrance-description" data-state="idle" data-light="candle" tabindex="-1" autofocus>
+	<div class="entrance-scene" aria-hidden="true">
+		<img class="entrance-poster" src="/codex/cover.webp" width="1600" height="1200" alt="" fetchpriority="high" decoding="async" />
+		<canvas class="entrance-canvas"></canvas>
+	</div>
+	<div class="entrance-shade" aria-hidden="true"></div>
+	<div class="entrance-frame" aria-hidden="true"></div>
+	<!-- Foglio d'attesa: copre il buio finché la scena 3D non è pronta. -->
+	<div class="entrance-loader" aria-hidden="true">
+		<div class="loader-sheet">
+			<p class="loader-edition">Gianluca D’Arcangelo <span>·</span> MMXXVI</p>
+			<div class="loader-figure">
+				<svg viewBox="0 0 240 240" width="240" height="240">
+					<g class="loader-guide">
+						<circle cx="120" cy="112" r="96" />
+						<rect x="45" y="58" width="150" height="150" />
+						<path d="M120 8v216M16 112h208" />
+					</g>
+					<g class="loader-ink">
+						<circle cx="120" cy="112" r="96" pathLength="1" transform="rotate(90 120 112)" />
+						<rect x="45" y="58" width="150" height="150" pathLength="1" />
+					</g>
+				</svg>
+				<p class="loader-title">Codex</p>
+			</div>
+			<p class="loader-caption"><Bilingual it="si prepara il codice" en="the codex is being bound" /></p>
+			<p class="loader-count">&nbsp;</p>
+		</div>
+	</div>
+	<header class="entrance-heading">
+		<p class="entrance-edition">Gianluca D’Arcangelo <span>·</span> MMXXVI</p>
+		<h2 id="entrance-title">Codex</h2>
+		<p id="entrance-description"><Bilingual it="Ogni idea comincia da una pagina." en="Every idea begins with a page." /></p>
+	</header>
+	<button class="entrance-book" type="button">
+		<span class="sr-only"><Bilingual it="Apri il libro ed entra nel portfolio" en="Open the book and enter the portfolio" /></span>
+	</button>
+	<div class="entrance-invitation">
+		<span class="entrance-ornament" aria-hidden="true">✧</span>
+		<button class="entrance-open" type="button">
+			<Bilingual it="apri il codice" en="open the codex" />
+			<svg viewBox="0 0 32 16" width="32" height="16" aria-hidden="true"><path d="M1 8h28m-6-6 6 6-6 6" /></svg>
+		</button>
+		<p class="entrance-caption"><Bilingual it="Muovi lo sguardo. Poi, entra." en="Look around. Then, step inside." /></p>
+	</div>
+	<footer class="entrance-footer">
+		<button class="entrance-light" type="button" aria-pressed="true">
+			<svg viewBox="0 0 16 24" width="14" height="21" aria-hidden="true">
+				<path class="light-flame" d="M8 1.5c2.6 3.2 3.6 5.4 3.6 7.3A3.6 3.6 0 0 1 8 12.4a3.6 3.6 0 0 1-3.6-3.6c0-1.9 1-4.1 3.6-7.3Z" />
+				<path class="light-wick" d="M8 12.4v2.4" />
+				<rect x="4.5" y="14.8" width="7" height="7.7" rx=".6" />
+			</svg>
+			<span class="light-off"><Bilingual it="Accendi la candela" en="Light the candle" /></span>
+			<span class="light-on"><Bilingual it="Spegni la candela" en="Snuff the candle" /></span>
+		</button>
+		<button class="entrance-skip" type="button"><Bilingual it="Salta introduzione" en="Skip introduction" /><span aria-hidden="true"> ↗</span></button>
+	</footer>
+	<p class="entrance-status sr-only" role="status" aria-live="polite"></p>
+	<div class="entrance-progress" aria-hidden="true"></div>
+</dialog>
+
+<script>
+	import { setupCodexEntrance } from '../scripts/codex-entrance';
+	setupCodexEntrance();
+</script>
+
+<style>
+	.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+	.codex-entrance {
+		position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; height: 100dvh;
+		max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden;
+		background: #19110d; color: #f0dfbd; isolation: isolate;
+		--entrance-exit: 0; --entrance-progress: 0;
+		opacity: calc(1 - var(--entrance-exit));
+	}
+	.codex-entrance::backdrop { background: transparent; }
+	.codex-entrance:focus { outline: none; }
+	.entrance-scene, .entrance-shade, .entrance-frame { position: absolute; inset: 0; pointer-events: none; }
+	.entrance-scene { z-index: -3; }
+	.entrance-poster, .entrance-canvas { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+	.entrance-canvas { opacity: 0; transition: opacity .5s ease; }
+	.codex-entrance[data-scene='ready'] .entrance-canvas { opacity: 1; }
+	/* The poster is only ever a stand-in for the two moments the real 3D scene
+	 * cannot be shown: before any JavaScript has run, and if it truly fails to
+	 * load. The instant loading starts it steps aside — never as a "screen"
+	 * sitting in front of the real, live render. */
+	.codex-entrance:is([data-scene='loading'], [data-scene='ready']) .entrance-poster { opacity: 0; transition: opacity .25s ease; }
+	.entrance-shade {
+		z-index: -2; background: linear-gradient(180deg, rgb(14 9 6 / .8), transparent 32%, transparent 62%, rgb(14 9 6 / .87)),
+			radial-gradient(ellipse at 50% 47%, transparent 30%, rgb(12 8 5 / .46) 100%);
+		transition: opacity 1.2s ease;
+	}
+	.entrance-frame { z-index: -1; inset: 24px; border: 1px solid rgb(239 213 169 / .16); transition: opacity .7s; }
+	/* — Foglio d'attesa — visibile finché la scena non è 'ready' (o ripiega sulla
+	 * copertina statica: 'unavailable' / 'still'). Il cerchio e il quadrato
+	 * vitruviani si tracciano a inchiostro con il download reale del modello. */
+	.entrance-loader {
+		position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 24px;
+		background:
+			radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(58 42 24 / .22) 100%),
+			radial-gradient(125% 85% at 26% 10%, #ead8b1 0%, #e2d0a8 42%, #dbc8a0 72%, var(--paper) 100%);
+		color: var(--ink-strong); --entrance-load: 0;
+		transition: opacity .9s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .9s;
+	}
+	.entrance-loader::before { content: ''; position: absolute; inset: 24px; border: var(--hairline) solid rgb(110 86 56 / .35); pointer-events: none; }
+	.codex-entrance:is([data-scene='ready'], [data-scene='unavailable'], [data-scene='still']) .entrance-loader { opacity: 0; visibility: hidden; }
+	.loader-sheet { display: grid; justify-items: center; text-align: center; animation: loader-in .6s ease both; }
+	.loader-edition { margin: 0 0 clamp(18px, 4vh, 36px); font-size: 11px; letter-spacing: .23em; text-transform: uppercase; color: var(--brown); }
+	.loader-edition > span { padding: 0 9px; color: var(--accent); }
+	.loader-figure { position: relative; width: clamp(190px, 30vmin, 260px); aspect-ratio: 1; display: grid; place-items: center; }
+	.loader-figure svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; }
+	.loader-guide { stroke: var(--brown-3); stroke-width: .6; opacity: .35; stroke-dasharray: 2 4; }
+	.loader-ink > * {
+		stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round;
+		stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--entrance-load));
+		transition: stroke-dashoffset .4s ease-out;
+	}
+	.loader-ink rect { stroke: var(--brown); stroke-width: 1.1; }
+	/* Dimensione ignota (niente Content-Length): la penna continua a tracciare. */
+	.codex-entrance:not([data-load='known']) .loader-ink > * { animation: loader-draw 2.6s ease-in-out infinite; }
+	.codex-entrance:not([data-load='known']) .loader-ink rect { animation-delay: -1.3s; }
+	.loader-title {
+		position: relative; margin: 0; font: 400 clamp(56px, 8vmin, 84px)/1 var(--font-hand), cursive;
+		-webkit-font-smoothing: auto; text-shadow: var(--hand-bold);
+		background: radial-gradient(closest-side, #e4d2aa 55%, transparent); padding: 6px 18px 10px;
+	}
+	.loader-caption {
+		margin: clamp(16px, 3.5vh, 30px) 0 0; font: 400 var(--hand-label)/1.1 var(--font-hand), cursive;
+		color: var(--accent-ink); -webkit-font-smoothing: auto; text-shadow: var(--hand-bold);
+	}
+	.loader-caption::after { content: '…'; display: inline-block; animation: entrance-breathe 1.2s ease-in-out infinite alternate; }
+	.loader-count { margin: 6px 0 0; min-height: 1.4em; font-style: italic; font-size: 15px; letter-spacing: .08em; color: var(--brown); font-variant-numeric: oldstyle-nums; }
+	@keyframes loader-draw { 0% { stroke-dashoffset: 1; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
+	@keyframes loader-in { from { opacity: 0; transform: translateY(6px); } }
+	/* "Salta" resta raggiungibile sopra il foglio, in inchiostro. */
+	.entrance-footer { z-index: 2; }
+	.codex-entrance:not(:is([data-scene='ready'], [data-scene='unavailable'], [data-scene='still'])) .entrance-skip { color: var(--ink-soft); }
+	.entrance-heading { position: absolute; top: clamp(42px, 6.2vh, 80px); width: 100%; text-align: center; pointer-events: none; }
+	.entrance-edition { font-size: 11px; letter-spacing: .23em; text-transform: uppercase; margin: 0 0 8px; }
+	.entrance-edition > span { padding: 0 9px; color: #cba56d; }
+	h2 { font: 400 clamp(60px, 7vw, 100px)/1 var(--font-hand), cursive; margin: 0; text-shadow: 0 2px 30px #160d07; }
+	#entrance-description { font-style: italic; font-size: clamp(15px, 1.2vw, 19px); margin: 8px 0 0; color: #e5cfac; }
+	.entrance-book { position: absolute; left: 25%; top: 29%; width: 49%; height: 48%; background: transparent; border: 0; cursor: pointer; border-radius: 35%; touch-action: none; }
+	.entrance-book:focus-visible { outline: 1px solid #f0dfbd; outline-offset: 12px; }
+	.entrance-invitation { position: absolute; bottom: clamp(80px, 10vh, 130px); width: 100%; display: grid; justify-items: center; gap: 8px; }
+	.entrance-ornament { font-size: 24px; line-height: 1; color: #dfbc83; }
+	.entrance-open { display: flex; align-items: center; gap: 18px; padding: 5px 14px 10px; border: 0; background: transparent; color: inherit; cursor: pointer; font: 400 clamp(35px, 3.2vw, 46px)/1.15 var(--font-hand), cursive; }
+	.entrance-open svg { fill: none; stroke: #dfbc83; stroke-width: 1; transition: transform .35s ease; }
+	.entrance-open:hover svg { transform: translateX(7px); }
+	.entrance-open:focus-visible, .entrance-skip:focus-visible { outline: 1px solid #f0dfbd; outline-offset: 5px; }
+	.entrance-caption { margin: 0; font-size: 12px; letter-spacing: .12em; color: #e5cfac; }
+	.entrance-footer { position: absolute; left: 48px; right: 48px; bottom: max(37px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+	.entrance-folio { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #dfc9a8; }
+	.entrance-folio > span[aria-hidden] { margin: 0 12px; opacity: .5; }
+	.entrance-skip { border: 0; background: transparent; color: #e5cfac; font: inherit; font-size: 13px; padding: 12px 0 12px 12px; cursor: pointer; }
+	.entrance-skip:hover { color: #fff4df; }
+	/* — Luce di candela — solo quando la scena 3D è viva: spegne lo studio e
+	 * lascia il libro alla fiamma. */
+	.entrance-light {
+		display: inline-flex; align-items: center; gap: 12px; margin-right: auto; min-height: 44px; padding: 9px 20px 9px 14px;
+		border: 1px solid rgb(239 213 169 / .42); border-radius: 999px;
+		background: rgb(25 16 11 / .62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+		color: #f0dfbd; font: inherit; font-size: 15px; letter-spacing: .04em; cursor: pointer;
+		box-shadow: 0 6px 22px rgb(0 0 0 / .35);
+		opacity: 0; visibility: hidden;
+		transition: opacity .5s ease, visibility 0s linear .5s, color .3s, border-color .3s, background .3s;
+	}
+	.codex-entrance[data-scene='ready']:not(:is([data-state='playing'], [data-state='closing'])) .entrance-light {
+		opacity: 1; visibility: visible; transition: opacity .5s ease, color .3s, border-color .3s, background .3s;
+	}
+	.entrance-light:hover { color: #fff4df; border-color: rgb(255 194 128 / .8); background: rgb(48 30 18 / .72); }
+	/* Al buio il pulsante prende il colore della fiamma. */
+	.entrance-light[aria-pressed='true'] {
+		color: #ffe2b8; border-color: rgb(255 170 92 / .75); background: rgb(40 20 8 / .7);
+	}
+	.entrance-light:focus-visible { outline: 1px solid #f0dfbd; outline-offset: 5px; }
+	.entrance-light svg { flex: none; width: 18px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.1; }
+	.entrance-light .light-flame { fill: #ffb45c; stroke: #ffb45c; opacity: .45; transition: opacity .4s ease; }
+	.entrance-light[aria-pressed='true'] .light-flame { opacity: 1; filter: drop-shadow(0 0 4px #ff9d44); animation: light-flicker 2.2s ease-in-out infinite alternate; transform-origin: 50% 90%; }
+	.entrance-light .light-on, .entrance-light[aria-pressed='true'] .light-off { display: none; }
+	.entrance-light[aria-pressed='true'] .light-on { display: inline; }
+	@keyframes light-flicker { 50% { transform: scale(.94, 1.04); opacity: .85; } }
+	/* Al buio la cornice e le ombre dipinte si ritirano: resta solo la fiamma. */
+	.codex-entrance[data-light='candle'] .entrance-frame { opacity: .45; }
+	.codex-entrance[data-light='candle'] .entrance-shade { opacity: .3; }
+	.entrance-heading, .entrance-invitation { transition: opacity .55s ease, transform .7s ease; }
+	.codex-entrance[data-state='loading'] .entrance-ornament, .codex-entrance[data-scene='loading'] .entrance-ornament { animation: entrance-breathe 1.4s ease-in-out infinite alternate; }
+	.codex-entrance:is([data-state='playing'], [data-state='closing']) :is(.entrance-heading, .entrance-invitation) { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+	.codex-entrance:is([data-state='playing'], [data-state='closing']) :is(.entrance-shade, .entrance-frame, .entrance-folio) { opacity: 0; }
+	.codex-entrance:is([data-state='playing'], [data-state='closing']) .entrance-book { pointer-events: none; }
+	.codex-entrance[data-state='closing'] .entrance-skip { display: none; }
+	.entrance-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #dbb77e; transform: scaleX(var(--entrance-progress)); transform-origin: left; }
+	@keyframes entrance-breathe { to { opacity: .25; } }
+	@media (min-aspect-ratio: 21/9) {
+		.entrance-poster { object-fit: contain; }
+	}
+	@media (max-aspect-ratio: 3/4) {
+		.entrance-poster {
+			width: 160%; max-width: none; height: auto; aspect-ratio: 4/3; left: -30%; top: 49%; transform: translateY(-50%);
+			mask-image: linear-gradient(transparent, #000 16%, #000 83%, transparent);
+		}
+		.entrance-shade { background: linear-gradient(180deg, rgb(14 9 6 / .3), transparent 35%, transparent 62%, rgb(14 9 6 / .5)); }
+		.entrance-heading { top: max(60px, 8svh); }
+		.entrance-book { left: 12%; top: 32%; width: 76%; height: 36%; }
+		.entrance-invitation { bottom: max(105px, 12svh); }
+	}
+	@media (max-width: 600px) {
+		.entrance-frame, .entrance-loader::before { inset: 14px; }
+		.entrance-footer { left: 27px; right: 27px; bottom: max(25px, env(safe-area-inset-bottom)); }
+		.entrance-edition { font-size: 9px; letter-spacing: .16em; }
+		.entrance-folio { font-size: 9px; }
+		.entrance-folio > span[aria-hidden] { margin: 0 6px; }
+		.entrance-skip { font-size: 12px; min-height: 44px; }
+		.entrance-light { font-size: 13px; gap: 9px; padding: 7px 15px 7px 11px; }
+	}
+	@media (max-height: 540px) and (min-aspect-ratio: 4/3) {
+		.entrance-heading { top: 27px; }
+		h2 { font-size: 48px; }
+		.entrance-edition, #entrance-description, .entrance-caption, .entrance-ornament { display: none; }
+		.entrance-invitation { bottom: 53px; }
+		.entrance-footer { bottom: 16px; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		*, *::before, *::after { animation: none !important; transition: none !important; }
+	}
+</style>

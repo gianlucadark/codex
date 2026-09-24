@@ -17,11 +17,13 @@
     "@astrojs/sitemap": "^3.7.3",
     "@vercel/analytics": "^2.0.1",
     "astro": "^7.0.3",
-    "lenis": "^1.3.25"
+    "lenis": "^1.3.25",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@playwright/test": "^1.61.1",
+    "@types/three": "^0.186.0",
     "lightship-cli": "^1.0.2",
     "playwright": "^1.61.1",
     "typescript": "^6.0.3"

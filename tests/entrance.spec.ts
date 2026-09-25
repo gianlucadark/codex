@@ -60,10 +60,9 @@ test('direct section links bypass the cover', async ({ page }) => {
 test('a failed 3D model still releases the reader into the portfolio', async ({ page }) => {
 	await page.route('**/codex/*.glb', route => route.abort());
 	await page.goto('/');
-	// The loader keeps the book/open buttons inert until the fallback is settled.
+	// A failed scene bypasses the introduction without ever requesting a poster.
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'unavailable');
-	await page.locator('.entrance-open').focus();
-	await page.keyboard.press('Enter');
+	await expect(page.locator('.entrance-poster')).toHaveCount(0);
 	await expect(page.locator('.codex-entrance')).not.toBeVisible();
 	await expect(page.locator('html')).not.toHaveAttribute('data-codex-intro');
 });
@@ -82,7 +81,7 @@ test('skipping during the portal zoom restores the original DOM and navigation',
 	await expect(page).toHaveURL(/#progetti/);
 });
 
-test('WebGL unavailable falls back to the cover with an immediate entrance', async ({ page }) => {
+test('WebGL unavailable enters the site without a static fallback', async ({ page }) => {
 	await page.addInitScript(() => {
 		const original = HTMLCanvasElement.prototype.getContext;
 		HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, options?: unknown) {
@@ -93,7 +92,7 @@ test('WebGL unavailable falls back to the cover with an immediate entrance', asy
 	await page.goto('/');
 	await page.locator('.entrance-open').focus();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'unavailable');
-	await page.locator('.entrance-open').click();
+	await expect(page.locator('.entrance-poster')).toHaveCount(0);
 	await expect(page.locator('.codex-entrance')).not.toBeVisible();
 	await expect(page.locator('h1')).toBeFocused();
 });
@@ -189,7 +188,7 @@ test('a slow 3D load shows the parchment loader, never a black screen', async ({
 	const loader = page.locator('.entrance-loader');
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'loading');
 	await expect(loader).toBeVisible();
-	await expect(loader.locator('.loader-title')).toHaveText('Codex');
+	await expect(loader.locator('.loader-title')).toHaveText('Codex.');
 	await expect(page.getByRole('button', { name: /Salta introduzione/ })).toBeVisible();
 	release();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
@@ -232,4 +231,33 @@ test('skip works while the model request is stalled',async ({page})=>{
  await page.locator('.entrance-skip').click();
  await expect(page.locator('.codex-entrance')).not.toBeVisible();
  await expect(page.locator('h1')).toBeFocused();
+});
+
+test('a load longer than the old timeout keeps only the loader, then reveals live 3D', async ({ page }) => {
+	test.setTimeout(60_000);
+	const posters: string[] = [];
+	page.on('request', r => { if (/\/codex\/cover(?:-mobile)?\.webp/.test(r.url())) posters.push(r.url()); });
+	let release!: () => void;
+	const held = new Promise<void>(resolve => { release = resolve; });
+	await page.route('**/codex/*.glb', async route => { await held; await route.continue(); });
+	await page.goto('/?intro=1');
+	await page.waitForTimeout(13_000);
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'loading');
+	await expect(page.locator('.entrance-loader')).toBeVisible();
+	await expect(page.locator('.entrance-poster, .entrance-scene img')).toHaveCount(0);
+	release();
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
+	await expect(page.locator('.entrance-canvas')).toHaveAttribute('data-ready', 'true');
+	await expect(page.locator('.entrance-loader')).not.toBeVisible();
+	expect(posters).toEqual([]);
+});
+
+test('losing WebGL at the cover releases the site without a screenshot', async ({ page }) => {
+	await page.goto('/?intro=1');
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
+	await page.locator('.entrance-canvas').evaluate(canvas => canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true })));
+	await expect(page.locator('.codex-entrance')).not.toBeVisible();
+	await expect(page.locator('body > main')).toHaveCount(1);
+	await expect(page.locator('h1')).toBeFocused();
+	await expect(page.locator('.entrance-poster')).toHaveCount(0);
 });

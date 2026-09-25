@@ -2,38 +2,51 @@
 import Bilingual from './Bilingual.astro';
 ---
 
-<dialog class="codex-entrance" aria-labelledby="entrance-title" aria-describedby="entrance-description" data-state="idle" data-light="candle" tabindex="-1" autofocus>
+<dialog class="codex-entrance" aria-labelledby="entrance-title" aria-describedby="entrance-description" data-scene="loading" data-state="idle" data-light="candle" tabindex="-1" autofocus>
 	<div class="entrance-scene" aria-hidden="true">
-		<!-- Fallback only: shown if the 3D truly fails to load. Never fetched eagerly,
-		     since the loader below is what a reader sees while the model downloads. -->
-		<picture><source media="(max-aspect-ratio: 3/4)" srcset="/codex/cover-mobile.webp" /><img class="entrance-poster" src="/codex/cover.webp" width="1440" height="900" alt="" fetchpriority="low" decoding="async" /></picture>
 		<canvas class="entrance-canvas"></canvas>
 	</div>
 	<div class="entrance-shade" aria-hidden="true"></div>
 	<div class="entrance-frame" aria-hidden="true"></div>
 	<!-- Foglio d'attesa: copre il buio finché la scena 3D non è pronta. -->
 	<div class="entrance-loader" aria-hidden="true">
-		<div class="loader-sheet">
+		<div class="loader-masthead">
 			<p class="loader-edition">Gianluca D’Arcangelo <span>·</span> MMXXVI</p>
+			<span class="loader-volume">Vol. I <span>—</span> <Bilingual it="Opere & studi" en="Works & studies" /></span>
+		</div>
+		<div class="loader-sheet">
 			<div class="loader-figure">
-				<svg viewBox="0 0 240 240" width="240" height="240">
+				<svg viewBox="0 0 600 600" fill="none" aria-hidden="true">
 					<g class="loader-guide">
-						<circle cx="120" cy="112" r="96" />
-						<rect x="45" y="58" width="150" height="150" />
-						<path d="M120 8v216M16 112h208" />
+						<path d="M300 0v600M0 300h600M88 88l424 424M88 512 512 88" />
+						<circle cx="300" cy="300" r="270" /><circle cx="300" cy="300" r="218" />
+						<rect x="110" y="110" width="380" height="380" />
+						<path d="M30 286v28m540-28v28M286 30h28m-28 540h28M105 300h390M300 105v390" />
+					</g>
+					<g class="loader-orbit">
+						<circle cx="300" cy="300" r="250" stroke-dasharray="1 13" />
+						<path d="M300 44a256 256 0 0 1 256 256M300 556A256 256 0 0 1 44 300" />
+						<path d="m300 35 5 9-5 9-5-9Zm0 512 5 9-5 9-5-9Z" />
 					</g>
 					<g class="loader-ink">
-						<circle cx="120" cy="112" r="96" pathLength="1" transform="rotate(90 120 112)" />
-						<rect x="45" y="58" width="150" height="150" pathLength="1" />
+						<circle cx="300" cy="300" r="234" pathLength="1" transform="rotate(-90 300 300)" />
+						<path d="M300 108 492 444H108Z" pathLength="1" />
+					</g>
+					<g class="loader-book-lines">
+						<path d="M300 205c-43-30-84-34-133-23v192c50-10 92-6 133 23 41-29 83-33 133-23V182c-49-11-90-7-133 23Zm0 0v192" pathLength="1" />
+						<path d="M179 390c47-7 88-2 121 22 33-24 74-29 121-22M185 208c34-3 64 4 90 17m50 0c26-13 56-20 90-17" pathLength="1" />
 					</g>
 				</svg>
-				<p class="loader-title">Codex</p>
+				<span class="loader-coordinate loader-coordinate-top">Fig. 01 <span>·</span> Initium</span>
+				<div class="loader-word"><p class="loader-title">Codex<span class="loader-title-dot">.</span></p></div>
+				<span class="loader-coordinate loader-coordinate-bottom">Ars <span>✧</span> Ingenium</span>
 			</div>
-			<p class="loader-caption"><Bilingual it="si prepara il codice" en="the codex is being bound" /></p>
-			<p class="loader-count">&nbsp;</p>
-			<svg class="loader-flame" viewBox="0 0 16 24" width="14" height="21" aria-hidden="true">
-				<path d="M8 1.5c2.6 3.2 3.6 5.4 3.6 7.3A3.6 3.6 0 0 1 8 12.4a3.6 3.6 0 0 1-3.6-3.6c0-1.9 1-4.1 3.6-7.3Z" />
-			</svg>
+			<p class="loader-caption"><Bilingual it="Ogni idea comincia da una pagina." en="Every idea begins with a page." /></p>
+		</div>
+		<div class="loader-ledger">
+			<div class="loader-note"><span class="loader-index">I / III</span><p><Bilingual it="Si prepara il codice" en="Binding the codex" /></p><span class="loader-detail"><Bilingual it="Materia, luce, meraviglia." en="Matter, light, wonder." /></span></div>
+			<div class="loader-meter"><span class="loader-meter-label"><Bilingual it="Composizione" en="Composition" /></span><p class="loader-count">00</p></div>
+			<div class="loader-rule"><span></span></div>
 		</div>
 	</div>
 	<header class="entrance-heading">
@@ -86,71 +99,85 @@ import Bilingual from './Bilingual.astro';
 	.codex-entrance:focus { outline: none; }
 	.entrance-scene, .entrance-shade, .entrance-frame { position: absolute; inset: 0; pointer-events: none; }
 	.entrance-scene { z-index: -3; }
-	.entrance-poster, .entrance-canvas { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-	.entrance-canvas { opacity: 0; transition: opacity .5s ease; }
+	.entrance-canvas { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+	.entrance-canvas { opacity: 0; }
 	.codex-entrance[data-scene='ready'] .entrance-canvas { opacity: 1; }
-	/* The poster is only ever a stand-in for the two moments the real 3D scene
-	 * cannot be shown: before any JavaScript has run, and if it truly fails to
-	 * load. The instant loading starts it steps aside — never as a "screen"
-	 * sitting in front of the real, live render. */
-	.codex-entrance:is([data-scene='loading'], [data-scene='ready']) .entrance-poster { opacity: 0; transition: opacity .25s ease; }
 	.entrance-shade {
 		z-index: -2; background: linear-gradient(180deg, rgb(14 9 6 / .8), transparent 32%, transparent 62%, rgb(14 9 6 / .87)),
 			radial-gradient(ellipse at 50% 47%, transparent 30%, rgb(12 8 5 / .46) 100%);
 		transition: opacity 2s cubic-bezier(.22, .61, .36, 1);
 	}
 	.entrance-frame { z-index: -1; inset: 24px; border: 1px solid rgb(239 213 169 / .16); transition: opacity 2s cubic-bezier(.22, .61, .36, 1); }
-	/* — Foglio d'attesa — è la prima cosa che si vede al caricamento, e resta
-	 * visibile finché la scena non è 'ready' (o ripiega sulla copertina statica:
-	 * 'unavailable' / 'still'). Il cerchio e il quadrato vitruviani si tracciano
-	 * a inchiostro con il download reale del modello. */
+	/* The loader stays opaque until the live scene has rendered. */
 	.entrance-loader {
 		position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 24px;
 		background:
 			radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(58 42 24 / .22) 100%),
 			radial-gradient(125% 85% at 26% 10%, #ead8b1 0%, #e2d0a8 42%, #dbc8a0 72%, var(--paper) 100%);
-		color: var(--ink-strong); --entrance-load: 0;
-		transition: opacity .9s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .9s;
+		color: var(--ink-strong);
+		transition: opacity 1.2s cubic-bezier(.22, 1, .36, 1), visibility 0s linear 1.2s;
 	}
 	.entrance-loader::before { content: ''; position: absolute; inset: 24px; border: var(--hairline) solid rgb(110 86 56 / .35); pointer-events: none; }
-	.codex-entrance:is([data-scene='ready'], [data-scene='unavailable'], [data-scene='still']) .entrance-loader { opacity: 0; visibility: hidden; }
-	.loader-sheet { display: grid; justify-items: center; text-align: center; animation: loader-in .6s ease both; }
-	.loader-edition { margin: 0 0 clamp(18px, 4vh, 36px); font-size: 11px; letter-spacing: .23em; text-transform: uppercase; color: var(--brown); }
-	.loader-edition > span { padding: 0 9px; color: var(--accent); }
-	.loader-figure { position: relative; width: clamp(190px, 30vmin, 260px); aspect-ratio: 1; display: grid; place-items: center; }
-	.loader-figure svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; }
-	.loader-guide { stroke: var(--brown-3); stroke-width: .6; opacity: .35; stroke-dasharray: 2 4; }
-	.loader-ink > * {
-		stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round;
-		stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--entrance-load));
-		transition: stroke-dashoffset .4s ease-out;
+	.codex-entrance[data-scene='ready'] .entrance-loader { opacity: 0; visibility: hidden; }
+	.loader-masthead { position: absolute; top: clamp(34px, 5.3vh, 64px); left: clamp(32px, 5vw, 90px); right: clamp(32px, 5vw, 90px); display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+	.loader-edition, .loader-volume { margin: 0; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--brown); }
+	.loader-edition > span, .loader-volume > span { color: var(--accent); padding: 0 8px; }
+	.loader-sheet { display: grid; justify-items: center; text-align: center; margin-top: -4vh; }
+	.loader-figure { position: relative; width: min(59vh, 580px, 75vw); aspect-ratio: 1; display: grid; place-items: center; }
+	.loader-figure svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+	.loader-guide { stroke: var(--brown); stroke-width: .65; opacity: .22; }
+	.loader-orbit { stroke: var(--accent-ink); stroke-width: .9; opacity: .52; transform-origin: 300px 300px; animation: loader-orbit 32s linear infinite; }
+	.loader-ink > * { stroke: var(--accent); stroke-width: 1.25; stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--entrance-load, 0)); transition: stroke-dashoffset .65s ease; }
+	.loader-ink path { stroke: var(--brown); opacity: .5; stroke-width: .8; }
+	.loader-book-lines { stroke: var(--brown); stroke-width: .8; opacity: .24; }
+	.loader-book-lines path { stroke-dasharray: 1; animation: loader-bind 3s cubic-bezier(.2,.7,.2,1) both; }
+	.loader-book-lines path + path { animation-delay: .4s; }
+	.loader-word { position: relative; width: 145%; padding: 14px 0 24px; }
+	.loader-word::before { content: ''; position: absolute; inset: 12% 5%; background: radial-gradient(ellipse, #e2d0a8 30%, rgb(226 208 168 / .88) 47%, transparent 72%); }
+	.loader-title { position: relative; margin: 0; color: var(--ink-strong); font: 400 clamp(112px, 15vw, 230px)/.95 var(--font-hand), cursive; letter-spacing: -.055em; padding-right: .06em; -webkit-font-smoothing: auto; text-shadow: var(--hand-bold); animation: loader-write 1.5s cubic-bezier(.16,1,.3,1) both; }
+	.loader-title-dot { color: var(--accent-ink); }
+	.loader-coordinate { position: absolute; font-style: italic; font-size: 12px; letter-spacing: .17em; color: var(--brown); }
+	.loader-coordinate span { color: var(--accent); margin: 0 12px; }
+	.loader-coordinate-top { top: 17%; }
+	.loader-coordinate-bottom { bottom: 16%; }
+	.loader-caption { margin: 12px 0 0; font-size: clamp(15px, 1.35vw, 19px); font-style: italic; color: var(--accent-ink); animation: loader-in 1.2s .3s both; }
+	.loader-ledger { position: absolute; left: clamp(32px, 5vw, 90px); right: clamp(32px, 5vw, 90px); bottom: clamp(94px, 12vh, 130px); display: flex; justify-content: space-between; align-items: end; gap: 24px; padding-bottom: 16px; }
+	.loader-index, .loader-meter-label { font-size: 9px; text-transform: uppercase; letter-spacing: .22em; color: var(--brown); }
+	.loader-note p { margin: 7px 0 4px; font-size: 17px; font-style: italic; color: var(--ink-strong); }
+	.loader-detail { color: var(--brown); font-size: 11px; letter-spacing: .045em; }
+	.loader-meter { text-align: right; }
+	.loader-count { margin: 1px 0 -4px; color: var(--ink-strong); font-size: clamp(42px, 5vw, 66px); line-height: 1; letter-spacing: -.06em; font-variant-numeric: lining-nums tabular-nums; }
+	.loader-count::after { content: '%'; margin-left: 7px; font-size: 15px; letter-spacing: 0; color: var(--accent-ink); }
+	.loader-rule { position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: rgb(110 86 56 / .22); overflow: hidden; }
+	.loader-rule span { display: block; width: 100%; height: 100%; background: var(--accent-ink); transform: scaleX(var(--entrance-load, 0)); transform-origin: left; transition: transform .65s ease; }
+	.codex-entrance:not([data-load='known']) .loader-rule span { animation: loader-search 2.4s ease-in-out infinite; }
+	.codex-entrance[data-scene='ready'] .loader-sheet { transform: scale(1.035); opacity: 0; transition: transform 1.2s ease, opacity .7s ease; }
+	@keyframes loader-orbit { to { transform: rotate(360deg); } }
+	@keyframes loader-bind { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+	@keyframes loader-write { from { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateY(14px); } to { opacity: 1; clip-path: inset(0); transform: none; } }
+	@keyframes loader-in { from { opacity: 0; transform: translateY(8px); } }
+	@keyframes loader-search { 0% { transform: translateX(-100%) scaleX(.25); } 100% { transform: translateX(100%) scaleX(.25); } }
+	@media (max-width: 600px) {
+		.loader-volume { display: none; }
+		.loader-edition { font-size: 9px; letter-spacing: .13em; }
+		.loader-masthead { justify-content: center; }
+		.loader-figure { width: min(77vw, 45vh); }
+		.loader-title { font-size: clamp(108px, 29vw, 170px); }
+		.loader-caption { max-width: 260px; }
+		.loader-coordinate { font-size: 10px; letter-spacing: .1em; }
+		.loader-note p { font-size: 15px; }
+		.loader-detail { font-size: 10px; }
 	}
-	.loader-ink rect { stroke: var(--brown); stroke-width: 1.1; }
-	/* Dimensione ignota (niente Content-Length): la penna continua a tracciare. */
-	.codex-entrance:not([data-load='known']) .loader-ink > * { animation: loader-draw 2.6s ease-in-out infinite; }
-	.codex-entrance:not([data-load='known']) .loader-ink rect { animation-delay: -1.3s; }
-	.loader-title {
-		position: relative; margin: 0; font: 400 clamp(56px, 8vmin, 84px)/1 var(--font-hand), cursive;
-		-webkit-font-smoothing: auto; text-shadow: var(--hand-bold);
-		background: radial-gradient(closest-side, #e4d2aa 55%, transparent); padding: 6px 18px 10px;
+	@media (max-height: 620px) and (min-aspect-ratio: 4/3) {
+		.loader-figure { width: 52vh; }
+		.loader-title { font-size: 25vh; }
+		.loader-ledger { bottom: 68px; }
+		.loader-caption, .loader-detail, .loader-coordinate { display: none; }
+		.loader-count { font-size: 38px; }
 	}
-	.loader-caption {
-		margin: clamp(16px, 3.5vh, 30px) 0 0; font: 400 var(--hand-label)/1.1 var(--font-hand), cursive;
-		color: var(--accent-ink); -webkit-font-smoothing: auto; text-shadow: var(--hand-bold);
-	}
-	.loader-caption::after { content: '…'; display: inline-block; animation: entrance-breathe 1.2s ease-in-out infinite alternate; }
-	.loader-count { margin: 6px 0 0; min-height: 1.4em; font-style: italic; font-size: 15px; letter-spacing: .08em; color: var(--brown); font-variant-numeric: oldstyle-nums; }
-	/* Un piccolo presagio della candela che troverà accesa oltre il foglio. */
-	.loader-flame {
-		margin-top: clamp(10px, 2.4vh, 20px); fill: #d97b2e; stroke: none;
-		filter: drop-shadow(0 0 4px rgb(217 123 46 / .55)); transform-origin: 50% 90%;
-		animation: light-flicker 2.2s ease-in-out infinite alternate;
-	}
-	@keyframes loader-draw { 0% { stroke-dashoffset: 1; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
-	@keyframes loader-in { from { opacity: 0; transform: translateY(6px); } }
 	/* "Salta" resta raggiungibile sopra il foglio, in inchiostro. */
 	.entrance-footer { z-index: 2; }
-	.codex-entrance:not(:is([data-scene='ready'], [data-scene='unavailable'], [data-scene='still'])) .entrance-skip { color: var(--ink-soft); }
+	.codex-entrance:not([data-scene='ready']) .entrance-skip { color: var(--ink-soft); }
 	.entrance-heading { position: absolute; top: clamp(42px, 6.2vh, 80px); width: 100%; text-align: center; pointer-events: none; }
 	.entrance-edition { font-size: 11px; letter-spacing: .23em; text-transform: uppercase; margin: 0 0 8px; }
 	.entrance-edition > span { padding: 0 9px; color: #cba56d; }
@@ -200,9 +227,7 @@ import Bilingual from './Bilingual.astro';
 	.codex-entrance[data-light='candle'] .entrance-frame { opacity: .45; }
 	.codex-entrance[data-light='candle'] .entrance-shade { opacity: .3; }
 	.entrance-heading, .entrance-invitation { transition: opacity .55s ease, transform .7s ease; }
-	/* Il titolo compare solo dopo che il foglio d'attesa si è dissolto, non
-	 * "attraverso" la sua dissolvenza; se il 3D non parte affatto, resta con la
-	 * copertina statica di riserva fin da subito. */
+	/* Reveal the invitation after the loader begins dissolving. */
 	.codex-entrance[data-scene='loading'] :is(.entrance-heading, .entrance-invitation) { opacity: 0; }
 	.codex-entrance[data-scene='ready'] :is(.entrance-heading, .entrance-invitation) { transition-delay: .35s; }
 	.codex-entrance[data-state='loading'] .entrance-ornament, .codex-entrance[data-scene='loading'] .entrance-ornament { animation: entrance-breathe 1.4s ease-in-out infinite alternate; }
@@ -212,14 +237,8 @@ import Bilingual from './Bilingual.astro';
 	.codex-entrance[data-state='closing'] .entrance-skip { display: none; }
 	.entrance-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #dbb77e; transform: scaleX(var(--entrance-progress)); transform-origin: left; }
 	@keyframes entrance-breathe { to { opacity: .25; } }
-	@media (min-aspect-ratio: 21/9) {
-		.entrance-poster { object-fit: contain; }
-	}
+
 	@media (max-aspect-ratio: 3/4) {
-		.entrance-poster {
-			width: 100%; height: 100%; left: 0; top: 0; transform: none; object-fit: cover;
-			
-		}
 		.entrance-shade { background: linear-gradient(180deg, rgb(14 9 6 / .3), transparent 35%, transparent 62%, rgb(14 9 6 / .5)); }
 		.entrance-heading { top: max(60px, 8svh); }
 		.entrance-book { left: 12%; top: 32%; width: 76%; height: 36%; }

@@ -1,6 +1,6 @@
 import {
-	ACESFilmicToneMapping, CanvasTexture, Color, DirectionalLight, HemisphereLight, MathUtils,
-	Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, PCFShadowMap, PerspectiveCamera, PointLight,
+	ACESFilmicToneMapping, AdditiveBlending, BufferGeometry, Float32BufferAttribute, Points, ShaderMaterial, Sprite, SpriteMaterial, CanvasTexture, Color, DirectionalLight, HemisphereLight, MathUtils,
+	Mesh, MeshDepthMaterial, MeshDistanceMaterial, RGBADepthPacking, Raycaster, Plane, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, PCFShadowMap, PerspectiveCamera, PointLight,
 	PMREMGenerator, Quaternion, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -13,6 +13,7 @@ export type CodexScene = {
 	open: () => void;
 	close: () => void;
 	move: (x: number, y: number) => void;
+	leave: () => void;
 	/** Switches to candlelight while retaining a restrained fill for legibility. */
 	setDark: (dark: boolean) => void;
 	pause: () => void;
@@ -63,8 +64,9 @@ export async function createCodexScene(
 		decoder.dispose();
 		const textures = new Set<import('three').Texture>();
 		scene.traverse(object => {
-			if (!(object instanceof Mesh)) return;
+			if (!(object instanceof Mesh) && !(object instanceof Points) && !(object instanceof Sprite)) return;
 			object.geometry.dispose();
+			if (object instanceof Mesh) { object.customDepthMaterial?.dispose(); object.customDistanceMaterial?.dispose(); }
 			for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
 				for (const value of Object.values(material)) if (value && typeof value === 'object' && 'isTexture' in value) textures.add(value as import('three').Texture);
 				material.dispose();
@@ -104,6 +106,21 @@ export async function createCodexScene(
 		let flameMaterial: MeshStandardMaterial | undefined;
 		let waxMaterial: MeshStandardMaterial | undefined;
 		const inkRelease = { value: 0 };
+		const presence = { value: 0 };
+		const paperTime = { value: 0 };
+		// Deform only the exposed sheet edges. The spine stays anchored and the
+		// coherent wave across neighbouring sheets preserves their separation.
+		const flutterShader: MeshStandardMaterial['onBeforeCompile'] = shader => {
+			shader.uniforms.bookPresence = presence;
+			shader.uniforms.paperTime = paperTime;
+			shader.vertexShader = 'uniform float bookPresence; uniform float paperTime;\n' + shader.vertexShader;
+			shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `
+				#include <begin_vertex>
+				float edge = smoothstep(-1.45, 1.5, position.x);
+				float wave = sin(position.z * 3.2 + paperTime * 5.4 + position.y * 24.);
+				transformed.y += bookPresence * edge * edge * (1. + wave) * .0025;
+			`);
+		};
 		const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 		model.scene.traverse(object => {
 			if (!(object instanceof Mesh)) return;
@@ -116,10 +133,17 @@ export async function createCodexScene(
 			}
 			object.castShadow = true;
 			object.receiveShadow = true;
-			if (object.name.startsWith('Small_flame')) flame = object;
+			if (/Folio[ _]tone/.test(object.name)) {
+				const depth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
+				const distance = new MeshDistanceMaterial();
+				depth.onBeforeCompile = flutterShader; distance.onBeforeCompile = flutterShader;
+				object.customDepthMaterial = depth; object.customDistanceMaterial = distance;
+			}
+			if (/^Small[ _]flame/.test(object.name)) { flame = object; object.castShadow = false; }
 			const materials = Array.isArray(object.material) ? object.material : [object.material];
 			for (const material of materials) {
 				if (!(material instanceof MeshStandardMaterial)) continue;
+				if (/Folio tone/.test(material.name)) material.onBeforeCompile = flutterShader;
 				if (material.map?.name?.includes('folio_studi') || material.name.includes('original portfolio ink')) {
 					material.onBeforeCompile = shader => {
 						shader.uniforms.inkRelease = inkRelease;
@@ -133,6 +157,8 @@ export async function createCodexScene(
 					if (texture) texture.anisotropy = anisotropy;
 				}
 				if (material.name === 'Candle flame') flameMaterial = material;
+				// The candle and its holder do not project a dark patch onto the table.
+				if (material.name === 'Aged brass' || material.name === 'Beeswax') object.castShadow = false;
 				if (material.name === 'Beeswax') { waxMaterial = material; material.emissive.set('#ff8f3a'); material.emissiveIntensity = 0; }
 				if (material.name.startsWith('PORTFOLIO_SCREEN')) {
 					screen = object;
@@ -156,7 +182,7 @@ export async function createCodexScene(
 		key.position.set(-3, 8, 4);
 		key.target.position.set(-.8, .4, 0);
 		key.castShadow = true;
-		key.shadow.mapSize.set(1024, 1024);
+		key.shadow.mapSize.set(2048, 2048);
 		Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: .1, far: 25 });
 		key.shadow.normalBias = .025;
 		key.shadow.bias = -.00015;
@@ -165,6 +191,9 @@ export async function createCodexScene(
 		scene.add(key, key.target);
 		const rim = new DirectionalLight('#c8d5e5', .45);
 		rim.position.set(4, 5, -5); scene.add(rim);
+		// A restrained warm reflection travels over the real embossed metal.
+		const glint = new DirectionalLight('#ffe0ac', 0);
+		glint.position.set(-2, 3, 5); scene.add(glint, glint.target);
 		// A fixed, unbounded inverse-power falloff avoids crossing Three.js's
 		// special distance=0 value halfway through a lighting transition.
 		const candle = new PointLight('#ff9d44', 3, 0, 2);
@@ -172,15 +201,31 @@ export async function createCodexScene(
 		else candle.position.set(-3, 2.5, -3);
 		// Only perceptible once the room goes dark, where the flame is the one
 		// light left and the book has to throw its own shadow away from it.
-		candle.castShadow = false;
-		candle.shadow.mapSize.set(512, 512);
+		candle.castShadow = true;
+		candle.shadow.mapSize.set(1024, 1024);
 		Object.assign(candle.shadow.camera, { near: .1, far: 16 });
 		candle.shadow.bias = -.0004;
 		candle.shadow.normalBias = .02;
-		candle.shadow.radius = 6;
+		candle.shadow.radius = 2;
+		candle.shadow.intensity = .72;
 		candle.shadow.blurSamples = 8;
 		scene.add(candle);
 		const candleOrigin = candle.position.clone();
+		// A small optical halo remains anchored in 3D and occluded by the book.
+		const glowCanvas = document.createElement('canvas');
+		glowCanvas.width = glowCanvas.height = 64;
+		const glowContext = glowCanvas.getContext('2d')!;
+		const halo = glowContext.createRadialGradient(32, 32, 0, 32, 32, 32);
+		halo.addColorStop(0, 'rgba(255,236,180,.7)');
+		halo.addColorStop(.18, 'rgba(255,184,74,.25)');
+		halo.addColorStop(.5, 'rgba(240,110,24,.06)');
+		halo.addColorStop(1, 'rgba(240,110,24,0)');
+		glowContext.fillStyle = halo; glowContext.fillRect(0, 0, 64, 64);
+		const glow = new Sprite(new SpriteMaterial({ map: new CanvasTexture(glowCanvas), blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
+		glow.position.copy(candleOrigin); glow.position.y -= .07;
+		glow.scale.setScalar(.65); scene.add(glow);
+		const flameScale = flame?.scale.clone();
+		const flameRotation = flame?.rotation.z ?? 0;
 		const flameEmissive = flameMaterial?.emissiveIntensity ?? 1;
 		// Daylight studio → dark room: every value the candle mode changes,
 		// eased between as `darkness` goes 0 → 1.
@@ -207,8 +252,8 @@ export async function createCodexScene(
 			const d = MathUtils.clamp(darkness, 0, 1);
 			sky.intensity = .4 * (1 - d) + .12 * d;
 			key.intensity = 2.1 * (1 - d) + .32 * d;
-			rim.intensity = .45 * (1 - d) + .12 * d;
-			scene.environmentIntensity = .2 * (1 - d) + .006 * d;
+			rim.intensity = .45 * (1 - d) + .22 * d;
+			scene.environmentIntensity = .2 * (1 - d) + .025 * d;
 			(scene.background as Color).lerpColors(day.background, night.background, d);
 			candle.color.lerpColors(day.candle, night.candle, d);
 			// A softer falloff than daylight's reaches across the whole book.
@@ -224,7 +269,13 @@ export async function createCodexScene(
 				candleOrigin.y + flutter * .01 * d,
 				candleOrigin.z + Math.sin(now * .0031 + .5) * .012 * d,
 			);
+			// A tethered, breathing flame: the wick stays still while its tip leans.
+			if (flame && flameScale) {
+				flame.scale.set(flameScale.x * (1 - flutter * .09), flameScale.y * (1 + flutter * .12), flameScale.z);
+				flame.rotation.z = flameRotation + flutter * .065;
+			}
 			// Wax glows where the flame shines through it.
+			glow.material.opacity = .6 + d * .3 + flutter * .08;
 			if (waxMaterial) waxMaterial.emissiveIntensity = d * (.14 + flutter * .02);
 			if (flameMaterial) flameMaterial.emissiveIntensity = flameEmissive * (1 + d * (1.6 + flutter * .25));
 			renderer.toneMappingExposure = MathUtils.lerp(1.05, 1.15, d);
@@ -242,8 +293,58 @@ export async function createCodexScene(
 		}));
 		contact.rotation.x = -Math.PI / 2; contact.position.y = .043;
 		scene.add(contact);
+		// Sparse airborne fibres catch the candle, with real depth and parallax.
+		// One draw call, GPU drift, no postprocessing or full-screen glow wash.
+		const dustGeometry = new BufferGeometry();
+		const dustPositions = [], dustSeeds = [];
+		for (let i = 0; i < 180; i++) {
+			const seed = (i * .61803398875) % 1;
+			dustPositions.push(((i * .754877666) % 1 - .5) * 10, .25 + seed * 4.5, ((i * .569840291) % 1 - .5) * 8);
+			dustSeeds.push(seed);
+		}
+		dustGeometry.setAttribute('position', new Float32BufferAttribute(dustPositions, 3));
+		dustGeometry.setAttribute('seed', new Float32BufferAttribute(dustSeeds, 1));
+		const dustMaterial = new ShaderMaterial({
+			transparent: true, depthWrite: false, blending: AdditiveBlending,
+			uniforms: { time: { value: 0 }, strength: { value: 1 }, candlePosition: { value: candleOrigin } },
+			vertexShader: `
+				attribute float seed;
+				uniform float time;
+				uniform vec3 candlePosition;
+				varying float illumination;
+				void main() {
+					vec3 p = position;
+					p.x += sin(time * .17 + seed * 40.) * .18;
+					p.z += cos(time * .13 + seed * 30.) * .14;
+					p.y += sin(time * .21 + seed * 50.) * .16;
+					vec4 view = modelViewMatrix * vec4(p, 1.);
+					illumination = (.1 + .65 / (1. + dot(p - candlePosition, p - candlePosition) * .3)) * (.4 + seed * .6);
+					gl_PointSize = clamp((12. + seed * 12.) / max(1., -view.z), 1., 3.);
+					gl_Position = projectionMatrix * view;
+				}
+			`,
+			fragmentShader: `
+				uniform float strength;
+				varying float illumination;
+				void main() {
+					float radius = length(gl_PointCoord - .5) * 2.;
+					float alpha = (1. - smoothstep(.05, 1., radius)) * illumination * strength;
+					gl_FragColor = vec4(1., .72, .38, alpha);
+				}
+			`,
+		});
+		const dust = new Points(dustGeometry, dustMaterial);
+		scene.add(dust);
 		const pointer = new Vector2();
 		const current = new Vector2();
+		let pointerActive = false;
+		let approach = 0;
+		let openingApproach = 0;
+		const ray = new Raycaster();
+		const coverPlane = new Plane(new Vector3(0, 1, 0), -.735);
+		const hit = new Vector3();
+		const lift = new Quaternion();
+		const spineAxis = new Vector3(0, 0, 1);
 		const basePosition = new Vector3();
 		const nextPosition = new Vector3();
 		const baseRotation = new Quaternion();
@@ -260,6 +361,7 @@ export async function createCodexScene(
 		const closeSpeed = 1 / 0.75;
 		let previous = performance.now();
 		let previousRender = 0;
+		let previousShadow = 0;
 		let slowFrames = 0;
 		let qualityScale = 1;
 		let visible = !document.hidden;
@@ -296,6 +398,15 @@ export async function createCodexScene(
 			basePosition.fromArray(a.p).lerp(nextPosition.fromArray(b.p), t);
 			baseRotation.fromArray(a.q).slerp(nextRotation.fromArray(b.q), t);
 			hinge.quaternion.fromArray(a.h).slerp(nextHinge.fromArray(b.h), t);
+			// Continue from the lifted cover on click, then merge into Blender's
+			// opening curve without snapping the hinge back to its closed pose.
+			const response = animating
+				? (direction === 1 ? openingApproach * (1 - MathUtils.smootherstep(time, 0, .7)) : 0)
+				: (time === 0 ? approach : 0);
+			presence.value = response;
+			hinge.quaternion.multiply(lift.setFromAxisAngle(spineAxis, response * .055));
+			glint.intensity = response * .85;
+			glint.position.set(-2 + current.x * 4, 3.5, 4 + current.y * 2);
 			const weight = animating ? Math.max(0, 1 - elapsed / .6) : 1;
 			target.set(0, 0, -1).applyQuaternion(baseRotation).multiplyScalar(basePosition.length()).add(basePosition);
 			offset.set(current.x * .42 * weight, -current.y * .24 * weight, 0).applyQuaternion(baseRotation);
@@ -333,14 +444,28 @@ export async function createCodexScene(
 			if (slowFrames > 40 && qualityScale > .65) { qualityScale *= .8; slowFrames = 0; resize(); }
 			if (animating) elapsed = direction === 1 ? Math.min(duration, elapsed + dt) : Math.max(0, elapsed - dt * closeSpeed);
 			current.lerp(pointer, 1 - Math.exp(-dt * 4.5));
+			let proximity = 0;
+			if (pointerActive && !animating && elapsed === 0) {
+				camera.updateMatrixWorld();
+				ray.setFromCamera(new Vector2(pointer.x, -pointer.y), camera);
+				if (ray.ray.intersectPlane(coverPlane, hit)) {
+					const outside = Math.hypot(Math.max(0, Math.abs(hit.x) - 1.6), Math.max(0, Math.abs(hit.z) - 2.15));
+					proximity = 1 - MathUtils.smootherstep(outside, 0, 1.15);
+				}
+			}
+			approach = MathUtils.lerp(approach, proximity, 1 - Math.exp(-dt * 6));
+			if (approach < .0001) approach = 0;
+			paperTime.value = now * .001;
 			const fading = darkness !== darkTarget || lightVelocity !== 0;
 			if (fading) advanceLight(dt);
 			// In the dark the flicker is the whole scene, so it keeps a smooth 30fps.
-			const idleGap = darkness > 0 ? 33 : 100;
+			const idleGap = approach > .001 || pointerActive ? 16 : darkness > 0 ? 33 : 100;
 			if (!animating && !fading && now - previousRender < (current.distanceToSquared(pointer) > .00001 ? 16 : idleGap)) return;
 			previousRender = now;
 			pose(elapsed);
-			if (animating && elapsed < 3) renderer.shadowMap.needsUpdate = true;
+			if (animating || now - previousShadow > 100) { renderer.shadowMap.needsUpdate = true; previousShadow = now; }
+			dustMaterial.uniforms.time.value = now * .001;
+			dustMaterial.uniforms.strength.value = 1 - MathUtils.smootherstep(elapsed / duration, .5, .78);
 			applyLight(now);
 			renderer.render(scene, camera);
 			if (animating) {
@@ -353,11 +478,12 @@ export async function createCodexScene(
 		document.addEventListener('visibilitychange', () => { visible = !document.hidden; previous = performance.now(); }, { signal });
 		raf = requestAnimationFrame(tick);
 		return {
-			pause() { paused = true; cancelAnimationFrame(raf); },
+			pause() { pointerActive = false; approach = 0; paused = true; cancelAnimationFrame(raf); },
 			resume() { if (paused && !disposed) { paused = false; previous = performance.now(); raf = requestAnimationFrame(tick); } },
-			open() { animating = true; direction = 1; pointer.set(0, 0); previous = performance.now(); },
-			close() { animating = true; direction = -1; pointer.set(0, 0); previous = performance.now(); },
-			move(x, y) { if (!animating) pointer.set(MathUtils.clamp(x, -1, 1), MathUtils.clamp(y, -1, 1)); },
+			open() { openingApproach = presence.value; pointerActive = false; animating = true; direction = 1; pointer.set(0, 0); previous = performance.now(); },
+			close() { pointerActive = false; approach = 0; animating = true; direction = -1; pointer.set(0, 0); previous = performance.now(); },
+			move(x, y) { if (!animating) { pointerActive = true; pointer.set(MathUtils.clamp(x, -1, 1), MathUtils.clamp(y, -1, 1)); } },
+			leave() { pointerActive = false; pointer.set(0, 0); },
 			setDark(dark) { darkTarget = dark ? 1 : 0; },
 			dispose,
 		};

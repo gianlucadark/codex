@@ -23,6 +23,7 @@ export function setupCodexEntrance() {
 	const sceneHost = dialog.querySelector<HTMLElement>('.entrance-scene')!;
 	const invitation = dialog.querySelector<HTMLElement>('.entrance-invitation')!;
 	const loaderCount = dialog.querySelector<HTMLElement>('.loader-count');
+	const loaderIndex = dialog.querySelector<HTMLElement>('.loader-index');
 	// While the parchment loader covers the book and "apri il codice", their
 	// buttons must not be reachable by Tab — a keyboard reader would otherwise
 	// land on controls hidden under the sheet.
@@ -95,8 +96,8 @@ export function setupCodexEntrance() {
 		dialog.dataset.scene = 'unavailable';
 		setLoaderInert(false);
 		status.textContent = en() ? 'Enter the portfolio to continue.' : 'Entra nel portfolio per continuare.';
-		if (is('loading') || is('playing')) enterSite(true);
-		else if (is('closing')) returnDone();
+		// No static fallback, including failures during idle or the return trip.
+		if (!is('done')) enterSite(true);
 	};
 
 	/** Loads the one scene instance the whole page lifetime shares. A no-op once it exists. */
@@ -106,7 +107,7 @@ export function setupCodexEntrance() {
 		const { signal } = sceneController;
 		dialog.dataset.scene = 'loading';
 		setLoaderInert(true);
-		loadTimeout = window.setTimeout(onSceneFailure, 12000);
+		loadTimeout = window.setTimeout(onSceneFailure, 60000);
 		sceneReady = import('./codex-scene')
 			.then(({ createCodexScene }) => createCodexScene(canvas, {
 				signal,
@@ -119,8 +120,10 @@ export function setupCodexEntrance() {
 					// Without a Content-Length the loader keeps drawing, without a number.
 					if (Number.isNaN(fraction)) { dialog.dataset.load = 'unknown'; return; }
 					dialog.dataset.load = 'known';
-					dialog.style.setProperty('--entrance-load', fraction.toFixed(3));
-					if (loaderCount) loaderCount.textContent = `${Math.round(fraction * 100)}%`;
+					if (loaderIndex && fraction >= 1) loaderIndex.textContent = 'II / III';
+					const composed = Math.min(.95, fraction * .95);
+					dialog.style.setProperty('--entrance-load', composed.toFixed(3));
+					if (loaderCount) loaderCount.textContent = String(Math.round(composed * 100)).padStart(2, '0');
 				},
 				onComplete: () => enterSite(true),
 				onClosed: () => returnDone(),
@@ -133,6 +136,10 @@ export function setupCodexEntrance() {
 				if (is('done')) scene.pause();
 				// The reader may have flipped the switch while the model was loading.
 				scene.setDark(dark);
+				dialog.dataset.load = 'known';
+				dialog.style.setProperty('--entrance-load', '1');
+				if (loaderCount) loaderCount.textContent = '100';
+				if (loaderIndex) loaderIndex.textContent = 'III / III';
 				dialog.dataset.scene = 'ready';
 				setLoaderInert(false);
 				status.textContent = en()
@@ -204,7 +211,8 @@ export function setupCodexEntrance() {
 		lenis()?.stop();
 		dialog.showModal();
 		dialog.focus({ preventScroll: true });
-		if (!scene || reduced.matches || failed) { returnDone(); return; }
+		if (reduced.matches || failed) { enterSite(true); return; }
+		if (!scene) { returnDone(); void ensureScene(); return; }
 		status.textContent = en() ? 'Closing the codex…' : 'Il codice si sta chiudendo…';
 		// Grab the live DOM and pin it full-screen *before* the dialog appears,
 		// so opening the modal causes no visible change at all.
@@ -255,8 +263,9 @@ export function setupCodexEntrance() {
 	};
 
 	try {
-		// Reduced motion never loads the 3D: show the still cover, not the loader.
-		if (reduced.matches) dialog.dataset.scene = 'still'; else setLoaderInert(true);
+		// Reduced motion bypasses the introduction without a still-image substitute.
+		if (reduced.matches) { enterSite(true); return; }
+		setLoaderInert(true);
 		dialog.showModal(); dialog.focus({ preventScroll: true }); html.dataset.codexIntro = 'active';
 		savedScroll = window.scrollY;
 		bindReturnButtons();
@@ -271,13 +280,20 @@ export function setupCodexEntrance() {
 			else if (!is('done')) enterSite();
 		}, { signal: pageSignal });
 		dialog.addEventListener('pointerdown', event => { dragged = false; downX = event.clientX; downY = event.clientY; }, { signal: pageSignal });
+		dialog.addEventListener('pointerdown', event => {
+			if (is('idle') && event.pointerType === 'touch') scene?.move(event.clientX / innerWidth * 2 - 1, event.clientY / innerHeight * 2 - 1);
+		}, { signal: pageSignal, passive: true });
+		for (const type of ['pointerup', 'pointercancel'] as const) dialog.addEventListener(type, event => {
+			if (event.pointerType === 'touch') scene?.leave();
+		}, { signal: pageSignal, passive: true });
+		window.addEventListener('blur', () => scene?.leave(), { signal: pageSignal });
 		dialog.addEventListener('pointermove', event => {
 			if (!is('idle')) return;
 			if (event.pointerType === 'touch' && !event.buttons) return;
 			if (event.buttons && Math.hypot(event.clientX - downX, event.clientY - downY) > 8) dragged = true;
 			scene?.move(event.clientX / innerWidth * 2 - 1, event.clientY / innerHeight * 2 - 1);
 		}, { signal: pageSignal, passive: true });
-		dialog.addEventListener('pointerleave', () => { if (is('idle')) scene?.move(0, 0); }, { signal: pageSignal });
+		dialog.addEventListener('pointerleave', () => { if (is('idle')) scene?.leave(); }, { signal: pageSignal });
 		dialog.addEventListener('keydown', event => {
 			if (event.key === 'Tab') {
 				// The loader (while up) makes book/open inert, so only ever wrap
@@ -295,7 +311,7 @@ export function setupCodexEntrance() {
 		reduced.addEventListener('change', () => {
 			if (!reduced.matches) return;
 			if (is('idle') || is('loading') || is('playing')) { sceneController?.abort(); scene?.dispose(); scene = undefined; sceneReady = undefined; enterSite(true); }
-			else if (is('closing')) { scene?.dispose(); scene = undefined; sceneReady = undefined; returnDone(); }
+			else if (is('closing')) { discardScene(); enterSite(true); }
 		}, { signal: pageSignal });
 		addEventListener('hashchange', () => { savedScroll = 0; if (!is('done') && !is('closing')) enterSite(true); }, { signal: pageSignal });
 		addEventListener('pagehide', () => { discardScene(); page.abort(); }, { signal: pageSignal, once: true });

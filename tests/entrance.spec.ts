@@ -11,7 +11,8 @@ for (const [name, viewport] of [
 		await page.goto('/');
 		await expect(page.locator('.codex-entrance')).toBeVisible();
 		await expect(page.locator('video')).toHaveCount(0);
-		await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
+		await page.locator('.entrance-open').focus();
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
 		await expect(page.locator('canvas.entrance-canvas')).toHaveAttribute('data-ready', 'true');
 		await expect(page.locator('html')).toHaveAttribute('data-codex-intro', 'active');
 		await page.locator('.entrance-book').click();
@@ -44,7 +45,7 @@ test('reduced motion opens immediately without downloading the 3D model', async 
 	const models: string[] = [];
 	page.on('request', request => { if (request.url().endsWith('.glb')) models.push(request.url()); });
 	await page.goto('/');
-	await page.getByRole('button', { name: 'apri il codice', exact: true }).click();
+	await expect(page.locator('h1')).toBeVisible();
 	await expect(page.locator('.codex-entrance')).not.toBeVisible();
 	expect(models).toEqual([]);
 });
@@ -59,6 +60,8 @@ test('direct section links bypass the cover', async ({ page }) => {
 test('a failed 3D model still releases the reader into the portfolio', async ({ page }) => {
 	await page.route('**/codex/*.glb', route => route.abort());
 	await page.goto('/');
+	// The loader keeps the book/open buttons inert until the fallback is settled.
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'unavailable');
 	await page.locator('.entrance-open').focus();
 	await page.keyboard.press('Enter');
 	await expect(page.locator('.codex-entrance')).not.toBeVisible();
@@ -67,6 +70,7 @@ test('a failed 3D model still releases the reader into the portfolio', async ({ 
 
 test('skipping during the portal zoom restores the original DOM and navigation', async ({ page }) => {
 	await page.goto('/');
+	await page.locator('.entrance-open').focus();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
 	await page.locator('.entrance-open').click();
 	await expect(page.locator('.codex-live-portal main')).toHaveCount(1, { timeout: 8_000 });
@@ -87,6 +91,7 @@ test('WebGL unavailable falls back to the cover with an immediate entrance', asy
 		} as typeof original;
 	});
 	await page.goto('/');
+	await page.locator('.entrance-open').focus();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'unavailable');
 	await page.locator('.entrance-open').click();
 	await expect(page.locator('.codex-entrance')).not.toBeVisible();
@@ -112,6 +117,7 @@ test('the navbar can close the book and reopen it, in place', async ({ page }) =
 	const errors: string[] = [];
 	page.on('pageerror', error => errors.push(error.message));
 	await page.goto('/');
+	await page.locator('.entrance-open').focus();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
 	await page.locator('.entrance-open').click();
 	await expect(page.locator('.codex-entrance')).not.toBeVisible({ timeout: 12_000 });
@@ -143,6 +149,7 @@ test('the navbar can close the book and reopen it, in place', async ({ page }) =
 
 test('Escape while the book is closing cancels the trip and keeps the reader on the site', async ({ page }) => {
 	await page.goto('/');
+	await page.locator('.entrance-open').focus();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
 	await page.locator('.entrance-open').click();
 	await expect(page.locator('.codex-entrance')).not.toBeVisible({ timeout: 12_000 });
@@ -187,4 +194,42 @@ test('a slow 3D load shows the parchment loader, never a black screen', async ({
 	release();
 	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
 	await expect(loader).not.toBeVisible();
+});
+
+test('the parchment loader appears at once, the model loads without interaction, and handoff never scales HTML', async ({ page }) => {
+	const models: string[] = [];
+	page.on('request', r => { if (r.url().endsWith('.glb')) models.push(r.url()); });
+	await page.goto('/');
+	await expect(page.locator('.entrance-loader')).toBeVisible();
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'loading');
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
+	await expect(page.locator('.entrance-loader')).not.toBeVisible();
+	expect(models).toHaveLength(1);
+	await page.locator('.entrance-open').click();
+	await expect(page.locator('.codex-live-portal main')).toHaveCount(1, { timeout: 20_000 });
+	expect(await page.locator('.codex-live-portal').evaluate(el => getComputedStyle(el).transform)).toBe('none');
+	await expect(page.locator('.codex-entrance')).not.toBeVisible();
+	expect(models).toHaveLength(1);
+});
+
+test('the candle is lit by default, and switching to daylight is remembered', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-light', 'candle');
+	await expect(page.locator('.entrance-light')).toHaveAttribute('aria-pressed', 'true');
+	await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'ready', { timeout: 30_000 });
+	await page.locator('.entrance-light').click();
+	await expect(page.locator('.entrance-light')).toHaveAttribute('aria-pressed', 'false');
+	await expect(page.locator('.codex-entrance')).not.toHaveAttribute('data-light');
+	await page.reload();
+	await expect(page.locator('.codex-entrance')).not.toHaveAttribute('data-light');
+	await expect(page.locator('.entrance-light')).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('skip works while the model request is stalled',async ({page})=>{
+ await page.route('**/codex/*.glb',()=>{});
+ await page.goto('/');
+ await expect(page.locator('.codex-entrance')).toHaveAttribute('data-scene', 'loading');
+ await page.locator('.entrance-skip').click();
+ await expect(page.locator('.codex-entrance')).not.toBeVisible();
+ await expect(page.locator('h1')).toBeFocused();
 });

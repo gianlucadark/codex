@@ -88,7 +88,7 @@ enUrl.searchParams.set('lang', 'en');
 				var mode = new URLSearchParams(location.search).get('intro');
 				try { if (sessionStorage.getItem('codex-entered-v1')) show = false; } catch (e) {}
 				if (mode === '1' && !location.hash) show = true;
-				if (mode === '0') show = false;
+				if (mode === '0' || matchMedia('(prefers-reduced-motion: reduce)').matches) show = false;
 				if (show) {
 					document.documentElement.dataset.codexIntro = 'pending';
 					// A failed script must never leave a reader behind a loading screen.

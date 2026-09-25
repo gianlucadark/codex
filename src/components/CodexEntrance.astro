@@ -4,7 +4,9 @@ import Bilingual from './Bilingual.astro';
 
 <dialog class="codex-entrance" aria-labelledby="entrance-title" aria-describedby="entrance-description" data-state="idle" data-light="candle" tabindex="-1" autofocus>
 	<div class="entrance-scene" aria-hidden="true">
-		<img class="entrance-poster" src="/codex/cover.webp" width="1600" height="1200" alt="" fetchpriority="high" decoding="async" />
+		<!-- Fallback only: shown if the 3D truly fails to load. Never fetched eagerly,
+		     since the loader below is what a reader sees while the model downloads. -->
+		<picture><source media="(max-aspect-ratio: 3/4)" srcset="/codex/cover-mobile.webp" /><img class="entrance-poster" src="/codex/cover.webp" width="1440" height="900" alt="" fetchpriority="low" decoding="async" /></picture>
 		<canvas class="entrance-canvas"></canvas>
 	</div>
 	<div class="entrance-shade" aria-hidden="true"></div>
@@ -29,6 +31,9 @@ import Bilingual from './Bilingual.astro';
 			</div>
 			<p class="loader-caption"><Bilingual it="si prepara il codice" en="the codex is being bound" /></p>
 			<p class="loader-count">&nbsp;</p>
+			<svg class="loader-flame" viewBox="0 0 16 24" width="14" height="21" aria-hidden="true">
+				<path d="M8 1.5c2.6 3.2 3.6 5.4 3.6 7.3A3.6 3.6 0 0 1 8 12.4a3.6 3.6 0 0 1-3.6-3.6c0-1.9 1-4.1 3.6-7.3Z" />
+			</svg>
 		</div>
 	</div>
 	<header class="entrance-heading">
@@ -45,7 +50,7 @@ import Bilingual from './Bilingual.astro';
 			<Bilingual it="apri il codice" en="open the codex" />
 			<svg viewBox="0 0 32 16" width="32" height="16" aria-hidden="true"><path d="M1 8h28m-6-6 6 6-6 6" /></svg>
 		</button>
-		<p class="entrance-caption"><Bilingual it="Muovi lo sguardo. Poi, entra." en="Look around. Then, step inside." /></p>
+		<p class="entrance-caption"><Bilingual it="Un libro da esplorare. Una pagina da abitare." en="A book to explore. A page to inhabit." /></p>
 	</div>
 	<footer class="entrance-footer">
 		<button class="entrance-light" type="button" aria-pressed="true">
@@ -95,9 +100,10 @@ import Bilingual from './Bilingual.astro';
 		transition: opacity 2s cubic-bezier(.22, .61, .36, 1);
 	}
 	.entrance-frame { z-index: -1; inset: 24px; border: 1px solid rgb(239 213 169 / .16); transition: opacity 2s cubic-bezier(.22, .61, .36, 1); }
-	/* — Foglio d'attesa — visibile finché la scena non è 'ready' (o ripiega sulla
-	 * copertina statica: 'unavailable' / 'still'). Il cerchio e il quadrato
-	 * vitruviani si tracciano a inchiostro con il download reale del modello. */
+	/* — Foglio d'attesa — è la prima cosa che si vede al caricamento, e resta
+	 * visibile finché la scena non è 'ready' (o ripiega sulla copertina statica:
+	 * 'unavailable' / 'still'). Il cerchio e il quadrato vitruviani si tracciano
+	 * a inchiostro con il download reale del modello. */
 	.entrance-loader {
 		position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; padding: 24px;
 		background:
@@ -134,6 +140,12 @@ import Bilingual from './Bilingual.astro';
 	}
 	.loader-caption::after { content: '…'; display: inline-block; animation: entrance-breathe 1.2s ease-in-out infinite alternate; }
 	.loader-count { margin: 6px 0 0; min-height: 1.4em; font-style: italic; font-size: 15px; letter-spacing: .08em; color: var(--brown); font-variant-numeric: oldstyle-nums; }
+	/* Un piccolo presagio della candela che troverà accesa oltre il foglio. */
+	.loader-flame {
+		margin-top: clamp(10px, 2.4vh, 20px); fill: #d97b2e; stroke: none;
+		filter: drop-shadow(0 0 4px rgb(217 123 46 / .55)); transform-origin: 50% 90%;
+		animation: light-flicker 2.2s ease-in-out infinite alternate;
+	}
 	@keyframes loader-draw { 0% { stroke-dashoffset: 1; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
 	@keyframes loader-in { from { opacity: 0; transform: translateY(6px); } }
 	/* "Salta" resta raggiungibile sopra il foglio, in inchiostro. */
@@ -188,6 +200,11 @@ import Bilingual from './Bilingual.astro';
 	.codex-entrance[data-light='candle'] .entrance-frame { opacity: .45; }
 	.codex-entrance[data-light='candle'] .entrance-shade { opacity: .3; }
 	.entrance-heading, .entrance-invitation { transition: opacity .55s ease, transform .7s ease; }
+	/* Il titolo compare solo dopo che il foglio d'attesa si è dissolto, non
+	 * "attraverso" la sua dissolvenza; se il 3D non parte affatto, resta con la
+	 * copertina statica di riserva fin da subito. */
+	.codex-entrance[data-scene='loading'] :is(.entrance-heading, .entrance-invitation) { opacity: 0; }
+	.codex-entrance[data-scene='ready'] :is(.entrance-heading, .entrance-invitation) { transition-delay: .35s; }
 	.codex-entrance[data-state='loading'] .entrance-ornament, .codex-entrance[data-scene='loading'] .entrance-ornament { animation: entrance-breathe 1.4s ease-in-out infinite alternate; }
 	.codex-entrance:is([data-state='playing'], [data-state='closing']) :is(.entrance-heading, .entrance-invitation) { opacity: 0; transform: translateY(-10px); pointer-events: none; }
 	.codex-entrance:is([data-state='playing'], [data-state='closing']) :is(.entrance-shade, .entrance-frame, .entrance-folio) { opacity: 0; }
@@ -200,8 +217,8 @@ import Bilingual from './Bilingual.astro';
 	}
 	@media (max-aspect-ratio: 3/4) {
 		.entrance-poster {
-			width: 160%; max-width: none; height: auto; aspect-ratio: 4/3; left: -30%; top: 49%; transform: translateY(-50%);
-			mask-image: linear-gradient(transparent, #000 16%, #000 83%, transparent);
+			width: 100%; height: 100%; left: 0; top: 0; transform: none; object-fit: cover;
+			
 		}
 		.entrance-shade { background: linear-gradient(180deg, rgb(14 9 6 / .3), transparent 35%, transparent 62%, rgb(14 9 6 / .5)); }
 		.entrance-heading { top: max(60px, 8svh); }

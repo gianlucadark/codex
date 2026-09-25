@@ -376,3 +376,6 @@ html[data-lang='en'] .bil[lang='it'] {
 		animation: none !important;
 	}
 }
+
+/* Programmatic entrance focus should not draw a box around the title. */
+main h1[tabindex="-1"]:focus { outline: none; }

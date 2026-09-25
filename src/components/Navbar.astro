@@ -1,4 +1,5 @@
 ---
+import Bilingual from './Bilingual.astro';
 /**
  * "Insula" — a centred, floating capsule à la Apple's dynamic island, recast
  * as a piece of the codex: a parchment pill with a rubric border that hovers in
@@ -45,10 +46,8 @@ import LogoGD from './LogoGD.astro';
 		aria-label="Torna al codice"
 		title="Torna al codice"
 	>
-		<svg viewBox="0 0 24 20" width="20" height="17" aria-hidden="true">
-			<path d="M12 3.6C10.2 2.2 7.6 1.6 5 1.6c-1.2 0-2.4.13-3.5.4v13.6c1.1-.27 2.3-.4 3.5-.4 2.6 0 5.2.6 7 2 1.8-1.4 4.4-2 7-2 1.2 0 2.4.13 3.5.4V2c-1.1-.27-2.3-.4-3.5-.4-2.6 0-5.2.6-7 2z" />
-			<path d="M12 3.6v13.6" />
-		</svg>
+		<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 7H2m0 0 4-4M2 7l4 4M9 6l6-3 7 4v9l-7 4-7-4V9m0-2 7 4 7-4m-7 4v9" /></svg>
+		<span><Bilingual it="Torna al Codex" en="Back to Codex" /></span>
 	</a>
 
 	<span class="sep sep-lang" aria-hidden="true"></span>
@@ -114,7 +113,7 @@ import LogoGD from './LogoGD.astro';
 
 	.brand :global(.logo-gd) {
 		width: 38px;
-		transition: transform 0.2s ease;
+		transition: transform .2s ease;
 	}
 
 	.brand:hover :global(.logo-gd) {
@@ -177,18 +176,18 @@ import LogoGD from './LogoGD.astro';
 
 	/* Return to codex ------------------------------------------------------ */
 	.return-book {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 38px;
-		height: 36px;
-		border-radius: 6px;
-		color: var(--brown);
-		flex: none;
-		transition: color 0.2s ease, background 0.2s ease;
+		display: inline-flex; align-items: center; justify-content: center;
+		width: auto; min-height: 44px; gap: 7px; padding: 0 8px;
+		color: var(--brown); flex: none; white-space: nowrap;
+		font-size: 14px; text-decoration: none;
+		border-left: 1px solid rgb(110 86 56 / .25);
+		transition: color .2s ease, background .2s ease;
+
 	}
 
 	.return-book svg {
+		flex: none;
+		transition: transform .25s ease;
 		fill: none;
 		stroke: currentColor;
 		stroke-width: 1.4;
@@ -202,6 +201,7 @@ import LogoGD from './LogoGD.astro';
 		background: rgba(156, 67, 38, 0.08);
 	}
 
+	.return-book:hover svg { transform: translateX(-2px); }
 	/* Language switch ----------------------------------------------------- */
 	.lang {
 		display: flex;
@@ -299,8 +299,8 @@ import LogoGD from './LogoGD.astro';
 		}
 
 		.return-book {
-			width: 34px;
-			height: 34px;
+			width: auto;
+			min-height: 44px;
 		}
 
 		.burger {

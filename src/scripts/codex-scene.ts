@@ -1,6 +1,6 @@
 import {
 	ACESFilmicToneMapping, CanvasTexture, Color, DirectionalLight, HemisphereLight, MathUtils,
-	Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, VSMShadowMap, PerspectiveCamera, PointLight,
+	Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, PCFShadowMap, PerspectiveCamera, PointLight,
 	PMREMGenerator, Quaternion, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -13,8 +13,10 @@ export type CodexScene = {
 	open: () => void;
 	close: () => void;
 	move: (x: number, y: number) => void;
-	/** Blows out every light but the candle: a dark room lit by its flame alone. */
+	/** Switches to candlelight while retaining a restrained fill for legibility. */
 	setDark: (dark: boolean) => void;
+	pause: () => void;
+	resume: () => void;
 	dispose: () => void;
 };
 
@@ -23,7 +25,7 @@ export async function createCodexScene(
 	canvas: HTMLCanvasElement,
 	options: {
 		signal: AbortSignal;
-		onProgress: (progress: number, corners: number[]) => void;
+		onProgress: (progress: number) => void;
 		/** Download progress of the model, 0–1; NaN when its size is unknown. */
 		onLoadProgress?: (fraction: number) => void;
 		onComplete: () => void;
@@ -35,12 +37,12 @@ export async function createCodexScene(
 ): Promise<CodexScene> {
 	const { signal, onProgress, onLoadProgress, onComplete, onClosed, onError } = options;
 	signal.throwIfAborted();
-	const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+	const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'default' });
 	renderer.outputColorSpace = SRGBColorSpace;
 	renderer.toneMapping = ACESFilmicToneMapping;
 	renderer.toneMappingExposure = 1.05;
 	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.type = VSMShadowMap;
+	renderer.shadowMap.type = PCFShadowMap;
 	renderer.shadowMap.autoUpdate = false;
 	renderer.shadowMap.needsUpdate = true;
 	const scene = new Scene();
@@ -75,8 +77,13 @@ export async function createCodexScene(
 	signal.addEventListener('abort', dispose, { once: true });
 	try {
 		const loaded = await Promise.all([
-			loader.loadAsync('/codex/scene_codex_v2.glb', event => {
+			loader.loadAsync('/codex/scene_codex_v3.glb', event => {
 				onLoadProgress?.(event.lengthComputable && event.total ? event.loaded / event.total : NaN);
+			}).then(gltf => {
+				// A fetch/timeout can fail before the worker finishes decoding.
+				// Dispose late arrivals too; they must never keep GPU resources alive.
+				if (disposed) { scene.add(gltf.scene); disposed = false; dispose(); throw new DOMException('Cancelled', 'AbortError'); }
+				return gltf;
 			}),
 			fetch('/codex/motion.json', { signal }).then(response => {
 				if (!response.ok) throw new Error('Cannot load Codex motion');
@@ -87,7 +94,7 @@ export async function createCodexScene(
 		const motion = loaded[1];
 		if (signal.aborted) {
 			// A skip can happen while the decoder is still completing its work.
-			disposed = false; dispose(); throw new DOMException('Cancelled', 'AbortError');
+			scene.add(model.scene); disposed = false; dispose(); throw new DOMException('Cancelled', 'AbortError');
 		}
 		scene.add(model.scene);
 		const hinge = model.scene.getObjectByName('OPEN_CODEX');
@@ -96,6 +103,7 @@ export async function createCodexScene(
 		let flame: Mesh | undefined;
 		let flameMaterial: MeshStandardMaterial | undefined;
 		let waxMaterial: MeshStandardMaterial | undefined;
+		const inkRelease = { value: 0 };
 		const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 		model.scene.traverse(object => {
 			if (!(object instanceof Mesh)) return;
@@ -112,6 +120,13 @@ export async function createCodexScene(
 			const materials = Array.isArray(object.material) ? object.material : [object.material];
 			for (const material of materials) {
 				if (!(material instanceof MeshStandardMaterial)) continue;
+				if (material.map?.name?.includes('folio_studi') || material.name.includes('original portfolio ink')) {
+					material.onBeforeCompile = shader => {
+						shader.uniforms.inkRelease = inkRelease;
+						shader.fragmentShader = 'uniform float inkRelease;\n' + shader.fragmentShader;
+						shader.fragmentShader = shader.fragmentShader.replace('#include <colorspace_fragment>', '#include <colorspace_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.89, 0.81, 0.66), inkRelease);');
+					};
+				}
 				// Use the exported physical maps: ink must not become raised relief,
 				// and wood roughness must retain its subtle variation across the grain.
 				for (const texture of [material.map, material.normalMap, material.roughnessMap]) {
@@ -137,7 +152,7 @@ export async function createCodexScene(
 		room.dispose(); pmrem.dispose();
 		const sky = new HemisphereLight('#e3d8c0', '#25130a', .4);
 		scene.add(sky);
-		const key = new DirectionalLight('#ffdfae', 2.1);
+		const key = new DirectionalLight('#fff0dc', 2.1);
 		key.position.set(-3, 8, 4);
 		key.target.position.set(-.8, .4, 0);
 		key.castShadow = true;
@@ -148,7 +163,7 @@ export async function createCodexScene(
 		key.shadow.radius = 4;
 		key.shadow.blurSamples = 8;
 		scene.add(key, key.target);
-		const rim = new DirectionalLight('#e5bc81', .45);
+		const rim = new DirectionalLight('#c8d5e5', .45);
 		rim.position.set(4, 5, -5); scene.add(rim);
 		// A fixed, unbounded inverse-power falloff avoids crossing Three.js's
 		// special distance=0 value halfway through a lighting transition.
@@ -157,7 +172,7 @@ export async function createCodexScene(
 		else candle.position.set(-3, 2.5, -3);
 		// Only perceptible once the room goes dark, where the flame is the one
 		// light left and the book has to throw its own shadow away from it.
-		candle.castShadow = true;
+		candle.castShadow = false;
 		candle.shadow.mapSize.set(512, 512);
 		Object.assign(candle.shadow.camera, { near: .1, far: 16 });
 		candle.shadow.bias = -.0004;
@@ -190,9 +205,9 @@ export async function createCodexScene(
 		};
 		const applyLight = (now: number) => {
 			const d = MathUtils.clamp(darkness, 0, 1);
-			sky.intensity = .4 * (1 - d);
-			key.intensity = 2.1 * (1 - d);
-			rim.intensity = .45 * (1 - d);
+			sky.intensity = .4 * (1 - d) + .12 * d;
+			key.intensity = 2.1 * (1 - d) + .32 * d;
+			rim.intensity = .45 * (1 - d) + .12 * d;
 			scene.environmentIntensity = .2 * (1 - d) + .006 * d;
 			(scene.background as Color).lerpColors(day.background, night.background, d);
 			candle.color.lerpColors(day.candle, night.candle, d);
@@ -245,19 +260,16 @@ export async function createCodexScene(
 		const closeSpeed = 1 / 0.75;
 		let previous = performance.now();
 		let previousRender = 0;
+		let slowFrames = 0;
+		let qualityScale = 1;
 		let visible = !document.hidden;
+		let paused = false;
+		let initialFov = motion.fov;
 		const duration = (motion.end - motion.start) / motion.fps;
 		if (!screen) throw new Error('Codex portal is missing');
 		const portalMesh = screen;
 		screen.geometry.computeBoundingBox();
 		const bounds = screen.geometry.boundingBox!;
-		const portalCorners = [
-			new Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
-			new Vector3(bounds.max.x, bounds.max.y, bounds.min.z),
-			new Vector3(bounds.max.x, bounds.max.y, bounds.max.z),
-			new Vector3(bounds.min.x, bounds.max.y, bounds.max.z),
-		];
-		const projected = new Vector3();
 		const resize = () => {
 			if (disposed) return;
 			const width = canvas.clientWidth, height = canvas.clientHeight;
@@ -267,11 +279,16 @@ export async function createCodexScene(
 			const portrait = camera.aspect < .8;
 			const widen = portrait ? Math.max(1, (4 / 3) / (camera.aspect * 1.35)) : 1;
 			camera.fov = MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(motion.fov) / 2) * widen));
+			initialFov = camera.fov;
 			camera.updateProjectionMatrix();
-			renderer.setPixelRatio(Math.min(devicePixelRatio, portrait ? 1.35 : 1.5, Math.sqrt(2_000_000 / (width * height))));
+			renderer.setPixelRatio(qualityScale * Math.min(devicePixelRatio, portrait ? 1.35 : 1.5, Math.sqrt(2_000_000 / (width * height))));
 			renderer.setSize(width, height, false);
 		};
 		observer = new ResizeObserver(resize); observer.observe(canvas); resize();
+		model.scene.updateMatrixWorld(true);
+		const paperCenter = bounds.getCenter(new Vector3()).applyMatrix4(portalMesh.matrixWorld);
+		const finalRotation = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2);
+		const finalPosition = new Vector3();
 		const pose = (time: number) => {
 			const index = Math.min(motion.samples.length - 1, time * motion.fps);
 			const i = Math.floor(index), t = index - i;
@@ -285,6 +302,18 @@ export async function createCodexScene(
 			camera.position.copy(basePosition).add(offset);
 			camera.quaternion.copy(baseRotation);
 			if (offset.lengthSq() > .000001) camera.lookAt(target);
+			// Continue the physical dolly toward the paper, aligning its normal
+			// with the lens. The crop is smaller than the page on every aspect ratio.
+			const progress = time / duration;
+			const travel = MathUtils.smootherstep(progress, .53, .87);
+			inkRelease.value = MathUtils.smootherstep(progress, .72, .90);
+			camera.fov = MathUtils.lerp(initialFov, 30, travel);
+			const cropHeight = Math.min(1.3, 1.85 / camera.aspect);
+			const distance = cropHeight / (2 * Math.tan(MathUtils.degToRad(30) / 2));
+			finalPosition.copy(paperCenter); finalPosition.y += distance;
+			camera.position.lerp(finalPosition, travel);
+			camera.quaternion.slerp(finalRotation, travel);
+			camera.updateProjectionMatrix();
 		};
 		pose(0);
 		applyLight(performance.now());
@@ -293,13 +322,15 @@ export async function createCodexScene(
 		renderer.render(scene, camera);
 		canvas.dataset.ready = 'true';
 		const tick = (now: number) => {
-			if (disposed) return;
+			if (disposed || paused) return;
 			raf = requestAnimationFrame(tick);
 			// Clamped both ways: rAF timestamps can occasionally arrive at or
 			// slightly behind the previous frame's, and a negative dt would send
 			// `elapsed` outside the sampled range.
 			const dt = Math.min(Math.max((now - previous) / 1000, 0), .05); previous = now;
 			if (!visible) return;
+			if (animating && dt > .03) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1);
+			if (slowFrames > 40 && qualityScale > .65) { qualityScale *= .8; slowFrames = 0; resize(); }
 			if (animating) elapsed = direction === 1 ? Math.min(duration, elapsed + dt) : Math.max(0, elapsed - dt * closeSpeed);
 			current.lerp(pointer, 1 - Math.exp(-dt * 4.5));
 			const fading = darkness !== darkTarget || lightVelocity !== 0;
@@ -313,12 +344,7 @@ export async function createCodexScene(
 			applyLight(now);
 			renderer.render(scene, camera);
 			if (animating) {
-				const corners: number[] = [];
-				for (const corner of portalCorners) {
-					projected.copy(corner).applyMatrix4(portalMesh.matrixWorld).project(camera);
-					corners.push((projected.x + 1) * canvas.clientWidth / 2, (1 - projected.y) * canvas.clientHeight / 2);
-				}
-				onProgress(elapsed / duration, corners);
+				onProgress(elapsed / duration);
 				if (direction === 1 && elapsed >= duration) { animating = false; onComplete(); }
 				else if (direction === -1 && elapsed <= 0) { animating = false; onClosed?.(); }
 			}
@@ -327,6 +353,8 @@ export async function createCodexScene(
 		document.addEventListener('visibilitychange', () => { visible = !document.hidden; previous = performance.now(); }, { signal });
 		raf = requestAnimationFrame(tick);
 		return {
+			pause() { paused = true; cancelAnimationFrame(raf); },
+			resume() { if (paused && !disposed) { paused = false; previous = performance.now(); raf = requestAnimationFrame(tick); } },
 			open() { animating = true; direction = 1; pointer.set(0, 0); previous = performance.now(); },
 			close() { animating = true; direction = -1; pointer.set(0, 0); previous = performance.now(); },
 			move(x, y) { if (!animating) pointer.set(MathUtils.clamp(x, -1, 1), MathUtils.clamp(y, -1, 1)); },

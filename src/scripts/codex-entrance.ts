@@ -21,7 +21,12 @@ export function setupCodexEntrance() {
 	const status = dialog.querySelector<HTMLElement>('.entrance-status')!;
 	const light = dialog.querySelector<HTMLButtonElement>('.entrance-light')!;
 	const sceneHost = dialog.querySelector<HTMLElement>('.entrance-scene')!;
+	const invitation = dialog.querySelector<HTMLElement>('.entrance-invitation')!;
 	const loaderCount = dialog.querySelector<HTMLElement>('.loader-count');
+	// While the parchment loader covers the book and "apri il codice", their
+	// buttons must not be reachable by Tab — a keyboard reader would otherwise
+	// land on controls hidden under the sheet.
+	const setLoaderInert = (active: boolean) => { book.inert = active; invitation.inert = active; };
 	const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 	const en = () => html.dataset.lang === 'en';
 
@@ -46,19 +51,25 @@ export function setupCodexEntrance() {
 	let sceneController: AbortController | undefined;
 	let failed = false;
 	let timeout = 0;
+	let loadTimeout = 0;
 	let dragged = false;
 	let downX = 0, downY = 0;
 	let savedScroll = window.scrollY;
 
-	// The codex opens by candlelight; switching the lights back on is remembered.
+	// The codex opens by candlelight; remember an explicit switch back to daylight.
+	// A distinct key from the previous default (which was daylight) avoids reading
+	// a stale 'day' that every reader's browser saved without ever choosing it.
 	let dark = true;
-	try { dark = localStorage.getItem('codex-light') !== 'day'; } catch { /* Storage blocked. */ }
-	const setDark = (next: boolean) => {
+	try { dark = localStorage.getItem('codex-light-v2') !== 'day'; } catch { /* Storage blocked. */ }
+	const applyDark = (next: boolean) => {
 		dark = next;
 		light.setAttribute('aria-pressed', String(dark));
 		if (dark) dialog.dataset.light = 'candle'; else delete dialog.dataset.light;
 		scene?.setDark(dark);
-		try { localStorage.setItem('codex-light', dark ? 'candle' : 'day'); } catch { /* Storage blocked. */ }
+	};
+	const setDark = (next: boolean) => {
+		applyDark(next);
+		try { localStorage.setItem('codex-light-v2', dark ? 'candle' : 'day'); } catch { /* Storage blocked. */ }
 	};
 
 	const lenis = () => (window as unknown as { lenis?: { start(): void; stop(): void } }).lenis;
@@ -70,6 +81,7 @@ export function setupCodexEntrance() {
 	/** A genuinely broken scene (load failure, lost context) is discarded for good. */
 	const discardScene = () => {
 		clearTimeout(timeout);
+		clearTimeout(loadTimeout);
 		sceneController?.abort();
 		disposePortal();
 		scene?.dispose(); scene = undefined;
@@ -81,6 +93,7 @@ export function setupCodexEntrance() {
 		failed = true;
 		discardScene();
 		dialog.dataset.scene = 'unavailable';
+		setLoaderInert(false);
 		status.textContent = en() ? 'Enter the portfolio to continue.' : 'Entra nel portfolio per continuare.';
 		if (is('loading') || is('playing')) enterSite(true);
 		else if (is('closing')) returnDone();
@@ -92,13 +105,15 @@ export function setupCodexEntrance() {
 		sceneController = new AbortController();
 		const { signal } = sceneController;
 		dialog.dataset.scene = 'loading';
+		setLoaderInert(true);
+		loadTimeout = window.setTimeout(onSceneFailure, 12000);
 		sceneReady = import('./codex-scene')
 			.then(({ createCodexScene }) => createCodexScene(canvas, {
 				signal,
 				dark,
-				onProgress(progress, corners) {
+				onProgress(progress) {
 					dialog.style.setProperty('--entrance-progress', String(progress));
-					portal?.update(progress, corners);
+					portal?.update(progress);
 				},
 				onLoadProgress(fraction) {
 					// Without a Content-Length the loader keeps drawing, without a number.
@@ -113,10 +128,13 @@ export function setupCodexEntrance() {
 			}))
 			.then(result => {
 				if (signal.aborted) { result.dispose(); return; }
+				clearTimeout(loadTimeout);
 				scene = result;
+				if (is('done')) scene.pause();
 				// The reader may have flipped the switch while the model was loading.
 				scene.setDark(dark);
 				dialog.dataset.scene = 'ready';
+				setLoaderInert(false);
 				status.textContent = en()
 					? 'The codex is ready. Move the pointer to look around.'
 					: 'Il codice è pronto. Muovi il puntatore per guardarti intorno.';
@@ -138,8 +156,10 @@ export function setupCodexEntrance() {
 		clearTimeout(timeout);
 		if (!scene) { enterSite(); return; }
 		setState('playing');
+		scene.resume();
 		portal = createCodexPortal(sceneHost);
 		scene.open();
+		timeout = window.setTimeout(() => enterSite(true), 10000);
 	};
 
 	const enterSite = (immediate = false) => {
@@ -150,6 +170,7 @@ export function setupCodexEntrance() {
 			clearTimeout(timeout);
 			disposePortal();
 			dialog.close();
+			scene?.pause();
 			open.removeAttribute('aria-disabled'); book.removeAttribute('aria-disabled');
 			html.removeAttribute('data-codex-intro');
 			lenis()?.start();
@@ -177,6 +198,7 @@ export function setupCodexEntrance() {
 	const returnToCodex = () => {
 		if (!is('done') || dialog.open) return;
 		savedScroll = window.scrollY;
+		dialog.getAnimations().forEach(animation => animation.cancel());
 		html.dataset.codexIntro = 'active';
 		setState('closing');
 		lenis()?.stop();
@@ -187,8 +209,9 @@ export function setupCodexEntrance() {
 		// Grab the live DOM and pin it full-screen *before* the dialog appears,
 		// so opening the modal causes no visible change at all.
 		portal = createCodexPortal(sceneHost, { scrollOffset: savedScroll });
-		portal.update(1, [0, 0, 0, 0, 0, 0, 0, 0]);
+		portal.update(1);
 		timeout = window.setTimeout(() => returnDone(), 15000);
+		scene.resume();
 		scene.close();
 	};
 
@@ -233,14 +256,14 @@ export function setupCodexEntrance() {
 
 	try {
 		// Reduced motion never loads the 3D: show the still cover, not the loader.
-		if (reduced.matches) dialog.dataset.scene = 'still';
+		if (reduced.matches) dialog.dataset.scene = 'still'; else setLoaderInert(true);
 		dialog.showModal(); dialog.focus({ preventScroll: true }); html.dataset.codexIntro = 'active';
 		savedScroll = window.scrollY;
 		bindReturnButtons();
 		open.addEventListener('click', () => { dragged = false; void enter(); }, { signal: pageSignal });
 		book.addEventListener('click', () => void enter(), { signal: pageSignal });
-		skip.addEventListener('click', () => { if (is('idle')) enterSite(); }, { signal: pageSignal });
-		setDark(dark);
+		skip.addEventListener('click', () => { if (!is('done') && !is('closing')) enterSite(true); }, { signal: pageSignal });
+		applyDark(dark);
 		light.addEventListener('click', () => setDark(!dark), { signal: pageSignal });
 		dialog.addEventListener('cancel', event => {
 			event.preventDefault();
@@ -257,7 +280,9 @@ export function setupCodexEntrance() {
 		dialog.addEventListener('pointerleave', () => { if (is('idle')) scene?.move(0, 0); }, { signal: pageSignal });
 		dialog.addEventListener('keydown', event => {
 			if (event.key === 'Tab') {
-				const buttons = [book, open, ...(dialog.dataset.scene === 'ready' ? [light] : []), skip];
+				// The loader (while up) makes book/open inert, so only ever wrap
+				// around the controls that are actually reachable right now.
+				const buttons = [book, open, ...(dialog.dataset.scene === 'ready' ? [light] : []), skip].filter(el => !el.inert);
 				const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
 				if (index < 0 || (event.shiftKey && index === 0) || (!event.shiftKey && index === buttons.length - 1)) {
 					event.preventDefault(); buttons[event.shiftKey ? buttons.length - 1 : 0].focus();
@@ -269,11 +294,14 @@ export function setupCodexEntrance() {
 		}, { signal: pageSignal });
 		reduced.addEventListener('change', () => {
 			if (!reduced.matches) return;
-			if (is('playing')) { scene?.dispose(); scene = undefined; sceneReady = undefined; enterSite(true); }
+			if (is('idle') || is('loading') || is('playing')) { sceneController?.abort(); scene?.dispose(); scene = undefined; sceneReady = undefined; enterSite(true); }
 			else if (is('closing')) { scene?.dispose(); scene = undefined; sceneReady = undefined; returnDone(); }
 		}, { signal: pageSignal });
 		addEventListener('hashchange', () => { savedScroll = 0; if (!is('done') && !is('closing')) enterSite(true); }, { signal: pageSignal });
 		addEventListener('pagehide', () => { discardScene(); page.abort(); }, { signal: pageSignal, once: true });
+		// The parchment loader is painted first; the model download starts right
+		// after, once the browser has had a frame to show it — never behind a
+		// static poster standing in as a fake "screen".
 		requestAnimationFrame(() => requestAnimationFrame(() => { if (is('idle')) void ensureScene(); }));
 	} catch { discardScene(); dialog.remove(); }
 }

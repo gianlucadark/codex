@@ -33,5 +33,10 @@ pnpm-debug.log*
 
 # local tooling, not needed for deploy (Blender pipeline, QA, audits)
 /docs/
-/scripts/
+/scripts/*
+!/scripts/export-codex-v3.py
+!/scripts/upgrade-codex-v3.py
+!/scripts/render-codex-posters.mjs
+!/scripts/qa-codex-frames.mjs
+!/scripts/audit-lighthouse.mjs
 /reports/

@@ -92,9 +92,9 @@ import Bilingual from './Bilingual.astro';
 	.entrance-shade {
 		z-index: -2; background: linear-gradient(180deg, rgb(14 9 6 / .8), transparent 32%, transparent 62%, rgb(14 9 6 / .87)),
 			radial-gradient(ellipse at 50% 47%, transparent 30%, rgb(12 8 5 / .46) 100%);
-		transition: opacity 1.2s ease;
+		transition: opacity 2s cubic-bezier(.22, .61, .36, 1);
 	}
-	.entrance-frame { z-index: -1; inset: 24px; border: 1px solid rgb(239 213 169 / .16); transition: opacity .7s; }
+	.entrance-frame { z-index: -1; inset: 24px; border: 1px solid rgb(239 213 169 / .16); transition: opacity 2s cubic-bezier(.22, .61, .36, 1); }
 	/* — Foglio d'attesa — visibile finché la scena non è 'ready' (o ripiega sulla
 	 * copertina statica: 'unavailable' / 'still'). Il cerchio e il quadrato
 	 * vitruviani si tracciano a inchiostro con il download reale del modello. */
@@ -179,7 +179,7 @@ import Bilingual from './Bilingual.astro';
 	}
 	.entrance-light:focus-visible { outline: 1px solid #f0dfbd; outline-offset: 5px; }
 	.entrance-light svg { flex: none; width: 18px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.1; }
-	.entrance-light .light-flame { fill: #ffb45c; stroke: #ffb45c; opacity: .45; transition: opacity .4s ease; }
+	.entrance-light .light-flame { fill: #ffb45c; stroke: #ffb45c; opacity: .45; transition: opacity 1.4s ease; }
 	.entrance-light[aria-pressed='true'] .light-flame { opacity: 1; filter: drop-shadow(0 0 4px #ff9d44); animation: light-flicker 2.2s ease-in-out infinite alternate; transform-origin: 50% 90%; }
 	.entrance-light .light-on, .entrance-light[aria-pressed='true'] .light-off { display: none; }
 	.entrance-light[aria-pressed='true'] .light-on { display: inline; }

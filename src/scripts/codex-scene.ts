@@ -75,7 +75,7 @@ export async function createCodexScene(
 	signal.addEventListener('abort', dispose, { once: true });
 	try {
 		const loaded = await Promise.all([
-			loader.loadAsync('/codex/codex.glb', event => {
+			loader.loadAsync('/codex/scene_codex_v2.glb', event => {
 				onLoadProgress?.(event.lengthComputable && event.total ? event.loaded / event.total : NaN);
 			}),
 			fetch('/codex/motion.json', { signal }).then(response => {
@@ -92,7 +92,6 @@ export async function createCodexScene(
 		scene.add(model.scene);
 		const hinge = model.scene.getObjectByName('OPEN_CODEX');
 		if (!hinge) throw new Error('Codex hinge is missing');
-		let screenMaterial: MeshStandardMaterial | undefined;
 		let screen: Mesh | undefined;
 		let flame: Mesh | undefined;
 		let flameMaterial: MeshStandardMaterial | undefined;
@@ -113,22 +112,18 @@ export async function createCodexScene(
 			const materials = Array.isArray(object.material) ? object.material : [object.material];
 			for (const material of materials) {
 				if (!(material instanceof MeshStandardMaterial)) continue;
-				if (material.map) material.map.anisotropy = anisotropy;
-				if (/Oxblood|Leather turned/.test(material.name)) {
-					material.bumpMap = material.map; material.bumpScale = .026; material.roughness = .86;
-				} else if (/Warm rag/.test(material.name)) {
-					material.bumpMap = material.map; material.bumpScale = .006; material.roughness = .96;
-				} else if (/Smoked walnut/.test(material.name)) {
-					material.bumpMap = material.map; material.bumpScale = .018; material.roughness = .78;
+				// Use the exported physical maps: ink must not become raised relief,
+				// and wood roughness must retain its subtle variation across the grain.
+				for (const texture of [material.map, material.normalMap, material.roughnessMap]) {
+					if (texture) texture.anisotropy = anisotropy;
 				}
 				if (material.name === 'Candle flame') flameMaterial = material;
 				if (material.name === 'Beeswax') { waxMaterial = material; material.emissive.set('#ff8f3a'); material.emissiveIntensity = 0; }
 				if (material.name.startsWith('PORTFOLIO_SCREEN')) {
 					screen = object;
-					screenMaterial = material;
-					material.emissiveMap = material.map;
-					material.emissive.set(0xffffff);
-					material.emissiveIntensity = .06;
+					// The original quad is only a projection anchor. The ink is now
+					// part of the full paper surface, lit by the scene like the left page.
+					object.visible = false;
 					object.castShadow = false;
 				}
 				if (/printing ink|rubric red/.test(material.name)) object.castShadow = false;
@@ -155,7 +150,9 @@ export async function createCodexScene(
 		scene.add(key, key.target);
 		const rim = new DirectionalLight('#e5bc81', .45);
 		rim.position.set(4, 5, -5); scene.add(rim);
-		const candle = new PointLight('#ff9d44', 3, 7, 2);
+		// A fixed, unbounded inverse-power falloff avoids crossing Three.js's
+		// special distance=0 value halfway through a lighting transition.
+		const candle = new PointLight('#ff9d44', 3, 0, 2);
 		if (flame) { flame.getWorldPosition(candle.position); candle.position.y += .1; }
 		else candle.position.set(-3, 2.5, -3);
 		// Only perceptible once the room goes dark, where the flame is the one
@@ -173,18 +170,32 @@ export async function createCodexScene(
 		// Daylight studio → dark room: every value the candle mode changes,
 		// eased between as `darkness` goes 0 → 1.
 		const day = { background: new Color('#21160f'), candle: new Color('#ff9d44') };
-		const night = { background: new Color('#040201'), candle: new Color('#ffa257') };
+		const night = { background: new Color('#040201'), candle: new Color('#ffd1a0') };
 		let darkness = options.dark ? 1 : 0;
 		let darkTarget = darkness;
+		let lightVelocity = 0;
+		const advanceLight = (dt: number) => {
+			// Exact critically damped response: continuous position AND velocity
+			// when the user reverses a fade, independent of the rendering frame rate.
+			const omega = 3.8;
+			const error = darkness - darkTarget;
+			const decay = Math.exp(-omega * dt);
+			const step = (lightVelocity + omega * error) * dt;
+			darkness = darkTarget + (error + step) * decay;
+			lightVelocity = (lightVelocity - omega * step) * decay;
+			if (Math.abs(darkness - darkTarget) < .0005 && Math.abs(lightVelocity) < .001) {
+				darkness = darkTarget;
+				lightVelocity = 0;
+			}
+		};
 		const applyLight = (now: number) => {
-			const d = MathUtils.smootherstep(darkness, 0, 1);
+			const d = MathUtils.clamp(darkness, 0, 1);
 			sky.intensity = .4 * (1 - d);
 			key.intensity = 2.1 * (1 - d);
 			rim.intensity = .45 * (1 - d);
 			scene.environmentIntensity = .2 * (1 - d) + .006 * d;
 			(scene.background as Color).lerpColors(day.background, night.background, d);
 			candle.color.lerpColors(day.candle, night.candle, d);
-			candle.distance = MathUtils.lerp(7, 0, d);
 			// A softer falloff than daylight's reaches across the whole book.
 			candle.decay = MathUtils.lerp(2, 1.5, d);
 			// A flame in still air: a slow breathing plus a quicker, irregular
@@ -192,7 +203,7 @@ export async function createCodexScene(
 			const breathe = Math.sin(now * .0021) * .5 + Math.sin(now * .0037 + 1.3) * .3;
 			const flutter = Math.sin(now * .013) * .35 + Math.sin(now * .029 + .7) * .2 + Math.sin(now * .047 + 2.1) * .12;
 			const dayFlicker = Math.sin(now * .007) * .13 + Math.sin(now * .011) * .07;
-			candle.intensity = MathUtils.lerp(3 + dayFlicker, 30 * (1 + breathe * .06 + flutter * .09), d);
+			candle.intensity = MathUtils.lerp(3 + dayFlicker, 24 * (1 + breathe * .06 + flutter * .09), d);
 			candle.position.set(
 				candleOrigin.x + Math.sin(now * .0023) * .012 * d,
 				candleOrigin.y + flutter * .01 * d,
@@ -254,7 +265,7 @@ export async function createCodexScene(
 			camera.aspect = width / height;
 			// In portrait, reveal more of the table instead of cropping away the book.
 			const portrait = camera.aspect < .8;
-			const widen = portrait ? Math.max(1, (4 / 3) / (camera.aspect * 1.5)) : 1;
+			const widen = portrait ? Math.max(1, (4 / 3) / (camera.aspect * 1.35)) : 1;
 			camera.fov = MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(motion.fov) / 2) * widen));
 			camera.updateProjectionMatrix();
 			renderer.setPixelRatio(Math.min(devicePixelRatio, portrait ? 1.35 : 1.5, Math.sqrt(2_000_000 / (width * height))));
@@ -274,7 +285,6 @@ export async function createCodexScene(
 			camera.position.copy(basePosition).add(offset);
 			camera.quaternion.copy(baseRotation);
 			if (offset.lengthSq() > .000001) camera.lookAt(target);
-			if (screenMaterial) screenMaterial.emissiveIntensity = .06 + .75 * MathUtils.smoothstep(time, 4, duration);
 		};
 		pose(0);
 		applyLight(performance.now());
@@ -292,8 +302,8 @@ export async function createCodexScene(
 			if (!visible) return;
 			if (animating) elapsed = direction === 1 ? Math.min(duration, elapsed + dt) : Math.max(0, elapsed - dt * closeSpeed);
 			current.lerp(pointer, 1 - Math.exp(-dt * 4.5));
-			const fading = darkness !== darkTarget;
-			if (fading) darkness = darkTarget > darkness ? Math.min(darkTarget, darkness + dt / 1.4) : Math.max(darkTarget, darkness - dt / .9);
+			const fading = darkness !== darkTarget || lightVelocity !== 0;
+			if (fading) advanceLight(dt);
 			// In the dark the flicker is the whole scene, so it keeps a smooth 30fps.
 			const idleGap = darkness > 0 ? 33 : 100;
 			if (!animating && !fading && now - previousRender < (current.distanceToSquared(pointer) > .00001 ? 16 : idleGap)) return;

@@ -54,7 +54,10 @@ export function createCodexPortal(host: HTMLElement, options: { scrollOffset?: n
 			const a = x1 - x0 + g * x1, b = x3 - x0 + h * x3;
 			const d = y1 - y0 + g * y1, e = y3 - y0 + h * y3;
 			surface.style.transform = `matrix3d(${a / width},${d / width},0,${g / width},${b / height},${e / height},0,${h / height},0,0,1,0,${x0},${y0},0,1)`;
-			surface.style.opacity = String(Math.min(1, (progress - .48) / .055));
+			// Keep the ink study visible through the open-book pause. Reveal the
+			// live page only as the camera enters it; reverse the same fade on exit.
+			const reveal = Math.max(0, Math.min(1, (progress - .74) / .16));
+			surface.style.opacity = String(reveal * reveal * (3 - 2 * reveal));
 			surface.style.filter = `brightness(${.84 + blend * .16})`;
 		},
 		dispose() {

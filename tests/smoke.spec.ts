@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+// These tests cover the portfolio after entering; the cinematic entrance has
+// its own suite, including first visits and the session bypass.
+test.beforeEach(async ({ page }) => {
+	await page.addInitScript(() => sessionStorage.setItem('codex-entered-v1', '1'));
+});
+
 test('home renders the cover and the inner folios', async ({ page }) => {
 	await page.goto('/');
 	await expect(page).toHaveTitle(/Codex/);

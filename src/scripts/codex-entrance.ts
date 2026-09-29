@@ -20,6 +20,7 @@ export function setupCodexEntrance() {
 	const skip = dialog.querySelector<HTMLButtonElement>('.entrance-skip')!;
 	const status = dialog.querySelector<HTMLElement>('.entrance-status')!;
 	const light = dialog.querySelector<HTMLButtonElement>('.entrance-light')!;
+	const langButtons = [...dialog.querySelectorAll<HTMLButtonElement>('.entrance-lang-btn')];
 	const sceneHost = dialog.querySelector<HTMLElement>('.entrance-scene')!;
 	const invitation = dialog.querySelector<HTMLElement>('.entrance-invitation')!;
 	const loaderCount = dialog.querySelector<HTMLElement>('.loader-count');
@@ -298,7 +299,7 @@ export function setupCodexEntrance() {
 			if (event.key === 'Tab') {
 				// The loader (while up) makes book/open inert, so only ever wrap
 				// around the controls that are actually reachable right now.
-				const buttons = [book, open, ...(dialog.dataset.scene === 'ready' ? [light] : []), skip].filter(el => !el.inert);
+				const buttons = [...langButtons, book, open, ...(dialog.dataset.scene === 'ready' ? [light] : []), skip].filter(el => !el.inert);
 				const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
 				if (index < 0 || (event.shiftKey && index === 0) || (!event.shiftKey && index === buttons.length - 1)) {
 					event.preventDefault(); buttons[event.shiftKey ? buttons.length - 1 : 0].focus();

@@ -54,6 +54,11 @@ import Bilingual from './Bilingual.astro';
 		<h2 id="entrance-title">Codex</h2>
 		<p id="entrance-description"><Bilingual it="Ogni idea comincia da una pagina." en="Every idea begins with a page." /></p>
 	</header>
+	<div class="entrance-lang" role="group" aria-label="Lingua · language">
+		<button type="button" class="entrance-lang-btn active" data-lang-btn="it" aria-pressed="true">it</button>
+		<span aria-hidden="true">·</span>
+		<button type="button" class="entrance-lang-btn" data-lang-btn="en" aria-pressed="false">en</button>
+	</div>
 	<button class="entrance-book" type="button">
 		<span class="sr-only"><Bilingual it="Apri il libro ed entra nel portfolio" en="Open the book and enter the portfolio" /></span>
 	</button>
@@ -177,6 +182,29 @@ import Bilingual from './Bilingual.astro';
 	}
 	/* "Salta" resta raggiungibile sopra il foglio, in inchiostro. */
 	.entrance-footer { z-index: 2; }
+	/* Selettore lingua: in alto a destra, sopra il foglio d'attesa. */
+	.entrance-lang {
+		position: absolute; z-index: 2; top: clamp(30px, 4.5vh, 56px); right: clamp(32px, 5vw, 90px);
+		display: flex; align-items: center; gap: 2px; padding: 3px;
+		border: 1px solid rgb(239 213 169 / .42); border-radius: 999px;
+		background: rgb(25 16 11 / .62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+		color: #b99a6c; box-shadow: 0 6px 22px rgb(0 0 0 / .3);
+		transition: opacity .55s ease;
+	}
+	.entrance-lang-btn {
+		min-width: 44px; min-height: 40px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent;
+		color: #e5cfac; cursor: pointer; text-transform: uppercase;
+		font: 400 26px/1 var(--font-hand), cursive; letter-spacing: .04em;
+		transition: color .2s, background .2s;
+	}
+	.entrance-lang-btn:hover { color: #fff4df; }
+	.entrance-lang-btn.active { color: #ffe2b8; background: rgb(255 194 128 / .16); box-shadow: inset 0 0 0 1px rgb(255 194 128 / .4); }
+	.entrance-lang-btn:focus-visible { outline: 1px solid #f0dfbd; outline-offset: 3px; }
+	.codex-entrance:is([data-state='playing'], [data-state='closing']) .entrance-lang { opacity: 0; pointer-events: none; }
+	@media (max-width: 600px) {
+		.entrance-lang { top: 26px; right: 27px; }
+		.entrance-lang-btn { min-width: 40px; min-height: 36px; font-size: 22px; }
+	}
 	.codex-entrance:not([data-scene='ready']) .entrance-skip { color: var(--ink-soft); }
 	.entrance-heading { position: absolute; top: clamp(42px, 6.2vh, 80px); width: 100%; text-align: center; pointer-events: none; }
 	.entrance-edition { font-size: 11px; letter-spacing: .23em; text-transform: uppercase; margin: 0 0 8px; }

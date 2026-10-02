@@ -1,7 +1,7 @@
 import {
 	ACESFilmicToneMapping, AdditiveBlending, BufferGeometry, Float32BufferAttribute, Points, ShaderMaterial, Sprite, SpriteMaterial, CanvasTexture, Color, DirectionalLight, HemisphereLight, MathUtils,
-	Mesh, MeshDepthMaterial, MeshDistanceMaterial, RGBADepthPacking, Raycaster, Plane, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, PCFShadowMap, PerspectiveCamera, PointLight,
-	PMREMGenerator, Quaternion, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
+	Mesh, MeshDepthMaterial, MeshDistanceMaterial, RGBADepthPacking, Raycaster, Plane, MeshBasicMaterial, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, PointLight,
+	NoColorSpace, PMREMGenerator, Quaternion, Scene, SRGBColorSpace, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -79,7 +79,7 @@ export async function createCodexScene(
 	signal.addEventListener('abort', dispose, { once: true });
 	try {
 		const loaded = await Promise.all([
-			loader.loadAsync('/codex/scene_codex_v3.glb', event => {
+			loader.loadAsync('/codex/scene_codex_v4.glb', event => {
 				onLoadProgress?.(event.lengthComputable && event.total ? event.loaded / event.total : NaN);
 			}).then(gltf => {
 				// A fetch/timeout can fail before the worker finishes decoding.
@@ -108,6 +108,26 @@ export async function createCodexScene(
 		const inkRelease = { value: 0 };
 		const presence = { value: 0 };
 		const paperTime = { value: 0 };
+		const leafOpen = { value: 0 };
+		// Once the board no longer presses on them, the upper leaves relax: they
+		// rise out of the gutter into a soft arch, fan apart along the fore-edge and
+		// the tail corner curls. Closed, they lie flat under the cover. Only the dense
+		// top leaves bend; the sparse folio edges below stay where they are.
+		const leafLift = (shader: Parameters<NonNullable<MeshStandardMaterial['onBeforeCompile']>>[0]) => {
+			shader.uniforms.leafOpen = leafOpen;
+			shader.vertexShader = 'uniform float leafOpen;\n' + shader.vertexShader;
+			shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', `
+				#include <begin_vertex>
+				{
+					float across = clamp((position.x + 1.52) / 3.04, 0., 1.);
+					float gutter = pow(clamp((-1.12 - position.x) / .415, 0., 1.), 2.);
+					float arch = .28 * pow(sin(3.14159 * across), .8) * (1. - .35 * across) * (1. - gutter);
+					float curl = .09 * pow(smoothstep(.85, 1.52, position.x) * smoothstep(1.25, 2.07, position.z), 2.);
+					float layer = smoothstep(.9, 1., (position.y - .468) / .212);
+					transformed.y += leafOpen * layer * (arch + curl);
+				}
+			`);
+		};
 		// Deform only the exposed sheet edges. The spine stays anchored and the
 		// coherent wave across neighbouring sheets preserves their separation.
 		const flutterShader: MeshStandardMaterial['onBeforeCompile'] = shader => {
@@ -121,6 +141,13 @@ export async function createCodexScene(
 				transformed.y += bookPresence * edge * edge * (1. + wave) * .0025;
 			`);
 		};
+		const leafShadow = () => {
+			const depth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking });
+			const distance = new MeshDistanceMaterial();
+			depth.onBeforeCompile = leafLift; distance.onBeforeCompile = leafLift;
+			return { depth, distance };
+		};
+		let contactPlane: Mesh | undefined;
 		const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 		model.scene.traverse(object => {
 			if (!(object instanceof Mesh)) return;
@@ -140,12 +167,33 @@ export async function createCodexScene(
 				object.customDepthMaterial = depth; object.customDistanceMaterial = distance;
 			}
 			if (/^Small[ _]flame/.test(object.name)) { flame = object; object.castShadow = false; }
+			if (/^CONTACT_AO/.test(object.name)) contactPlane = object;
 			const materials = Array.isArray(object.material) ? object.material : [object.material];
 			for (const material of materials) {
 				if (!(material instanceof MeshStandardMaterial)) continue;
 				if (/Folio tone/.test(material.name)) material.onBeforeCompile = flutterShader;
+				if (material.name === 'Oxide red ribbon' || material.name === 'Loose leaf rag paper') {
+					material.onBeforeCompile = leafLift;
+					const { depth, distance } = leafShadow();
+					object.customDepthMaterial = depth; object.customDistanceMaterial = distance;
+				}
+				// Thin glass: reflections only, no opaque shadow, drawn after the desk.
+				if (material.name === 'Clear glass') {
+					material.depthWrite = false; material.envMapIntensity = .8; material.roughness = .1;
+					object.castShadow = false; object.renderOrder = 2;
+				}
+				// A low cutoff: mipmapped alpha thins the narrow vane at a distance.
+				if (material.name === 'Goose quill vane') material.alphaTest = .2;
+				if (material.name === 'Iron gall stain') {
+					material.depthWrite = false; material.polygonOffset = true; material.polygonOffsetFactor = -2;
+					object.castShadow = false; object.renderOrder = 1;
+				}
+				if (/brass/i.test(material.name)) material.envMapIntensity = 2.2;
 				if (material.map?.name?.includes('folio_studi') || material.name.includes('original portfolio ink')) {
+					const { depth, distance } = leafShadow();
+					object.customDepthMaterial = depth; object.customDistanceMaterial = distance;
 					material.onBeforeCompile = shader => {
+						leafLift(shader);
 						shader.uniforms.inkRelease = inkRelease;
 						shader.fragmentShader = 'uniform float inkRelease;\n' + shader.fragmentShader;
 						shader.fragmentShader = shader.fragmentShader.replace('#include <colorspace_fragment>', '#include <colorspace_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.89, 0.81, 0.66), inkRelease);');
@@ -280,19 +328,18 @@ export async function createCodexScene(
 			if (flameMaterial) flameMaterial.emissiveIntensity = flameEmissive * (1 + d * (1.6 + flutter * .25));
 			renderer.toneMappingExposure = MathUtils.lerp(1.05, 1.15, d);
 		};
-		// Subtle contact occlusion grounds the stationary page block. The cover's
-		// moving shadow remains a real shadow map throughout the opening.
-		const contactCanvas = document.createElement('canvas');
-		contactCanvas.width = contactCanvas.height = 256;
-		const context = contactCanvas.getContext('2d')!;
-		context.filter = 'blur(14px)';
-		context.fillStyle = 'rgba(20, 9, 3, .5)';
-		context.fillRect(35, 26, 186, 204);
-		const contact = new Mesh(new PlaneGeometry(4.6, 5.7), new MeshBasicMaterial({
-			map: new CanvasTexture(contactCanvas), transparent: true, depthWrite: false,
-		}));
-		contact.rotation.x = -Math.PI / 2; contact.position.y = .043;
-		scene.add(contact);
+		// Contact occlusion baked in Blender from every resting object: soft, shaped
+		// grounding under the book and the desk props. The cover's moving shadow
+		// remains a real shadow map throughout the opening.
+		if (contactPlane) {
+			const baked = contactPlane.material as MeshStandardMaterial;
+			const occlusion = baked.map!;
+			occlusion.colorSpace = NoColorSpace; occlusion.needsUpdate = true;
+			contactPlane.material = new MeshBasicMaterial({ color: '#120802', alphaMap: occlusion, transparent: true, depthWrite: false, opacity: .82 });
+			baked.map = null; baked.dispose();
+			contactPlane.castShadow = contactPlane.receiveShadow = false;
+			contactPlane.renderOrder = 1;
+		}
 		// Sparse airborne fibres catch the candle, with real depth and parallax.
 		// One draw call, GPU drift, no postprocessing or full-screen glow wash.
 		const dustGeometry = new BufferGeometry();
@@ -398,6 +445,7 @@ export async function createCodexScene(
 			basePosition.fromArray(a.p).lerp(nextPosition.fromArray(b.p), t);
 			baseRotation.fromArray(a.q).slerp(nextRotation.fromArray(b.q), t);
 			hinge.quaternion.fromArray(a.h).slerp(nextHinge.fromArray(b.h), t);
+			leafOpen.value = MathUtils.smootherstep(2 * Math.acos(Math.min(1, Math.abs(hinge.quaternion.w))), .9, 2.6);
 			// Continue from the lifted cover on click, then merge into Blender's
 			// opening curve without snapping the hinge back to its closed pose.
 			const response = animating

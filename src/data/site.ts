@@ -22,7 +22,7 @@ export const site = {
 
 	/** Contatti. I link vuoti non vengono mostrati finché non li compili. */
 	contact: {
-		email: 'gianlucadark1@gmail.com',
+		email: 'gianluca.darcangeloo@gmail.com',
 		linkedin: 'https://www.linkedin.com/in/gianluca-d-arcangelo',
 		place: 'Sperlonga, Italia',
 		/** CV scaricabile: metti il PDF in /public e imposta il percorso (es. '/cv.pdf'). */

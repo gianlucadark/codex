@@ -6,6 +6,8 @@ import portfolio3dCover from '../assets/progetti/portfolio-3d.webp';
 import portfolio3dCover2 from '../assets/progetti/portfolio-3d-2.webp';
 import lightshipCover from '../assets/progetti/lightship.webp';
 import cretaCover from '../assets/progetti/creta.webp';
+import orbitCover from '../assets/progetti/orbit.webp';
+import orbitCover2 from '../assets/progetti/orbit-2.webp';
 
 /** A single "tavola" (plate) in the projects section of the codex. */
 export interface Project {
@@ -60,6 +62,45 @@ export interface Project {
 export const projects: Project[] = [
 	{
 		numeral: 'I',
+		slug: 'orbit',
+		title: 'Orbit',
+		stack: 'Tauri · Rust · React · TypeScript',
+		desc: 'Una ruota sul cursore per convertire, comprimere e modificare file, offline.',
+		descEn: 'A wheel at your cursor to convert, compress and edit files, offline.',
+		category: 'App Desktop · Windows',
+		categoryEn: 'Desktop App · Windows',
+		year: 'MMXXVI · 2026',
+		role: 'Desktop · Fullstack',
+		status: 'beta · in beta',
+		summary:
+			'Orbit è un’app desktop per Windows che porta le operazioni sui file dove sono già: si seleziona un file, si preme Ctrl+Alt+O e attorno al cursore si apre una ruota con le sole azioni compatibili. Converte immagini, documenti, dati, audio e video, comprime, estrae testo con l’OCR, rimuove lo sfondo, vettorizza in SVG, invia al telefono e modifica i PDF — tutto in locale, senza upload né account.',
+		summaryEn:
+			'Orbit is a Windows desktop app that brings file operations to where the files already are: select a file, press Ctrl+Alt+O and a wheel opens around the cursor with only the compatible actions. It converts images, documents, data, audio and video, compresses, extracts text with OCR, removes backgrounds, vectorises to SVG, sends to your phone and edits PDFs — all locally, with no uploads or accounts.',
+		highlights: [
+			{ it: 'Ruota contestuale sul cursore: da Esplora file, Ctrl+V o cattura schermo, con le sole azioni compatibili.', en: 'Contextual wheel at the cursor: from File Explorer, Ctrl+V or a screen capture, with only the compatible actions.' },
+			{ it: 'Oltre 55 operazioni: conversioni, compressione, OCR, rimozione sfondo, SVG, PDF ⇄ Word, video in GIF.', en: '55+ operations: conversions, compression, OCR, background removal, SVG, PDF ⇄ Word, video to GIF.' },
+			{ it: 'Editor PDF che corregge il testo nel suo font, firma e oscura i dati per davvero, senza toccare l’originale.', en: 'PDF editor that rewrites text in its own font, signs and truly redacts data, never touching the original.' },
+			{ it: 'Tutto in locale: motore Rust isolato in un worker con limiti di memoria e tempo, nessun file caricato online.', en: 'Fully local: a Rust engine isolated in a worker with memory and time limits, no file uploaded anywhere.' },
+		],
+		caseStudy: {
+			problem: {
+				it: 'Convertire o sistemare un file su Windows vuol dire saltare tra programmi diversi o caricarlo su siti sconosciuti: lento, dispersivo e poco rispettoso della privacy.',
+				en: 'Converting or fixing a file on Windows means hopping between different programs or uploading it to unknown websites: slow, scattered and careless with privacy.',
+			},
+			approach: {
+				it: 'Ho costruito un’app nativa con Tauri e Rust: una ruota che compare dove si trova il file e raggruppa le azioni per famiglie, sopra motori locali — codec di Windows, Office o LibreOffice già installati, PDFium, modelli ML compilati nell’eseguibile.',
+				en: 'I built a native app with Tauri and Rust: a wheel that appears where the file is and groups actions into families, on top of local engines — Windows codecs, the Office or LibreOffice already installed, PDFium, ML models compiled into the executable.',
+			},
+			result: {
+				it: 'Un unico gesto per decine di operazioni, arrivato alla versione 0.10 con un editor PDF completo. Ogni nuova funzione entra nella stessa ruota, senza aggiungere finestre o passaggi.',
+				en: 'One gesture for dozens of operations, now at version 0.10 with a full PDF editor. Every new feature joins the same wheel, without adding windows or steps.',
+			},
+		},
+		links: [{ it: 'sito · download', en: 'site · download', href: 'https://orbit-beta-app.vercel.app/' }],
+		images: [orbitCover, orbitCover2],
+	},
+	{
+		numeral: 'II',
 		slug: 'uxability',
 		title: 'UXability',
 		stack: 'Angular · AI Analysis · UX Audit',
@@ -98,7 +139,7 @@ export const projects: Project[] = [
 		images: [uxabilityCover],
 	},
 	{
-		numeral: 'II',
+		numeral: 'III',
 		slug: 'uxability-extension',
 		title: 'UXability Browser Extension',
 		stack: 'JavaScript · Browser APIs',
@@ -136,7 +177,7 @@ export const projects: Project[] = [
 		images: [uxabilityExtensionCover],
 	},
 	{
-		numeral: 'III',
+		numeral: 'IV',
 		slug: 'portfolio-3d',
 		title: 'Portfolio 3D',
 		stack: 'Angular · Three.js · WebGL · Blender',
@@ -175,7 +216,7 @@ export const projects: Project[] = [
 		images: [portfolio3dCover, portfolio3dCover2],
 	},
 	{
-		numeral: 'IV',
+		numeral: 'V',
 		slug: 'lightship',
 		title: 'Lightship',
 		stack: 'Node.js · Rust · CLI',
@@ -214,7 +255,7 @@ export const projects: Project[] = [
 		images: [lightshipCover],
 	},
 	{
-		numeral: 'V',
+		numeral: 'VI',
 		slug: 'creta',
 		title: 'Creta',
 		stack: 'Next.js · React · Generative UI',

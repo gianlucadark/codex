@@ -29,9 +29,8 @@ export default defineConfig({
 			name: 'EB Garamond',
 			cssVariable: '--font-garamond',
 			provider: fontProviders.google(),
-			// Solo il peso realmente usato (il corpo del testo): 500/600 non
-			// comparivano in nessuno stile e generavano @font-face inutili.
-			weights: [400],
+			// Normal for the book and display type, medium for reading on textured paper.
+			weights: [400, 500],
 			styles: ['normal', 'italic'],
 			// `swap`: il testo compare subito col fallback e passa al font quando è
 			// pronto — niente FOIT (testo invisibile durante il caricamento).

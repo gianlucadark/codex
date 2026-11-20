@@ -1,75 +1,57 @@
 ---
-/**
- * The "running head" of a folio: a latin eyebrow followed by the section name
- * in the active language, and the handwritten folio number on the right. The
- * latin term stays fixed (it belongs to neither language); only the IT/EN voice
- * switches with the language toggle. `rule` draws the underline used by the
- * inner sections (the hero uses a borderless variant).
- */
 import Bilingual from './Bilingual.astro';
 
-interface Props {
-	/** Fixed latin term shown before the section name (optional). */
-	latin?: string;
-	/** Section name — Italian voice. */
-	it: string;
-	/** Section name — English voice. */
-	en: string;
-	folio: string;
-	rule?: boolean;
-}
-
-const { latin, it, en, folio, rule = true } = Astro.props;
+interface Props { latin?: string; it: string; en: string; folio: string; }
+const { latin, it, en, folio } = Astro.props;
 ---
-
-<div class:list={['head', { ruled: rule }]} data-reveal>
-	<h2 class="eyebrow">
-		{latin && <span class="latin">{latin} — </span>}
-		<Bilingual it={it} en={en} />
-	</h2>
+<header class="heading" data-reveal>
+	<div>
+		{latin && <p class="imprint rubric">{latin}</p>}
+		<h2><Bilingual it={it} en={en} /></h2>
+	</div>
 	<span class="folio hand-bold">{folio}</span>
-</div>
+</header>
 
 <style>
-	.head {
+	.heading {
 		display: flex;
-		align-items: baseline;
+		align-items: flex-end;
 		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: clamp(24px, 3.1vw, 45px);
 	}
-
-	.head.ruled {
-		border-bottom: var(--hairline) solid var(--accent);
-		padding-bottom: 8px;
+	.heading .rubric {
+		color: var(--accent-ink);
+		margin: 0 0 9px;
 	}
-
-	.eyebrow {
+	h2 {
 		margin: 0;
 		font-weight: 400;
-		font-style: italic;
-		letter-spacing: 0.24em;
-		text-transform: uppercase;
-		font-size: 15px;
-		color: var(--brown);
+		font-size: clamp(46px, 6.6vw, 108px);
+		line-height: 0.95;
+		letter-spacing: -0.055em;
 	}
-
 	.folio {
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-folio);
-		letter-spacing: 0.015em;
+		margin-bottom: 4px;
+		font:
+			400 var(--hand-folio)/1 var(--font-hand),
+			cursive;
 		color: var(--accent-ink);
 		white-space: nowrap;
-		padding-left: 12px;
 	}
-
-	@media (max-width: 560px) {
-		.eyebrow {
-			/* La spaziatura ampia manda l'occhiello a capo in modo goffo: qui
-			   la stringo così il titolo di sezione resta su poche righe pulite. */
-			letter-spacing: 0.13em;
-			font-size: 13.5px;
+	@media (max-width: 520px) {
+		.heading {
+			position: relative;
+		}
+		.heading .rubric {
+			padding-right: 62px;
+			margin-bottom: 13px;
 		}
 		.folio {
-			font-size: 32px;
+			position: absolute;
+			top: -6px;
+			right: 0;
+			font-size: 29px;
 		}
 	}
 </style>

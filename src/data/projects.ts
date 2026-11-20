@@ -57,12 +57,20 @@ export interface Project {
 	 *   images: [shot],
 	 */
 	images?: ImageMetadata[];
+
+	/* — The workshop table (projects folio on the home page) — */
+	/** Latin name of the "invention", written in mirror script on its sheet. */
+	latin?: string;
+	/** A short handwritten note scribbled on the sheet, under the print. */
+	note?: { it: string; en: string };
 }
 
 export const projects: Project[] = [
 	{
 		numeral: 'I',
 		slug: 'orbit',
+		latin: 'Rota ad cursorem',
+		note: { it: 'la ruota si apre sul cursore', en: 'the wheel opens at your cursor' },
 		title: 'Orbit',
 		stack: 'Tauri · Rust · React · TypeScript',
 		desc: 'Una ruota sul cursore per convertire, comprimere e modificare file, offline.',
@@ -102,6 +110,8 @@ export const projects: Project[] = [
 	{
 		numeral: 'II',
 		slug: 'uxability',
+		latin: 'Speculum qualitatis',
+		note: { it: 'una scansione, quattro voti', en: 'one scan, four scores' },
 		title: 'UXability',
 		stack: 'Angular · AI Analysis · UX Audit',
 		desc: 'Analizza UX, accessibilità, SEO e AEO in un’unica scansione leggibile.',
@@ -141,6 +151,8 @@ export const projects: Project[] = [
 	{
 		numeral: 'III',
 		slug: 'uxability-extension',
+		latin: 'Oculus peregrinus',
+		note: { it: '27 problemi, trovati sul posto', en: '27 issues, found on the spot' },
 		title: 'UXability Browser Extension',
 		stack: 'JavaScript · Browser APIs',
 		desc: 'Controlla accessibilità, usabilità e SEO senza uscire dalla pagina.',
@@ -179,6 +191,8 @@ export const projects: Project[] = [
 	{
 		numeral: 'IV',
 		slug: 'portfolio-3d',
+		latin: 'Fenestra antiqua',
+		note: { it: 'sì, è Windows XP. In 3D.', en: 'yes, it’s Windows XP. In 3D.' },
 		title: 'Portfolio 3D',
 		stack: 'Angular · Three.js · WebGL · Blender',
 		desc: 'Un portfolio esplorabile che racconta progetti e competenze in 3D.',
@@ -218,6 +232,8 @@ export const projects: Project[] = [
 	{
 		numeral: 'V',
 		slug: 'lightship',
+		latin: 'Navis lucis',
+		note: { it: 'voto F: si torna al lavoro', en: 'grade F: back to work' },
 		title: 'Lightship',
 		stack: 'Node.js · Rust · CLI',
 		desc: 'CLI per controllare qualità, accessibilità e SEO prima del deploy.',
@@ -257,6 +273,8 @@ export const projects: Project[] = [
 	{
 		numeral: 'VI',
 		slug: 'creta',
+		latin: 'Ex charta forma',
+		note: { it: 'da un file Word a una pagina', en: 'from a Word file to a page' },
 		title: 'Creta',
 		stack: 'Next.js · React · Generative UI',
 		desc: 'Trasforma un documento Word in una landing page coerente e modificabile.',

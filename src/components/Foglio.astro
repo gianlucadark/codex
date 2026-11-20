@@ -1,0 +1,193 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import type { Project } from '../data/projects';
+import Bilingual from './Bilingual.astro';
+
+interface Props {
+	project: Project;
+	index: number;
+	x: number;
+	y: number;
+	r: number;
+	format: string;
+}
+const { project, index, x, y, r, format } = Astro.props;
+const drawings = import.meta.glob<{ default: ImageMetadata }>('../assets/bottega/*.webp', { eager: true });
+const study = drawings[`../assets/bottega/${project.slug}.webp`]?.default;
+const cover = project.images?.[0];
+const href = `/progetti/${project.slug}`;
+const year = project.year.split(' · ').at(-1);
+const [statusIt, statusEn = statusIt] = project.status.split(' · ');
+---
+<li class:list={['foglio-sciolto', format]} data-item data-sheet data-x={x} data-y={y} data-r={r}
+	style={`--x:${x};--y:${y};--r:${r}deg;--index:${index};--mobile-y:${index % 2 ? .53 : .47}`}>
+	<div class="paper-shadow">
+		<div class="leaf">
+			<article class="face recto" data-face="recto" aria-labelledby={`titolo-${project.slug}`}>
+				<header class="reference"><span><Bilingual it="Tav." en="Pl." /> {project.numeral}</span><span>{year}</span></header>
+				<h3 id={`titolo-${project.slug}`}><a href={href} draggable="false">{project.slug === 'uxability-extension'
+					? <>UXability <small>Browser Extension</small></> : project.title}</a></h3>
+				{(study ?? cover) && <div class="study" data-grip>
+					<img src={(study ?? cover)!.src} width="512" height="512" loading="lazy" alt="" draggable="false" />
+				</div>}
+				{project.note && <p class="annotation hand-bold"><Bilingual it={project.note.it} en={project.note.en} /></p>}
+				<footer>
+					<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
+					<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
+				</footer>
+			</article>
+			<article class="face verso" data-face="verso" aria-label={project.title} inert>
+				<header class="reference"><span><Bilingual it="Tav." en="Pl." /> {project.numeral} · verso</span><span><Bilingual it={statusIt} en={statusEn} /></span></header>
+				<h3><a href={href} draggable="false">{project.title}</a></h3>
+				{cover && <figure class="print" data-grip>
+					<Image src={cover} widths={[320, 640]} sizes="300px" alt="" loading="lazy" draggable="false" />
+				</figure>}
+				<p class="desc"><Bilingual it={project.desc} en={project.descEn} /></p>
+				<footer>
+					<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
+					<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
+				</footer>
+			</article>
+		</div>
+	</div>
+</li>
+
+<style>
+	.foglio-sciolto {
+		--paper-width: clamp(255px, 23.5vw, 410px);
+		--paper-ratio: .89;
+		--turn: 0deg;
+		position: absolute;
+		left: calc(var(--x) * 100%); top: calc(var(--y) * 100%);
+		width: var(--paper-width); aspect-ratio: var(--paper-ratio);
+		transform: translate(-50%, -50%) rotate(var(--r));
+		list-style: none; user-select: none; -webkit-user-select: none; touch-action: none;
+		color: #2e261d;
+	}
+	.wide { --paper-width: clamp(250px, 24.6vw, 425px); --paper-ratio: 1.38; }
+	.slip { --paper-width: clamp(213px, 17.5vw, 302px); --paper-ratio: .82; }
+	.foglio-sciolto:nth-child(5) { --paper-width: clamp(222px, 19.8vw, 342px); }
+	.foglio-sciolto:nth-child(6) { --paper-width: clamp(235px, 21.6vw, 360px); --paper-ratio: 1.3; }
+	:global(.desk-live) .foglio-sciolto { top: 0; left: 0; cursor: grab; }
+	.foglio-sciolto.is-held { cursor: grabbing; }
+	.foglio-sciolto.is-flying { transition: transform .82s cubic-bezier(.22,.69,.17,1); }
+	.foglio-sciolto.is-turned { --turn: 180deg; }
+	.paper-shadow, .leaf { width: 100%; height: 100%; }
+	.paper-shadow {
+		/* Counter-rotate the cast shadow so the window stays on the left as a sheet turns. */
+		--light-angle: calc(65deg - var(--bearing, var(--r)));
+		--throw: 6px;
+		--blur: 3px;
+		filter: brightness(var(--exposure, 1)) drop-shadow(1px 1px .7px #291a118c)
+			drop-shadow(calc(var(--throw) * cos(var(--light-angle))) calc(var(--throw) * sin(var(--light-angle))) var(--blur) #20140bc4);
+		perspective: 1150px;
+		transition: filter .23s, scale .23s;
+	}
+	.is-held .paper-shadow {
+		scale: 1.024;
+		--throw: 21px;
+		--blur: 9px;
+	}
+	.leaf {
+		position: relative;
+		transform-style: preserve-3d;
+		transform: rotateY(var(--turn));
+		transition: transform .62s cubic-bezier(.4,0,.2,1);
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		.is-held .leaf {
+			transform: rotateX(var(--tilt-x, 0deg)) rotateY(calc(var(--turn) + var(--tilt-y, 0deg)));
+			transition-duration: .18s;
+		}
+	}
+	.face {
+		position: absolute; inset: 0;
+		backface-visibility: hidden; -webkit-backface-visibility: hidden;
+		display: grid;
+		grid-template: 'ref' auto 'title' auto 'art' minmax(0, 1fr) 'note' auto 'foot' auto / minmax(0, 1fr);
+		padding: 7.2% 8% 6%;
+		isolation: isolate;
+	}
+	.face::before {
+		content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+		background: url('../assets/bottega/carta-vergata.webp') center / 100% 100% no-repeat;
+	}
+	.wide .face::before { transform: scale(-1); filter: brightness(1.045); }
+	.slip .face::before { transform: scaleX(-1); filter: saturate(.65) brightness(.96); }
+	.foglio-sciolto:nth-child(5) .face::before { transform: scaleY(-1); filter: sepia(.19) brightness(.97); }
+	.reference {
+		grid-area: ref; display: flex; align-items: baseline; justify-content: space-between; gap: 5px;
+		font: 500 .72rem/1.2 var(--font-garamond), Georgia, serif;
+		letter-spacing: .1em; text-transform: uppercase; color: #674f38;
+	}
+	.reference > :first-child { color: var(--accent-ink); }
+	h3 {
+		grid-area: title; margin: .08em 0 0; color: #2a2119;
+		font: 500 clamp(32px, 3.2vw, 57px)/.99 var(--font-garamond), Georgia, serif;
+		letter-spacing: -.055em; overflow-wrap: break-word;
+	}
+	h3 a { text-decoration: none; }
+	h3, footer { position: relative; z-index: 1; }
+	h3 small { display: block; font-size: .49em; letter-spacing: -.025em; font-style: italic; line-height: 1.15; }
+	h3 a:hover, footer :is(a,button):hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: .14em; }
+	.study {
+		grid-area: art; min-height: 0; margin: 2px -3% 0; mix-blend-mode: multiply;
+		display: flex; align-items: center; justify-content: center;
+	}
+	.study img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+	.annotation {
+		grid-area: note; margin: 0 0 .12em; color: #793f2e; text-align: right; pointer-events: none;
+		font: 400 clamp(23px, 1.85vw, 32px)/.97 var(--font-hand), cursive; rotate: -2deg;
+	}
+	.wide .recto {
+		grid-template: 'ref ref' auto 'title title' auto 'note art' minmax(0, 1fr) 'foot foot' auto / .9fr 1.32fr;
+		padding: 6.5% 7.3% 5.2%;
+	}
+	.wide .study { margin: -11% -3% 0 -4%; }
+	.wide .annotation { align-self: center; text-align: left; rotate: -5deg; }
+	.wide h3 { font-size: clamp(31px, 2.85vw, 52px); }
+	footer {
+		grid-area: foot; display: flex; align-items: center; justify-content: space-between; gap: 4px;
+		border-top: 1px solid #715c443d;
+		font: italic 500 max(.91rem, 14px)/1.12 var(--font-garamond), Georgia, serif;
+	}
+	footer a, footer button { padding: 5px 0 1px; color: #5e382b; }
+	footer a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+	footer button {
+		display: none; align-items: center; gap: 4px; font: inherit; border: 0; background: transparent; cursor: pointer;
+	}
+	:global(.desk-live) footer button { display: inline-flex; }
+	footer button span[aria-hidden] { font: normal 17px/1 Georgia, serif; }
+	.verso { transform: rotateY(180deg); }
+	.verso::before { transform: scaleX(-1); }
+	.verso h3 { font-size: clamp(20px, 1.85vw, 34px); margin: .21em 0; }
+	.wide .verso { padding-block: 5% 4.5%; }
+	.print { grid-area: art; min-height: 0; margin: 2px 0 5px; }
+	.print img {
+		display: block; width: 100%; height: 100%; object-fit: contain;
+		filter: drop-shadow(1px 2px 1px #442e1977); rotate: -1deg;
+	}
+	.desc { grid-area: note; margin: 3px 0 6px; font-size: clamp(14px, 1.06vw, 18px); line-height: 1.13; }
+	@media (min-width: 960px) and (max-width: 1199px) {
+		.wide, .foglio-sciolto:nth-child(6) { --paper-ratio: 1.12; }
+	}
+	@media (max-width: 959px) {
+		.foglio-sciolto, .foglio-sciolto:nth-child(5), .foglio-sciolto:nth-child(6) {
+			--paper-width: clamp(229px, 63vw, 286px);
+			left: calc(50vw + var(--index) * var(--pitch));
+			top: calc(var(--mobile-y) * 100%); touch-action: auto;
+		}
+		.wide, .foglio-sciolto:nth-child(6) { --paper-width: clamp(246px, 70vw, 316px); --paper-ratio: 1.06; }
+		.slip { --paper-width: clamp(215px, 61vw, 270px); }
+		[data-grip] { touch-action: none; }
+		h3, .wide h3 { font-size: 37px; }
+		.verso h3 { font-size: 25px; }
+		.annotation { font-size: 25px; }
+		footer a, footer button { min-height: 35px; display: inline-flex; align-items: center; }
+		footer button { display: none; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.leaf, .paper-shadow, .foglio-sciolto.is-flying { transition: none; }
+	}
+</style>

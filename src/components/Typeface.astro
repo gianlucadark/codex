@@ -1,492 +1,164 @@
 ---
 import SectionHeader from './SectionHeader.astro';
-import MarginNote from './MarginNote.astro';
 import Bilingual from './Bilingual.astro';
 import { facts, stages, features } from '../data/typeface';
 
-interface Props {
-	showAnnotations?: boolean;
-}
-
-const { showAnnotations = true } = Astro.props;
-
-// Placeholder "presente ma invisibile" per lo scrittoio: uno zero-width space
-// tiene vivo `:placeholder-shown` (che governa il suggerimento overlay) senza
-// mostrare nulla — un semplice spazio verrebbe svuotato da compressHTML.
-const zwsp = String.fromCharCode(0x200b);
+const space = String.fromCharCode(0x200b);
 ---
 
-<section id="font" class="foglio" aria-label="Il font">
-	<SectionHeader latin="Manus Auctoris" it="Il font" en="The typeface" folio="f. VI r" />
-
-	<div class="grid">
-		<div class="prose">
-			<h3 class="type-name hand-bold" data-reveal>Gianluca Hand</h3>
-			<div class="bil-pair lines" data-reveal>
-				<Bilingual
-					as="p"
-					class="copy"
-					it="Per titoli, note e dettagli manoscritti uso un carattere disegnato dalla mia calligrafia. Ho digitalizzato la mia scrittura a mano, lettera per lettera, fino a farne un font vero e proprio, con imperfezioni controllate e piccoli cambi di ritmo."
-					en="Headings, marginal notes and handwritten details use a typeface drawn from my own handwriting, digitised letter by letter into a real font, with controlled imperfections and tiny shifts in rhythm."
-				/>
-			</div>
-			<div class="bil-pair notes" data-reveal>
-				<Bilingual
-					as="p"
-					class="copy"
-					it="Non è un vezzo decorativo: è una piccola infrastruttura d'identità. Mi permette di far entrare nel portfolio la stessa mano che appunta, cancella, prova e riscrive durante il lavoro."
-					en="It is not just ornament: it is a small identity system. It brings into the portfolio the same hand that annotates, crosses out, tests and rewrites during the work."
-				/>
-			</div>
-			<p class="signoff hand-bold" data-reveal>
-				<Bilingual it="la mia mano, il mio codice." en="my hand, my code." />
-			</p>
+<section id="font" class="foglio typeface" aria-label="Gianluca Hand">
+	<SectionHeader latin="Manus auctoris" it="La mia calligrafia" en="My handwriting" folio="f. III v" />
+	<div class="specimen-sheet">
+		<div class="specimen-title">
+			<h3 class="hand-bold">Gianluca Hand</h3>
+			<p><Bilingual it="Ho digitalizzato la mia scrittura, lettera per lettera. Anche qui ogni tratto conserva le piccole irregolarità della mano." en="I digitised my handwriting letter by letter. Each stroke still carries the small irregularities of the hand." /></p>
+			<dl>{facts.map(f=><div><dt>{f.value}</dt><dd><Bilingual it={f.it} en={f.en} /></dd></div>)}</dl>
 		</div>
-
-		<div class="plate codex-plate" data-reveal>
-			<div class="sample">
-				<span class="line line-1"></span>
-				<span class="line line-2"></span>
-				<span class="baseline"></span>
-				<div class="glyphs hand-bold">Aa Gg</div>
+		<div class="writing">
+			<label for="writing-line" class="imprint"><Bilingual it="Prova il carattere" en="Try the typeface" /></label>
+			<div class="guide">
+				<input type="text" class="scrittoio-input hand-bold" id="writing-line" maxlength="80" autocomplete="off" spellcheck="false" placeholder={space} />
+				<span class="hint hand-bold" aria-hidden="true"><Bilingual it="Scrivi qui…" en="Write here…" /></span>
 			</div>
-			<div class="plate-foot">
-				<Bilingual it="scritto a mano" en="hand-drawn" />
-			</div>
+			<p class="alphabet hand-bold" aria-hidden="true">Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz</p>
 		</div>
 	</div>
-
-	<!-- Lo scrittoio: il lettore prova la mano dell'autore. Zero JS — le
-	     alternative contestuali del font fanno tutto da sole, e il suggerimento
-	     bilingue è un overlay che sparisce con :placeholder-shown. -->
-	<div class="scrittoio" data-reveal>
-		<div class="scrittoio-head">
-			<span class="scrittoio-kicker">
-				<Bilingual it="prova dal vivo" en="live test" />
-			</span>
-			<p class="scrittoio-label" id="scrittoio-label">
-				<Bilingual
-					it="Prova la mia mano..."
-					en="Try my hand..."
-				/>
-			</p>
+	<details>
+		<summary><Bilingual it="Dal foglio al font" en="From paper to type" /></summary>
+		<div class="notes">
+			{[...stages, ...features].map(note=><div><h3><Bilingual it={note.it} en={note.en} /></h3><p><Bilingual it={note.itText} en={note.enText} /></p></div>)}
 		</div>
-		<div class="scrittoio-line">
-			<input
-				class="scrittoio-input hand-bold"
-				type="text"
-				maxlength="80"
-				autocomplete="off"
-				autocapitalize="off"
-				spellcheck="false"
-				placeholder={zwsp}
-				aria-labelledby="scrittoio-label"
-			/>
-			<span class="scrittoio-hint hand-bold" aria-hidden="true">
-				<span class="bil" lang="it">scrivi qui…</span>
-				<span class="bil" lang="en">write here…</span>
-			</span>
-		</div>
-	</div>
-	
-	<div class="specimen" data-reveal="stagger">
-		<p class="hand-bold">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
-		<p class="hand-bold">a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
-		<p class="phrase hand-bold">
-			<Bilingual it="Scrivere codice come si annota un margine." en="Writing code like annotating a margin." />
-		</p>
-		<p class="accent hand-bold">0 1 2 3 4 5 6 7 8 9 &nbsp; à è é ì ò ù &nbsp; € $ £</p>
-	</div>
-
-
-	<div class="process" data-reveal="stagger" role="group" aria-label="Processo del font">
-		{
-			stages.map((stage) => (
-				<article>
-					<span class="step">{stage.step}</span>
-					<h3 class="hand-bold">
-						<Bilingual it={stage.it} en={stage.en} />
-					</h3>
-					<p>
-						<Bilingual it={stage.itText} en={stage.enText} />
-					</p>
-				</article>
-			))
-		}
-	</div>
-
-	<div class="usage" data-reveal="stagger" role="group" aria-label="Uso del font">
-		{
-			features.map((feature, i) => (
-				<div>
-					<span class="step">{String(i + 4).padStart(2, '0')}</span>
-					<h3 class="hand-bold">
-						<Bilingual it={feature.it} en={feature.en} />
-					</h3>
-					<p>
-						<Bilingual it={feature.itText} en={feature.enText} />
-					</p>
-				</div>
-			))
-		}
-	</div>
-
-	<dl class="facts" data-reveal="stagger">
-		{
-			facts.map((f) => (
-				<div>
-					<dt class="hand-bold">{f.value}</dt>
-					<dd>
-						<Bilingual it={f.it} en={f.en} />
-					</dd>
-				</div>
-			))
-		}
-	</dl>
-
-	{
-		showAnnotations && (
-			<MarginNote style="top:96px;right:18px;transform:rotate(6deg);text-align:right;width:130px;line-height:1.2;">
-				<span class="bil" lang="it">nessuna lettera<br />è mai uguale</span>
-				<span class="bil" lang="en">no letter is<br />ever the same</span>
-			</MarginNote>
-		)
-	}
+	</details>
 </section>
 
 <style>
-	.grid {
+	.specimen-sheet {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		gap: 48px;
-		align-items: center;
-		margin-top: 38px;
+		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+		gap: clamp(32px, 5vw, 80px);
+		padding: clamp(20px, 3vw, 45px) 0;
+		border-block: 1px solid var(--rule);
 	}
-
-	.prose {
-		border-left: 2px solid rgba(156, 67, 38, 0.5);
-		padding-left: 28px;
+	.specimen-title h3 {
+		margin: 0 0 9px;
+		font:
+			400 clamp(46px, 4.6vw, 74px)/1 var(--font-hand),
+			cursive;
 	}
-
-	.type-name {
-		margin: 0 0 16px;
-		font-family: var(--font-hand), cursive;
-		font-weight: 400;
-		font-size: var(--hand-heading);
+	.specimen-title p {
+		margin: 0;
+		font-size: 19px;
+		line-height: 1.4;
+		max-width: 36ch;
+	}
+	dl {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		row-gap: 14px;
+		margin: 24px 0 0;
+	}
+	dt {
+		font-style: italic;
+		font-size: 22px;
 		line-height: 1;
-		color: var(--ink-strong);
-	}
-
-	.lines {
-		margin: 0 0 16px;
-	}
-
-	.notes {
-		margin: 0 0 22px;
-	}
-
-	.copy {
-		margin: 0;
-		font-size: 20px;
-		color: var(--ink);
-		max-width: 54ch;
-	}
-
-	p.signoff {
-		margin: 0;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-label);
-		line-height: 1.05;
-		letter-spacing: 0.02em;
 		color: var(--accent-ink);
 	}
-
-	.plate {
-		box-shadow: 0 10px 26px -18px rgba(58, 42, 24, 0.7);
-		padding: 26px 28px;
+	dd {
+		font-size: 15px;
+		margin: 3px 0 0;
 	}
-
-	.sample {
+	.writing {
+		align-self: center;
+		min-width: 0;
+	}
+	.writing label {
+		color: var(--accent-ink);
+	}
+	.guide {
 		position: relative;
+		margin-top: 12px;
+		background: linear-gradient(
+			to bottom,
+			transparent 27%,
+			#8d594255 27% calc(27% + 1px),
+			transparent calc(27% + 1px) 75%,
+			#8d594255 75% calc(75% + 1px),
+			transparent calc(75% + 1px)
+		);
+		border-bottom: 1px solid var(--rule);
 	}
-
-	.line,
-	.baseline {
-		position: absolute;
-		left: 0;
-		right: 0;
-		height: 1px;
+	.scrittoio-input,
+	.hint {
+		font:
+			400 clamp(43px, 4.8vw, 78px)/1.1 var(--font-hand),
+			cursive;
 	}
-
-	.line {
-		background: rgba(156, 67, 38, 0.32);
-	}
-	.line-1 {
-		top: 16%;
-	}
-	.line-2 {
-		top: 50%;
-	}
-	.baseline {
-		bottom: 10%;
-		background: rgba(58, 42, 24, 0.5);
-	}
-
-	.glyphs {
-		position: relative;
-		font-family: var(--font-hand), cursive;
-		font-size: clamp(88px, 11vw, 132px);
-		line-height: 1.05;
-		color: var(--ink-strong);
-		text-align: center;
-	}
-
-	.plate-foot {
-		display: flex;
-		justify-content: space-between;
-		margin-top: 16px;
-		font-style: italic;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		font-size: 14px;
-		color: var(--accent-ink);
-	}
-
-	.plate-foot .bil[lang='en'] {
-		margin-left: auto;
-	}
-
-	.specimen {
-		margin-top: 42px;
-		border-top: 1px solid rgba(110, 86, 56, 0.45);
-		padding-top: 28px;
-	}
-
-	.specimen p {
-		margin: 0 0 6px;
-		max-width: none;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-label);
-		color: var(--ink);
-		line-height: 1.35;
-	}
-
-	.specimen p.accent {
-		margin-bottom: 0;
-		color: var(--accent-ink);
-	}
-
-	.specimen p.phrase {
-		margin: 10px 0 8px;
-		font-size: var(--hand-title);
-		line-height: 1.05;
-		color: var(--ink-strong);
-	}
-
-	/* ---- Lo scrittoio ------------------------------------------------------- */
-	.scrittoio {
-		margin-top: 42px;
-		padding: clamp(20px, 3vw, 28px);
-		background:
-			linear-gradient(90deg, rgba(156, 67, 38, 0.18), transparent 16%, transparent 84%, rgba(156, 67, 38, 0.16)),
-			linear-gradient(180deg, rgba(255, 249, 226, 0.74), rgba(223, 203, 159, 0.46));
-		border: var(--hairline) solid rgba(124, 47, 23, 0.72);
-		box-shadow:
-			0 18px 34px -28px rgba(58, 42, 24, 0.85),
-			inset 0 0 0 3px rgba(255, 247, 219, 0.42);
-	}
-
-	.scrittoio-head {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 16px;
-		align-items: baseline;
-		margin-bottom: 16px;
-	}
-
-	.scrittoio-kicker {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 32px;
-		padding: 4px 10px;
-		border: 1px solid rgba(124, 47, 23, 0.7);
-		background: rgba(156, 67, 38, 0.1);
-		font-style: italic;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		font-size: 13px;
-		line-height: 1.1;
-		color: var(--accent-ink);
-	}
-
-	.scrittoio-label {
-		margin: 0;
-		font-style: italic;
-		letter-spacing: 0.04em;
-		font-size: clamp(17px, 1.7vw, 20px);
-		line-height: 1.35;
-		color: var(--brown);
-	}
-
-	/* La riga di scrittura: due filetti rubrica come guide e la base
-	   d'appoggio scura, come nel campione qui sopra. */
-	.scrittoio-line {
-		position: relative;
-		background:
-			linear-gradient(rgba(156, 67, 38, 0.32), rgba(156, 67, 38, 0.32)) 0 24% / 100% 1px
-				no-repeat,
-			linear-gradient(rgba(156, 67, 38, 0.32), rgba(156, 67, 38, 0.32)) 0 76% / 100% 1px
-				no-repeat,
-			linear-gradient(180deg, rgba(255, 252, 235, 0.58), rgba(255, 252, 235, 0.12));
-		border-bottom: 2px solid rgba(58, 42, 24, 0.62);
-		box-shadow: 0 10px 18px -18px rgba(58, 42, 24, 0.85);
-	}
-
-	.scrittoio-line:focus-within {
-		border-bottom-color: var(--accent-ink);
-		box-shadow:
-			0 2px 0 var(--accent-ink),
-			0 14px 24px -18px rgba(124, 47, 23, 0.92);
-	}
-
 	.scrittoio-input {
 		display: block;
+		border: 0;
 		width: 100%;
-		min-height: clamp(74px, 8vw, 92px);
-		padding: 0 10px;
-		background: transparent;
-		border: none;
-		outline: none;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-title);
-		line-height: normal;
-		letter-spacing: 0.02em;
-		color: var(--ink-strong);
-		caret-color: var(--accent-ink);
-	}
-
-	.scrittoio-hint {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		padding: 0 10px;
-		pointer-events: none;
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-title);
-		line-height: normal;
-		color: var(--ink-soft);
-		opacity: 0.8;
-		transition: opacity 0.25s ease;
-	}
-
-	.scrittoio-input:not(:placeholder-shown) + .scrittoio-hint {
-		opacity: 0;
-	}
-
-	.process {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 18px;
-		margin-top: 34px;
-	}
-
-	.process article,
-	.usage > div {
-		border-top: 1px solid rgba(110, 86, 56, 0.42);
-		padding-top: 16px;
-	}
-
-	.step {
-		display: block;
-		margin-bottom: 12px;
-		font-style: italic;
-		letter-spacing: 0.08em;
-		font-size: 16px;
-		line-height: 1.2;
-		font-weight: 600;
-		color: var(--accent-ink);
-	}
-
-	h3 {
-		margin: 0 0 10px;
-		font-family: var(--font-hand), cursive;
-		font-weight: 400;
-		font-size: var(--hand-title);
-		line-height: 1.02;
-		letter-spacing: 0.012em;
-		color: var(--ink-strong);
-	}
-
-	.process p,
-	.usage p {
-		margin: 0;
-		font-size: clamp(18px, 1.8vw, 20px);
-		line-height: 1.55;
+		min-width: 0;
+		padding: 10px 2px;
 		color: var(--ink);
+		background: transparent;
+		border-radius: 0;
 	}
-
-	.facts {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 28px;
-		margin: 34px 0 0;
+	.scrittoio-input:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
 	}
-
-	.facts dt {
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-label);
-		letter-spacing: 0.02em;
-		color: var(--accent-ink);
-		line-height: 1;
-	}
-
-	.facts dd {
-		margin: 4px 0 0;
-		font-style: italic;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		font-size: 14px;
+	.hint {
+		position: absolute;
+		left: 2px;
+		top: 10px;
+		pointer-events: none;
 		color: var(--brown);
 	}
-
-	.usage {
+	.scrittoio-input:not(:placeholder-shown) + .hint {
+		visibility: hidden;
+	}
+	.alphabet {
+		margin: 24px 0 0;
+		color: var(--accent-ink);
+		font:
+			400 clamp(28px, 2.4vw, 36px)/1.22 var(--font-hand),
+			cursive;
+	}
+	details {
+		border-bottom: 1px solid var(--rule);
+	}
+	summary {
+		cursor: pointer;
+		padding: 13px 0;
+		color: var(--accent-ink);
+		font:
+			italic 20px/1.3 var(--font-garamond),
+			Georgia,
+			serif;
+	}
+	.notes {
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 24px;
-		margin-top: 32px;
+		gap: 25px;
+		padding: 14px 0 26px;
 	}
-
-	@media (max-width: 860px) {
-		.grid {
+	.notes h3 {
+		margin: 0;
+		font-size: 22px;
+		font-weight: 400;
+	}
+	.notes p {
+		margin: 4px 0 0;
+		font-size: 17px;
+		line-height: 1.4;
+	}
+	@media (max-width: 720px) {
+		.specimen-sheet,
+		.notes {
 			grid-template-columns: 1fr;
 		}
-
-		/* Come in About: su una colonna il filetto a sinistra sballa il centro. */
-		.prose {
-			border-left: none;
-			padding-left: 0;
-			text-align: center;
-		}
-
-		.copy {
-			margin-left: auto;
-			margin-right: auto;
-		}
-
-		.process,
-		.usage {
-			grid-template-columns: 1fr;
-		}
-
-		.scrittoio-head {
-			grid-template-columns: 1fr;
-			gap: 10px;
-		}
-
-		.scrittoio-kicker {
-			justify-self: start;
+		.alphabet {
+			margin-top: 16px;
 		}
 	}
 </style>

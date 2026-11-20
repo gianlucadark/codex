@@ -5,7 +5,7 @@ import { skillGroups as groups } from '../data/skills';
 ---
 
 <section id="competenze" class="foglio" aria-label="Competenze">
-	<SectionHeader latin="Artes & Instrumenta" it="Competenze" en="Skills" folio="f. V r" />
+	<SectionHeader latin="Artes & instrumenta" it="Gli strumenti" en="The tools" folio="f. III r" />
 
 	<div class="grid" data-reveal="stagger">
 		{
@@ -33,10 +33,12 @@ import { skillGroups as groups } from '../data/skills';
 <style>
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-		gap: 38px;
-		margin-top: 38px;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: clamp(22px, 3vw, 46px);
 	}
+	.group {border-top: 1px solid var(--rule); padding-top: 17px;}
+	@media (max-width: 900px) { .grid {grid-template-columns:repeat(2, minmax(0,1fr));} }
+	@media (max-width: 520px) { .grid {grid-template-columns:1fr;} }
 
 	h3 {
 		margin: 0 0 4px;
@@ -79,10 +81,9 @@ import { skillGroups as groups } from '../data/skills';
 	}
 
 	.bullet {
-		width: 7px;
-		height: 7px;
+		width: 10px;
+		height: 1px;
 		background: var(--accent);
-		border-radius: 50%;
 		flex: none;
 	}
 </style>

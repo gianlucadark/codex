@@ -1,193 +1,144 @@
 ---
+import { Image } from 'astro:assets';
 import type { Project } from '../data/projects';
 import Bilingual from './Bilingual.astro';
 
-interface Props {
-	project: Project;
-}
-
-const { project } = Astro.props;
-
-// Status is stored as a combined "italiano · english" string; split it so the
-// language switch shows only the active voice (like every other bilingual pair).
+interface Props { project: Project; featured?: boolean; }
+const { project, featured = false } = Astro.props;
+const image = project.images?.[0];
 const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 ---
 
-<a class="row" href={`/progetti/${project.slug}`} aria-label={`Apri la tavola ${project.numeral}: ${project.title}`}>
-	<div class="numeral hand-bold">{project.numeral}</div>
-	<div class="body">
-		<div class="title-line">
-			<h3 class="hand-bold">{project.title}</h3>
-			<span class="stack">{project.stack}</span>
-		</div>
-		<p>
-			<Bilingual class="bil-inline" it={project.desc} en={project.descEn} />
-		</p>
-		<span class="cue">
-				<Bilingual it="apri la tavola" en="open the plate" />
-				<span class="arrow" aria-hidden="true">→</span>
-			</span>
+<a class:list={['work', { featured }]} href={`/progetti/${project.slug}`}>
+	{image && <div class="print">
+		<Image src={image} widths={featured ? [480, 800, 1200] : [128, 224]}
+			sizes={featured ? '(max-width:790px) 90vw, 46vw' : '96px'} alt="" loading="lazy" />
+	</div>}
+	<div class="entry">
+		<span class="imprint ref"><Bilingual it="Tav." en="Pl." /> {project.numeral} <span> / </span> {project.year.split(' · ').at(-1)}</span>
+		<h3>{project.title}</h3>
+		{featured
+			? <><p class="description"><Bilingual it={project.desc} en={project.descEn} /></p>
+				<p class="stack">{project.stack} <span>·</span> <Bilingual it={statusIt} en={statusEn} /></p></>
+			: <p class="category"><Bilingual it={project.category} en={project.categoryEn} /></p>}
 	</div>
-	<div class="meta">
-		<span class="year">{project.year}</span>
-		<span class="status">
-			<Bilingual it={statusIt} en={statusEn} />
-		</span>
-	</div>
+	<span class="read"><Bilingual it={featured ? 'Apri la tavola' : 'Apri'} en={featured ? 'Open the plate' : 'Open'} /></span>
 </a>
 
 <style>
-	.row {
+	.work {
 		display: grid;
-		grid-template-columns: 70px minmax(0, 1fr) 132px;
-		gap: 30px;
+		grid-template-columns: 84px minmax(0, 1fr) auto;
+		gap: clamp(12px, 1.6vw, 23px);
 		align-items: center;
-		padding: 28px 6px;
-		border-top: 1px solid rgba(110, 86, 56, 0.45);
+		padding: 15px 0;
 		text-decoration: none;
-		color: inherit;
-		transition: background 0.2s ease, padding 0.2s ease;
 	}
-
-	.row:hover {
-		background: rgba(156, 67, 38, 0.06);
-		padding-left: 14px;
-		padding-right: 14px;
+	.print {
+		position: relative;
+		overflow: hidden;
+		background: var(--pale-rule);
 	}
-
-	/* Indicatore di focus da tastiera visibile (non basta il solo cambio di sfondo). */
-	.row:focus-visible {
-		background: rgba(156, 67, 38, 0.06);
-		padding-left: 14px;
-		padding-right: 14px;
-		outline: 2px solid var(--accent);
-		outline-offset: -2px;
+	.print img {
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: cover;
+		transition: transform 0.35s ease;
 	}
-
-	.numeral {
-		font-family: var(--font-hand), cursive;
-		font-size: var(--hand-display);
+	.work:not(.featured) .print {
+		aspect-ratio: 1.38;
+	}
+	.work:hover .print img,
+	.work:focus-visible .print img {
+		transform: scale(1.035);
+	}
+	.work:hover h3,
+	.work:focus-visible h3 {
 		color: var(--accent-ink);
-		line-height: 0.8;
-		text-align: center;
-		transition: transform 0.2s ease;
 	}
-
-	.row:hover .numeral,
-	.row:focus-visible .numeral {
-		transform: scale(1.08);
+	.ref {
+		display: block;
+		font-size: 0.75rem;
+		color: var(--accent-ink);
 	}
-
-	.title-line {
-		display: flex;
-		align-items: baseline;
-		gap: 16px;
-		flex-wrap: wrap;
+	.ref > span:not(.bil) {
+		color: var(--rule);
+		margin: 0 2px;
 	}
-
 	h3 {
-		margin: 0;
-		font-family: var(--font-hand), cursive;
+		margin: 5px 0;
 		font-weight: 400;
-		font-size: var(--hand-title);
-		line-height: 1;
-		color: var(--ink-strong);
+		font-size: clamp(24px, 2.15vw, 34px);
+		line-height: 1.05;
+		letter-spacing: -0.035em;
+		transition: color 0.22s;
 	}
-
+	.category,
 	.stack {
-		font-style: italic;
-		letter-spacing: 0.06em;
-		font-size: 15px;
-		color: var(--accent-ink);
-	}
-
-	p {
-		margin: 7px 0 0;
-		font-size: 19px;
 		color: var(--ink-soft);
-		max-width: 64ch;
+		font-size: 16px;
+		margin: 0;
+		line-height: 1.25;
 	}
-
-	.cue {
-		display: inline-block;
-		margin-top: 10px;
-		font-style: italic;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		font-size: 13px;
-		color: var(--accent-ink);
-		opacity: 0;
-		transform: translateY(2px);
-		transition: opacity 0.2s ease, transform 0.2s ease;
-	}
-
-	.row:hover .cue,
-	.row:focus-visible .cue {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	.cue .arrow {
-		display: inline-block;
-		transition: transform 0.2s ease;
-	}
-
-	.row:hover .cue .arrow,
-	.row:focus-visible .cue .arrow {
-		transform: translateX(4px);
-	}
-
-	/* Meta column — the plate's dating & status, where the diagram used to sit. */
-	.meta {
+	.read {
 		justify-self: end;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 6px;
-		text-align: right;
-	}
-
-	.year {
-		font-style: italic;
-		letter-spacing: 0.04em;
-		font-size: 15px;
-		/* --brown (≈6.5:1 su pergamena) invece di --brown-3 (≈3.8:1): a 15px il
-		   testo deve superare 4.5:1 per l'AA. --brown-3 resta per bordi/filetti. */
-		color: var(--brown);
-		white-space: nowrap;
-	}
-
-	.status {
-		font-style: italic;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		font-size: 13px;
+		align-self: center;
 		color: var(--accent-ink);
-		white-space: nowrap;
+		font-size: 16px;
+		font-style: italic;
+		text-decoration: underline;
+		text-underline-offset: 4px;
 	}
-
-	@media (max-width: 860px) {
-		.row {
-			grid-template-columns: 48px 1fr;
-			gap: 16px;
-			padding: 22px 4px;
+	.featured {
+		display: block;
+		padding: 0;
+	}
+	.featured .print {
+		padding: 10px;
+		border: 1px solid var(--rule);
+		background: transparent;
+	}
+	.featured .print img {
+		aspect-ratio: 16/9;
+		height: auto;
+	}
+	.featured .entry {
+		margin-top: 19px;
+	}
+	.featured h3 {
+		font-size: clamp(42px, 4.8vw, 72px);
+		margin: 7px 0;
+	}
+	.description {
+		font-size: clamp(20px, 1.7vw, 26px);
+		line-height: 1.24;
+		margin: 0 0 12px;
+		max-width: 37ch;
+	}
+	.stack span:not(.bil) {
+		color: var(--accent);
+		margin-inline: 3px;
+	}
+	.featured .read {
+		display: inline-block;
+		margin-top: 14px;
+		font-size: 18px;
+	}
+	@media (max-width: 1050px) and (min-width: 791px) {
+		.work:not(.featured) {
+			grid-template-columns: 68px minmax(0, 1fr);
 		}
-		.numeral {
-			font-size: 50px;
+		.work:not(.featured) .read {
+			display: none;
 		}
-		/* Drop the meta under the body instead of a third column. */
-		.meta {
-			grid-column: 2;
-			align-items: flex-start;
-			flex-direction: row;
-			gap: 14px;
-			text-align: left;
-			margin-top: 6px;
+	}
+	@media (max-width: 500px) {
+		.work:not(.featured) {
+			grid-template-columns: 70px minmax(0, 1fr);
 		}
-		/* On touch screens there's no hover — always show the cue. */
-		.cue {
-			opacity: 1;
-			transform: none;
+		.work:not(.featured) .read {
+			display: none;
 		}
 	}
 </style>

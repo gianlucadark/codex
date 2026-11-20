@@ -1,44 +1,130 @@
 ---
-import Section from './Section.astro';
-import ProjectRow from './ProjectRow.astro';
-import MarginNote from './MarginNote.astro';
 import Bilingual from './Bilingual.astro';
+import Foglio from './Foglio.astro';
 import { projects } from '../data/projects';
+import compasso from '../assets/bottega/compasso.webp';
+import penna from '../assets/bottega/penna.webp';
 
-interface Props {
-	showAnnotations?: boolean;
-}
-
-const { showAnnotations = true } = Astro.props;
+// The two overlapping groups leave wood visible around the inkwell and tools.
+const places = [
+	{ x: .230, y: .339, r: -12, format: 'folio' },
+	{ x: .458, y: .255, r: 8, format: 'wide' },
+	{ x: .739, y: .281, r: -4, format: 'slip' },
+	{ x: .311, y: .732, r: 5, format: 'wide' },
+	{ x: .598, y: .656, r: -9, format: 'folio' },
+	{ x: .797, y: .745, r: 9, format: 'wide' },
+];
+const tools = [
+	{ name: 'compasso', src: compasso, x: .087, y: .819, r: -63 },
+	{ name: 'penna', src: penna, x: .912, y: .476, r: -67 },
+];
 ---
-
-<Section
-	id="progetti"
-	label="Progetti"
-	latin="Tabulae Inventionum"
-	it="Progetti"
-	en="Work"
-	folio="f. IV r"
-	subtitleIt="Prodotti, strumenti ed esperienze interattive"
-	subtitleEn="Products, tools and interactive experiences"
->
-	<div class="list" data-reveal="stagger">
-		{projects.map((project) => <ProjectRow project={project} />)}
+<section id="progetti" class="works" aria-labelledby="works-title">
+	<header class="bench-heading">
+		<div class="heading-copy">
+			<p class="imprint rubric" lang="la">Tabulae inventionum</p>
+			<h2 id="works-title"><Bilingual it="Opere scelte" en="Selected works" /></h2>
+		</div>
+		<div class="desk-controls">
+			<p class="hint hand-bold desktop"><Bilingual it="Prendi un foglio dal banco" en="Pick a sheet from the desk" /></p>
+			<p class="hint hand-bold mobile"><Bilingual it="Trascina il disegno" en="Drag the drawing" /></p>
+			<div class="actions desktop">
+				<button type="button" data-gather><Bilingual it="Raccogli" en="Gather" /></button>
+				<span aria-hidden="true">/</span>
+				<button type="button" data-scatter><Bilingual it="Sparpaglia" en="Scatter" /></button>
+			</div>
+			<div class="actions mobile">
+				<button type="button" data-prev><Bilingual it="Indietro" en="Previous" /></button>
+				<span aria-hidden="true">/</span>
+				<button type="button" data-next><Bilingual it="Avanti" en="Next" /></button>
+			</div>
+		</div>
+	</header>
+	<div class="bench-window" data-bench-window>
+		<div class="desk" data-tavolo style={`--intervals: ${Math.max(0, projects.length - 1)}`}>
+			<ul class="sheets" role="list">
+				{projects.map((project, index) => <Foglio {project} {index} {...places[index % places.length]} />)}
+			</ul>
+			{tools.map(({ name, src, x, y, r }) => (
+				<div class:list={['instrument', name]} data-item data-x={x} data-y={y} data-r={r}
+					style={`--x:${x};--y:${y};--r:${r}deg`} aria-hidden="true">
+					<img src={src.src} width={src.width} height={src.height} alt="" loading="lazy" draggable="false" />
+				</div>
+			))}
+		</div>
 	</div>
+</section>
 
-	{
-		showAnnotations && (
-			<MarginNote slot="note" style="top:60px;right:18px;transform:rotate(5deg);">
-				<Bilingual it="+ molti altri…" en="+ many more…" />
-			</MarginNote>
-		)
-	}
-</Section>
+<script>
+	import { initTavolo } from '../scripts/tavolo';
+	initTavolo();
+</script>
 
 <style>
-	.list {
+	.works { position: relative; padding-top: clamp(36px, 4.6vw, 72px); }
+	.bench-heading {
+		max-width: var(--page-width);
+		margin: 0 auto;
+		padding: 0 var(--gutter) clamp(20px, 2.5vw, 38px);
 		display: flex;
-		flex-direction: column;
-		border-bottom: 1px solid rgba(110, 86, 56, 0.45);
+		align-items: end;
+		justify-content: space-between;
+		gap: 16px;
+	}
+	.bench-heading .rubric { color: var(--accent-ink); margin-bottom: 6px; }
+	h2 { margin: 0; font-size: clamp(48px, 6.6vw, 104px); line-height: .95; letter-spacing: -.055em; font-weight: 400; }
+	.desk-controls { display: none; text-align: right; }
+	.works:has(.desk-live) .desk-controls { display: block; }
+	.hint { color: var(--accent-ink); font: 400 clamp(28px, 2.3vw, 38px)/1 var(--font-hand), cursive; margin: 0 0 -3px; rotate: -2deg; }
+	.actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; color: var(--rule); }
+	.actions button { font: italic 500 17px/1 var(--font-garamond), Georgia, serif; min-height: 44px; padding: 4px 5px; border: 0; color: var(--brown); background: transparent; cursor: pointer; text-underline-offset: 4px; }
+	.actions button:hover { color: var(--accent-ink); text-decoration: underline; }
+	.actions button:disabled { opacity: .45; cursor: default; text-decoration: none; }
+	.mobile { display: none; }
+	.bench-window { position: relative; overflow: clip; background: #51341f; }
+	.desk {
+		position: relative;
+		isolation: isolate;
+		width: 100%;
+		height: clamp(680px, 54vw, 970px);
+		background: #51341f url('../assets/bottega/banco-noce.webp') center center / cover no-repeat;
+		box-shadow: inset 0 3px 7px -3px #271305bf, inset 0 -3px 6px -3px #221409b3;
+	}
+	.sheets { margin: 0; padding: 0; }
+	.instrument {
+		position: absolute; left: calc(var(--x) * 100%); top: calc(var(--y) * 100%);
+		transform: translate(-50%, -50%) rotate(var(--r));
+		user-select: none; touch-action: none;
+	}
+	.instrument img { width: 100%; height: auto; display: block; pointer-events: none; }
+	.compasso { width: clamp(165px, 16vw, 290px); filter: drop-shadow(2px 4px 2px #1e100ece); }
+	.penna { width: clamp(210px, 24vw, 410px); filter: drop-shadow(4px 10px 4px #1e100e88); }
+	:global(.desk-live) .instrument { left: 0; top: 0; cursor: grab; }
+	:global(.desk-live) .instrument.is-held { cursor: grabbing; }
+	@media (max-width: 959px) {
+		.bench-heading { align-items: center; }
+		.desktop { display: none; }
+		.hint.mobile { display: block; }
+		.actions.mobile { display: flex; }
+		.bench-window { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #96734e #3e291d; }
+		.desk {
+			--pitch: clamp(264px, 72vw, 345px);
+			width: calc(100% + var(--intervals) * var(--pitch));
+			height: clamp(415px, 108vw, 510px);
+			background-image: url('../assets/bottega/banco-mobile.webp');
+			background-position: center;
+		}
+		.instrument { display: none; }
+	}
+	@media (max-width: 540px) {
+		.bench-heading { gap: 8px; padding-bottom: 16px; }
+		.bench-heading .rubric { font-size: .75rem; }
+		.hint.mobile { font-size: 26px; }
+		.actions { gap: 1px; }
+		.actions button { font-size: 16px; }
+	}
+	@media (max-width: 360px) {
+		h2 { font-size: 42px; }
+		.hint.mobile { font-size: 23px; }
 	}
 </style>

@@ -1,14 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import CodexBackground from '../components/CodexBackground.astro';
 
 const title = "Folio perduto — 404 · Codex";
 const description = 'La pagina richiesta non esiste in questo codice. Torna alla copertina del portfolio.';
 ---
 
 <Layout title={title} description={description}>
-	<main class="codex">
-		<CodexBackground showGrid={true} showStains={true} />
+	<main class="codex manuscript">
 
 		<div class="content">
 			<section class="lost" aria-label="Pagina non trovata">
@@ -37,19 +35,6 @@ const description = 'La pagina richiesta non esiste in questo codice. Torna alla
 </Layout>
 
 <style>
-	.codex {
-		position: relative;
-		min-height: 100vh;
-		overflow: hidden;
-		background: radial-gradient(
-			125% 85% at 26% 10%,
-			#f0e6c9 0%,
-			#e8d9b5 42%,
-			#ddca9f 72%,
-			var(--paper) 100%
-		);
-		color: var(--ink);
-	}
 
 	.content {
 		position: relative;
@@ -73,7 +58,7 @@ const description = 'La pagina richiesta non esiste in questo codice. Torna alla
 		font-style: italic;
 		letter-spacing: 0.28em;
 		text-transform: uppercase;
-		font-size: 13px;
+		font-size: 16px;
 		color: var(--brown-2);
 	}
 
@@ -107,7 +92,7 @@ const description = 'La pagina richiesta non esiste in questo codice. Torna alla
 		font-style: italic;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		font-size: 12px;
+		font-size: 18px;
 		color: var(--brown);
 		text-decoration: none;
 		transition: color 0.2s ease;

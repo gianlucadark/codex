@@ -20,40 +20,43 @@ const href = `/progetti/${project.slug}`;
 const year = project.year.split(' · ').at(-1);
 const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 ---
-<li class:list={['foglio-sciolto', format]} data-item data-sheet data-x={x} data-y={y} data-r={r}
-	style={`--x:${x};--y:${y};--r:${r}deg;--index:${index};--mobile-y:${index % 2 ? .53 : .47}`}>
-	<div class="paper-shadow">
-		<div class="leaf">
-			<article class="face recto" data-face="recto" aria-labelledby={`titolo-${project.slug}`}>
-				<header class="reference"><span><Bilingual it="Tav." en="Pl." /> {project.numeral}</span><span>{year}</span></header>
-				<h3 id={`titolo-${project.slug}`}><a href={href} draggable="false">{project.slug === 'uxability-extension'
-					? <>UXability <small>Browser Extension</small></> : project.title}</a></h3>
-				{(study ?? cover) && <div class="study" data-grip>
-					<img src={(study ?? cover)!.src} width="512" height="512" loading="lazy" alt="" draggable="false" />
-				</div>}
-				{project.note && <p class="annotation hand-bold"><Bilingual it={project.note.it} en={project.note.en} /></p>}
-				<footer>
-					<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
-					<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
-				</footer>
-			</article>
-			<article class="face verso" data-face="verso" aria-label={project.title} inert>
-				<header class="reference"><span><Bilingual it="Tav." en="Pl." /> {project.numeral} · verso</span><span><Bilingual it={statusIt} en={statusEn} /></span></header>
-				<h3><a href={href} draggable="false">{project.title}</a></h3>
-				{cover && <figure class="print" data-grip>
-					<Image src={cover} widths={[320, 640]} sizes="300px" alt="" loading="lazy" draggable="false" />
-				</figure>}
-				<p class="desc"><Bilingual it={project.desc} en={project.descEn} /></p>
-				<footer>
-					<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
-					<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
-				</footer>
-			</article>
+<li class="sheet-slot">
+	<div class:list={['foglio-sciolto', format]} data-item data-sheet data-x={x} data-y={y} data-r={r}
+		style={`--x:${x};--y:${y};--r:${r}deg;--mobile-y:${index % 2 ? .52 : .48}`}>
+		<div class="paper-shadow">
+			<div class="leaf">
+				<article class="face recto" data-face="recto" aria-labelledby={`titolo-${project.slug}`}>
+					<header class="reference" data-grip><span><Bilingual it="Tav." en="Pl." /> {project.numeral}</span><span>{year}</span></header>
+					<h3 id={`titolo-${project.slug}`}><a href={href} draggable="false">{project.slug === 'uxability-extension'
+						? <>UXability <small>Browser Extension</small></> : project.title}</a></h3>
+					{(study ?? cover) && <div class="study">
+						<img src={(study ?? cover)!.src} width="512" height="512" loading="lazy" alt="" draggable="false" />
+					</div>}
+					{project.note && <p class="annotation hand-bold"><Bilingual it={project.note.it} en={project.note.en} /></p>}
+					<footer>
+						<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
+						<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
+					</footer>
+				</article>
+				<article class="face verso" data-face="verso" aria-label={project.title} inert>
+					<header class="reference" data-grip><span><Bilingual it="Tav." en="Pl." /> {project.numeral} · verso</span><span><Bilingual it={statusIt} en={statusEn} /></span></header>
+					<h3><a href={href} draggable="false">{project.title}</a></h3>
+					{cover && <figure class="print">
+						<Image src={cover} widths={[320, 640]} sizes="300px" alt="" loading="lazy" draggable="false" />
+					</figure>}
+					<p class="desc"><Bilingual it={project.desc} en={project.descEn} /></p>
+					<footer>
+						<a href={href} draggable="false"><Bilingual it="Apri progetto" en="Open project" /></a>
+						<button type="button" data-turn><Bilingual it="Gira" en="Turn over" /> <span aria-hidden="true">⤾</span></button>
+					</footer>
+				</article>
+			</div>
 		</div>
 	</div>
 </li>
 
 <style>
+	.sheet-slot { list-style: none; }
 	.foglio-sciolto {
 		--paper-width: clamp(255px, 23.5vw, 410px);
 		--paper-ratio: .89;
@@ -62,13 +65,15 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 		left: calc(var(--x) * 100%); top: calc(var(--y) * 100%);
 		width: var(--paper-width); aspect-ratio: var(--paper-ratio);
 		transform: translate(-50%, -50%) rotate(var(--r));
-		list-style: none; user-select: none; -webkit-user-select: none; touch-action: none;
+		user-select: none; -webkit-user-select: none; touch-action: none;
 		color: #2e261d;
 	}
 	.wide { --paper-width: clamp(250px, 24.6vw, 425px); --paper-ratio: 1.38; }
 	.slip { --paper-width: clamp(213px, 17.5vw, 302px); --paper-ratio: .82; }
-	.foglio-sciolto:nth-child(5) { --paper-width: clamp(222px, 19.8vw, 342px); }
-	.foglio-sciolto:nth-child(6) { --paper-width: clamp(235px, 21.6vw, 360px); --paper-ratio: 1.3; }
+	@media (min-width: 960px) {
+		.sheet-slot:nth-child(5) .foglio-sciolto { --paper-width: clamp(222px, 19.8vw, 342px); }
+		.sheet-slot:nth-child(6) .foglio-sciolto { --paper-width: clamp(235px, 21.6vw, 360px); --paper-ratio: 1.3; }
+	}
 	:global(.desk-live) .foglio-sciolto { top: 0; left: 0; cursor: grab; }
 	.foglio-sciolto.is-held { cursor: grabbing; }
 	.foglio-sciolto.is-flying { transition: transform .82s cubic-bezier(.22,.69,.17,1); }
@@ -115,7 +120,7 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 	}
 	.wide .face::before { transform: scale(-1); filter: brightness(1.045); }
 	.slip .face::before { transform: scaleX(-1); filter: saturate(.65) brightness(.96); }
-	.foglio-sciolto:nth-child(5) .face::before { transform: scaleY(-1); filter: sepia(.19) brightness(.97); }
+	.sheet-slot:nth-child(5) .face::before { transform: scaleY(-1); filter: sepia(.19) brightness(.97); }
 	.reference {
 		grid-area: ref; display: flex; align-items: baseline; justify-content: space-between; gap: 5px;
 		font: 500 .72rem/1.2 var(--font-garamond), Georgia, serif;
@@ -170,21 +175,25 @@ const [statusIt, statusEn = statusIt] = project.status.split(' · ');
 	}
 	.desc { grid-area: note; margin: 3px 0 6px; font-size: clamp(14px, 1.06vw, 18px); line-height: 1.13; }
 	@media (min-width: 960px) and (max-width: 1199px) {
-		.wide, .foglio-sciolto:nth-child(6) { --paper-ratio: 1.12; }
+		.wide, .sheet-slot:nth-child(6) .foglio-sciolto { --paper-ratio: 1.12; }
 	}
 	@media (max-width: 959px) {
-		.foglio-sciolto, .foglio-sciolto:nth-child(5), .foglio-sciolto:nth-child(6) {
-			--paper-width: clamp(229px, 63vw, 286px);
-			left: calc(50vw + var(--index) * var(--pitch));
-			top: calc(var(--mobile-y) * 100%); touch-action: auto;
+		.sheet-slot { position: relative; scroll-snap-align: center; scroll-snap-stop: always; }
+		.foglio-sciolto {
+			--paper-width: min(75vw, 302px);
+			left: 50%; top: calc(var(--mobile-y) * 100%); touch-action: manipulation;
+			transform: translate(-50%, -50%) rotate(clamp(-4deg, var(--r), 4deg));
 		}
-		.wide, .foglio-sciolto:nth-child(6) { --paper-width: clamp(246px, 70vw, 316px); --paper-ratio: 1.06; }
-		.slip { --paper-width: clamp(215px, 61vw, 270px); }
-		[data-grip] { touch-action: none; }
+		.wide { --paper-width: min(78vw, 316px); --paper-ratio: 1.06; }
+		.slip { --paper-width: min(73vw, 288px); }
+		:global(.desk-live) .foglio-sciolto { cursor: auto; }
+		:global(.desk-live) [data-grip] {
+			touch-action: none; cursor: grab;
+		}
 		h3, .wide h3 { font-size: 37px; }
 		.verso h3 { font-size: 25px; }
 		.annotation { font-size: 25px; }
-		footer a, footer button { min-height: 35px; display: inline-flex; align-items: center; }
+		footer a, footer button { min-height: 44px; display: inline-flex; align-items: center; }
 		footer button { display: none; }
 	}
 	@media (prefers-reduced-motion: reduce) {

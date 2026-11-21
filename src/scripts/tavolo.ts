@@ -7,8 +7,8 @@
  * briefly before settling on the wood.
  *
  * State lives here (centre in desk pixels + rotation); the DOM only receives a
- * transform. On a narrow desk the camera is a native horizontal scroller.
- * Touching the drawing moves the sheet; touching the margins pans the bench.
+ * transform. On a narrow desk each sheet has a snap slot. Its reference strip
+ * can be picked up; swiping the artwork pans the bench.
  */
 
 interface Item {
@@ -68,12 +68,14 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		flying: false,
 	}));
 	const sheets = items.filter((it) => it.sheet);
+	const slots = sheets.map(it => it.el.parentElement!);
 	const byEl = new Map(items.map((it) => [it.el, it]));
 
 	const moving = new Set<Item>();
 	let raf = 0;
 	let last = 0;
-	let W = desk.clientWidth;
+	const layoutWidth = () => compact && slots.length ? slots[0].clientWidth : desk.clientWidth;
+	let W = layoutWidth();
 	let H = desk.clientHeight;
 	let top = items.length;
 
@@ -131,8 +133,8 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 	};
 
 	// — Layouts —
-	const toHome = (it: Item, i: number) => compact
-		? [viewport.clientWidth / 2 + i * (W - viewport.clientWidth) / Math.max(1, sheets.length - 1), H * (i % 2 ? .53 : .47), it.home.r] as const
+	const toHome = (it: Item) => compact
+		? [W / 2, H * Number(it.el.style.getPropertyValue('--mobile-y')), Math.max(-4, Math.min(4, it.home.r))] as const
 		: [it.home.x * W, it.home.y * H, it.home.r] as const;
 	const pile = (i: number) => [W * 0.5 + (i - 2.5) * 4, H * 0.5 + (i % 2 ? 5 : -5), (i % 2 ? 1 : -1) * (2 + i * 1.3)] as const;
 
@@ -159,23 +161,32 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		});
 	};
 
-	items.forEach((it, i) => {
-		[it.x, it.y, it.r] = toHome(it, i);
+	items.forEach((it) => {
+		[it.x, it.y, it.r] = toHome(it);
 		write(it);
 	});
 	sheets.forEach((it) => raise(it));
 	if (compact) {
+		// A grip drag belongs to the sheet. Let swipes elsewhere scroll natively,
+		// and keep the browser from treating the next tap as a request to stop a fling.
+		desk.querySelectorAll<HTMLElement>('[data-grip]').forEach(grip => {
+			grip.addEventListener('touchmove', event => event.preventDefault(), { signal, passive: false });
+		});
 		const prev = section.querySelector<HTMLButtonElement>('[data-prev]')!;
 		const next = section.querySelector<HTMLButtonElement>('[data-next]')!;
+		const current = section.querySelector<HTMLElement>('[data-current]')!;
+		// The first and last slots have equal end padding, so both can centre.
+		const currentIndex = () => Math.max(0, Math.min(slots.length - 1, Math.round(viewport.scrollLeft / layoutWidth())));
 		const sync = () => {
-			prev.disabled = viewport.scrollLeft < 2;
-			next.disabled = viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 2;
+			const index = currentIndex();
+			current.textContent = String(index + 1);
+			prev.disabled = index === 0;
+			next.disabled = index >= slots.length - 1;
 		};
 		const pan = (direction: number) => {
-			const centre = viewport.scrollLeft + viewport.clientWidth / 2;
-			const targets = sheets.map(it => it.x).sort((a, b) => direction * (a - b));
-			const target = targets.find(x => direction * (x - centre) > 8);
-			const left = target === undefined ? (direction > 0 ? W : 0) : target - viewport.clientWidth / 2;
+			const target = slots[currentIndex() + direction];
+			if (!target) return;
+			const left = target.offsetLeft + target.offsetWidth / 2 - viewport.clientWidth / 2;
 			viewport.scrollTo({ left, behavior: reduce.matches ? 'instant' : 'smooth' });
 		};
 		prev.addEventListener('click', () => pan(-1), { signal });
@@ -185,8 +196,10 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		sync();
 	}
 
-	section.querySelector('[data-gather]')?.addEventListener('click', gather, { signal });
-	section.querySelector('[data-scatter]')?.addEventListener('click', scatter, { signal });
+	if (!compact) {
+		section.querySelector('[data-gather]')?.addEventListener('click', gather, { signal });
+		section.querySelector('[data-scatter]')?.addEventListener('click', scatter, { signal });
+	}
 
 	// — Inertia —
 	const step = (t: number) => {
@@ -233,7 +246,7 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		trail: { t: number; x: number; y: number; r: number }[];
 	} | null = null;
 	let swallowClick = false;
-	let origin = desk.getBoundingClientRect();
+	const surface = (it: Item) => compact ? it.el.parentElement! : desk;
 
 	desk.addEventListener(
 		'pointerdown',
@@ -246,7 +259,7 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 			if (!it) return;
 			settle(it);
 			moving.delete(it);
-			origin = desk.getBoundingClientRect();
+			const origin = surface(it).getBoundingClientRect();
 			const px = e.clientX - origin.left;
 			const py = e.clientY - origin.top;
 			// The grab point, in the sheet's own (unrotated) frame.
@@ -267,7 +280,7 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		(e) => {
 			if (!hold || e.pointerId !== hold.id) return;
 			const { it } = hold;
-			origin = desk.getBoundingClientRect();
+			const origin = surface(it).getBoundingClientRect();
 			const px = e.clientX - origin.left;
 			const py = e.clientY - origin.top;
 			const ddx = px - hold.px;
@@ -317,6 +330,10 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 		swallowClick = true;
 		setTimeout(() => (swallowClick = false), 0);
 
+		if (compact) {
+			fly(it, ...toHome(it));
+			return;
+		}
 		const recent = trail.filter((p) => e.timeStamp - p.t < 90);
 		const a = recent[0];
 		const b = recent[recent.length - 1];
@@ -370,7 +387,7 @@ function live(desk: HTMLElement, compact: boolean): () => void {
 
 	// Keep the layout proportional when the desk changes size.
 	const resize = new ResizeObserver(() => {
-		const nw = desk.clientWidth;
+		const nw = layoutWidth();
 		const nh = desk.clientHeight;
 		if (!nw || !nh || (nw === W && nh === H)) return;
 		const scaleX = nw / W;

@@ -27,21 +27,21 @@ const tools = [
 		</div>
 		<div class="desk-controls">
 			<p class="hint hand-bold desktop"><Bilingual it="Prendi un foglio dal banco" en="Pick a sheet from the desk" /></p>
-			<p class="hint hand-bold mobile"><Bilingual it="Trascina il disegno" en="Drag the drawing" /></p>
+			<p class="hint hand-bold mobile"><Bilingual it="Scorri sul banco" en="Swipe along the desk" /></p>
 			<div class="actions desktop">
 				<button type="button" data-gather><Bilingual it="Raccogli" en="Gather" /></button>
 				<span aria-hidden="true">/</span>
 				<button type="button" data-scatter><Bilingual it="Sparpaglia" en="Scatter" /></button>
 			</div>
 			<div class="actions mobile">
-				<button type="button" data-prev><Bilingual it="Indietro" en="Previous" /></button>
-				<span aria-hidden="true">/</span>
-				<button type="button" data-next><Bilingual it="Avanti" en="Next" /></button>
+				<button type="button" data-prev aria-controls="banco-progetti"><Bilingual it="Indietro" en="Previous" /></button>
+				<span class="position"><span data-current>1</span> / {projects.length}</span>
+				<button type="button" data-next aria-controls="banco-progetti"><Bilingual it="Avanti" en="Next" /></button>
 			</div>
 		</div>
 	</header>
-	<div class="bench-window" data-bench-window>
-		<div class="desk" data-tavolo style={`--intervals: ${Math.max(0, projects.length - 1)}`}>
+	<div class="bench-window" data-bench-window id="banco-progetti">
+		<div class="desk" data-tavolo>
 			<ul class="sheets" role="list">
 				{projects.map((project, index) => <Foglio {project} {index} {...places[index % places.length]} />)}
 			</ul>
@@ -106,21 +106,30 @@ const tools = [
 		.desktop { display: none; }
 		.hint.mobile { display: block; }
 		.actions.mobile { display: flex; }
-		.bench-window { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #96734e #3e291d; }
+		.bench-window { container-type: inline-size; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: #96734e #3e291d; }
 		.desk {
-			--pitch: clamp(264px, 72vw, 345px);
-			width: calc(100% + var(--intervals) * var(--pitch));
-			height: clamp(415px, 108vw, 510px);
+			--pitch: min(86cqw, 354px);
+			width: max-content;
+			height: clamp(345px, 105vw, 426px);
+			overflow: clip;
 			background-image: url('../assets/bottega/banco-mobile.webp');
-			background-position: center;
 		}
+		.sheets {
+			display: grid;
+			grid-auto-flow: column;
+			grid-auto-columns: var(--pitch);
+			height: 100%;
+			padding-inline: calc((100cqw - var(--pitch)) / 2);
+		}
+		.position { color: var(--brown-2); font: 500 14px/1 var(--font-garamond), Georgia, serif; font-variant-numeric: tabular-nums; }
 		.instrument { display: none; }
 	}
-	@media (max-width: 540px) {
-		.bench-heading { gap: 8px; padding-bottom: 16px; }
+	@media (max-width: 600px) {
+		.bench-heading { display: block; padding-bottom: 8px; }
 		.bench-heading .rubric { font-size: .75rem; }
-		.hint.mobile { font-size: 26px; }
-		.actions { gap: 1px; }
+		.works:has(.desk-live) .desk-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+		.hint.mobile { margin: 0; font-size: 26px; text-align: left; }
+		.actions { gap: 4px; }
 		.actions button { font-size: 16px; }
 	}
 	@media (max-width: 360px) {
